@@ -2,11 +2,12 @@
 NAME = webserv
 
 CXX = c++
-CXXFLAGS = -Wall -Werror -Wextra -std=c++98
+CXXFLAGS = -Wall -Werror -Wextra #-std=c++98 -g
 
-SRCS	=	srcs/main.cpp											
+SRCS	=	srcs/main.cpp	\
+			srcs/Parser.cpp											
 
-INC		=	inc/
+INC		=	inc/Parser.hpp
 
 all: $(NAME)
 
