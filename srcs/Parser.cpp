@@ -1,18 +1,19 @@
 #  include "../inc/Parser.hpp"
 
-Parser::Parser (): _port(0) {};
+Parser::Parser ():      _port(0) {};
+
 Parser::~Parser()  {};
 
 int     Parser::read(char   *config)
 {
     std::fstream file(config, std::fstream::in);
-    if  (file.good())
+    if  (file.good() && valid_brackets(file))
     {
         std::string  line;
         while(std::getline( file, line ) )
         {
             while (line.length() == 0)
-                getline(file, line);
+                getline(file, line); // skip blank lines
             line = trim(line);
             if ( line.compare(0, 6, "listen") == 0 )
                 setPort(line);
@@ -27,13 +28,14 @@ int     Parser::read(char   *config)
     return 1;
 }
 
+// Getters and Setters
+
 std::string     Parser::getIP() const                       {   return _ip;                 };
 int             Parser::getPort() const                     {   return _port;               };
 std::string     Parser::getProtocol() const                 {   return _protocol;           };
 
 void            Parser::setPort(std::string const s)
 {
-    
     if (_port != 0)
         return ;
     std::stringstream tmp;
@@ -43,6 +45,40 @@ void            Parser::setPort(std::string const s)
     _port = stoi(s.substr(start, end));
 };
 
+// private functions
+
+int     Parser::valid_brackets(std::fstream &f) // check if { } are well closed  
+{
+    std::vector<char>   brackets; 
+    std::ostringstream  sstr;
+    std::string         s;
+
+    sstr << f.rdbuf();
+    s = sstr.str();
+    size_t len = s.size();
+    for ( size_t i = 0; i < len; i++)
+    {
+        if ( s[i] == '{' || s[i] == '}' )
+            brackets.push_back(s[i]);
+    }
+    std::vector<char>::iterator it = brackets.begin();
+    while (it != brackets.end())
+    {
+        if ( *it == '{' && *(it + 1) == '}')
+        {
+            brackets.erase(it,it + 2);
+            it = brackets.begin();
+        }
+        else
+            ++it;
+    }
+    if (brackets.size())
+        return 0;
+    std::cout << "OK\n";
+    return 1;
+}
+
+// string manipulation functions
 
 std::string     Parser::trim(std::string s)
 {

@@ -2,7 +2,7 @@
 NAME = webserv
 
 CXX = c++
-CXXFLAGS = -Wall -Werror -Wextra #-std=c++98 -g
+CXXFLAGS = -Wall -Werror -Wextra -g #-std=c++98 -g
 
 SRCS	=	srcs/main.cpp	\
 			srcs/Parser.cpp											
