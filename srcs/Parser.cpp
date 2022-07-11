@@ -1,18 +1,14 @@
 #  include "../inc/Parser.hpp"
 
-Parser::Parser ():  _ip(0),
-                    _port(0),
-                    _protocol(0),
-                    _config(0) {};
+Parser::Parser ():      _port(0) {};
 
 Parser::~Parser()  {};
 
 int     Parser::read(char   *config)
 {
     std::fstream file(config, std::fstream::in);
-    if  (file.good())
+    if  (file.good() && valid_brackets(file))
     {
-        setConfigFile(file);
         std::string  line;
         while(std::getline( file, line ) )
         {
@@ -37,11 +33,9 @@ int     Parser::read(char   *config)
 std::string     Parser::getIP() const                       {   return _ip;                 };
 int             Parser::getPort() const                     {   return _port;               };
 std::string     Parser::getProtocol() const                 {   return _protocol;           };
-std::fstream    Parser::getConfigFile() const               {   return _config;             };
 
 void            Parser::setPort(std::string const s)
 {
-    
     if (_port != 0)
         return ;
     std::stringstream tmp;
@@ -53,39 +47,35 @@ void            Parser::setPort(std::string const s)
 
 // private functions
 
-int     Parser::valid_brackets(std::fstream f) // check if { } are well closed  
+int     Parser::valid_brackets(std::fstream &f) // check if { } are well closed  
 {
     std::vector<char>   brackets; 
     std::ostringstream  sstr;
+    std::string         s;
 
     sstr << f.rdbuf();
-    if (std::count(s.begin(), s.end(), '{') == std::count(s.begin(), s.end(), '}')
+    s = sstr.str();
+    size_t len = s.size();
+    for ( size_t i = 0; i < len; i++)
     {
-        size_t len = sstr.length();
-        for ( int i = 0; i < len; i++)
-        {
-            if ( sstr[i] == '{' || sstr[i] == '}' )
-                brackets.push(sstr[i]);
-        }
-        while (brackets.size())
-        {
-            std::vector<char>::iterator it = brackets.begin();
-            while (it != brackets.end())
-            {
-                if ( *it == '{' && *(it + 1) == '}')
-                {
-                    brackets.erase(it,it + 1);
-                    std::cout << brackets;
-                    it = brackets.begin();
-                }
-            }
-        }
-        if (brackets.size())
-        {    std::cout << "PARSER KO\n"; return 0;}
-        std::cout << "PARSER OK\n";
-        return 1;
+        if ( s[i] == '{' || s[i] == '}' )
+            brackets.push_back(s[i]);
     }
-    return 0;
+    std::vector<char>::iterator it = brackets.begin();
+    while (it != brackets.end())
+    {
+        if ( *it == '{' && *(it + 1) == '}')
+        {
+            brackets.erase(it,it + 2);
+            it = brackets.begin();
+        }
+        else
+            ++it;
+    }
+    if (brackets.size())
+        return 0;
+    std::cout << "OK\n";
+    return 1;
 }
 
 // string manipulation functions
