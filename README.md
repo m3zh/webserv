@@ -2,7 +2,8 @@
 
 ## Ressources
 ```
-TO DO
+# config file will be based on nginx default config
+https://www.nginx.com/resources/wiki/start/topics/examples/full/
 ```
 ## Clone and Fetch
 
