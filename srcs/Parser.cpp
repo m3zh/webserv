@@ -64,16 +64,19 @@ int     Parser::valid_brackets(std::fstream &f) // check if { } are well closed
     std::vector<char>::iterator it = brackets.begin();
     while (it != brackets.end())
     {
-        if ( *it == '{' && *(it + 1) == '}')
+        if ( *it == '{' && (it + 1) != brackets.end() && *(it + 1) == '}')
         {
-            brackets.erase(it,it + 2);
+            brackets.erase(it, it + 2);
             it = brackets.begin();
         }
         else
             ++it;
     }
     if (brackets.size())
+    {
+        std::cout << "Error\nNo Matching brackets in config file\n";
         return 0;
+    }
     std::cout << "OK\n";
     return 1;
 }
