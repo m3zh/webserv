@@ -10,8 +10,10 @@ int     Parser::read(char   *config)
     if  (file.good() && valid_brackets(file))
     {
         std::string  line;
-        while(std::getline( file, line ) )
+        file.seekg(0);
+        while( std::getline( file, line ) )
         {
+            std::cout << line << std::endl;
             while (line.length() == 0)
                 getline(file, line); // skip blank lines
             line = trim(line);
@@ -74,7 +76,6 @@ int     Parser::valid_brackets(std::fstream &f) // check if { } are well closed
     }
     if (brackets.size())
         return 0;
-    std::cout << "OK\n";
     return 1;
 }
 
