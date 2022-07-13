@@ -78,6 +78,7 @@ int     Parser::valid_brackets(std::fstream &f) // check if { } are well closed
     {
         std::cout << "Error\nNo Matching brackets in config file\n";
         return 0;
+    }
     return 1;
 }
 
