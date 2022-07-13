@@ -91,7 +91,3 @@ std::string     Parser::trim(std::string s)
     return s.substr(start, end);
 }
 
-void Parser::createLexer()
-{
-    lexer = new Lexer();
-}
