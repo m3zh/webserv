@@ -6,7 +6,7 @@
 /*   By: vmasse <vmasse@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/10 18:49:57 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/07/12 15:49:02 by vmasse           ###   ########.fr       */
+/*   Updated: 2022/07/13 16:28:48 by vmasse           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,18 @@
 # include <sstream>
 # include <cstring>
 # include <vector>
+# include <map>
+
+# include "AToken.hpp"
+# include "Lexer.hpp"
+# include "TokenType.hpp"
+
+class Lexer;
 
 class Parser
 {
     private:
-        std::string     _ip;
+        std::string     _ip; // pourquoi l'ip ici ?
         int             _port;
         std::string     _protocol;
 
@@ -31,7 +38,9 @@ class Parser
 
         Parser(Parser const &p);
         Parser& operator=(Parser const &p);
-        
+
+        Lexer  lexer;
+
     public:
         Parser();
         ~Parser();
@@ -41,4 +50,6 @@ class Parser
         int             getPort() const;
         std::string     getProtocol() const;
         void            setPort(std::string const str);
+
+        void            createLexer();
 };

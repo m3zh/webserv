@@ -30,9 +30,9 @@ int     Parser::read(char   *config)
 
 // Getters and Setters
 
-std::string     Parser::getIP() const                       {   return _ip;                 };
-int             Parser::getPort() const                     {   return _port;               };
-std::string     Parser::getProtocol() const                 {   return _protocol;           };
+std::string     Parser::getIP()         const     {   return _ip;         };
+int             Parser::getPort()       const     {   return _port;       };
+std::string     Parser::getProtocol()   const     {   return _protocol;   };
 
 void            Parser::setPort(std::string const s)
 {
@@ -89,4 +89,9 @@ std::string     Parser::trim(std::string s)
     size_t start = s.find_first_not_of(spaces);
     size_t end = s.find_last_not_of(spaces);
     return s.substr(start, end);
+}
+
+void Parser::createLexer()
+{
+    lexer = new Lexer();
 }
