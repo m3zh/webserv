@@ -9,7 +9,9 @@ class AToken
 		std::string	type;
 
 	public:
-
+		AToken();
+		virtual ~AToken();
+		
 		bool	validate();
 
 };

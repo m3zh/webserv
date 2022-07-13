@@ -21,8 +21,8 @@ class Lexer
 		Lexer(Lexer const &rhs);
 		Lexer& operator=(Lexer const &rhs);
 
-		std::string     trim(std::string s);
-        int             valid_brackets(std::fstream &f);
+		std::string     			trim(std::string s);
+        int             			valid_brackets(std::fstream &f);
 
 		std::string					_rawFile;
 		
@@ -39,5 +39,5 @@ class Lexer
 
         int 						read(char   *config);
 		void						tokenize(); // crée l'array de token; si c'est invalide, on return NULL et notre main quitte 
-		bool						validate_line(std::string line);
+		bool						valid_line(std::string line);
 };

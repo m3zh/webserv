@@ -5,7 +5,7 @@ CXXFLAGS = -Wall -Werror -Wextra -g #-std=c++98 -g
 
 SRCS	=	srcs/main.cpp		\
 			srcs/AToken.cpp		\
-			srcs/Lexer.cpp		\									
+			srcs/Lexer.cpp									
 
 INC		=	inc/AToken.hpp		\
 			inc/Lexer.hpp

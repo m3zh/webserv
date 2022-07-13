@@ -1,4 +1,4 @@
-# include "Lexer.hpp"
+# include "../inc/Lexer.hpp"
 
 Lexer::	Lexer() {}
 Lexer::~Lexer() {}
@@ -8,13 +8,14 @@ int     Lexer::read(char   *config)
     std::fstream file(config, std::fstream::in);
     if  (file.good() && valid_brackets(file))
     {
-        std::string  line;
-        while(std::getline( file, line ) )
+		std::string line;
+        while (getline( file, line ))
         {
+			std::cout << "ici\n";
             while (line.length() == 0)
                 getline(file, line); // skip blank lines
             line = trim(line);
-            if (!validate_line(line))
+            if (!valid_line(line))
 				return 0;
         } 
         file.close();     
@@ -57,7 +58,7 @@ int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed
         std::cout << "Error\nNo Matching brackets in config file\n";
         return 0;
     }
-    std::cout << "OK\n";
+    std::cout << "1) Brackets OK\n";
     return 1;
 }
 
@@ -66,7 +67,7 @@ void	Lexer::tokenize()
 
 }
 
-bool	validate_line(std::string line)
+bool	Lexer::valid_line(std::string line)
 {
 	std::cout << line << std::endl;
 	return true;
