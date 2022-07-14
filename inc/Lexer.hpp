@@ -22,6 +22,8 @@ class Lexer
 		Lexer& operator=(Lexer const &rhs);
 
 		std::string     			trim(std::string s);
+		int             			match_any(std::string s, std::string set);
+		int             			split(std::string s);
         int             			valid_brackets(std::fstream &f);
 
 		std::string					_rawFile;

@@ -82,3 +82,33 @@ std::string     Lexer::trim(std::string s)
     size_t end = s.find_last_not_of(spaces);
     return s.substr(start, end);
 }
+
+
+int             Lexer::match_any(char c, std::string set)
+{
+    std::string::iterator it = set.begin();
+    while ( it != set.end() )
+    {   
+        if (*it == c) return 1;
+        it++;     
+    };
+    return 0;
+}
+
+std::string     Lexer::split(std::string s)
+{
+    std::string spaces = " \n\r\t\f\v";
+    std::string::iterator it = s.begin();
+    start = 0;
+    while ( it != s.end() )
+    {
+        if (match_any(*it, spaces))
+        {
+            tokens.push_back(s.substr(start, it))
+            while (it != s.end() && match_any(*it, spaces))
+                it++;
+            start = it;
+        }
+        else it++;
+    }
+}
