@@ -24,12 +24,10 @@ class Lexer
 		std::string     			trim(std::string s);
         int             			valid_brackets(std::fstream &f);
 
-		std::string					_rawFile;
-		
+		std::vector<std::string>	current_line;
 
 	protected:
 
-		std::vector<std::string>	raw;
 		std::vector<AToken>			tokens;
 
 	public:
@@ -38,6 +36,7 @@ class Lexer
 		~Lexer();
 
         int 						read(char   *config);
-		void						tokenize(); // crée l'array de token; si c'est invalide, on return NULL et notre main quitte 
+		void						tokenize(std::string line); // crée l'array de token; si c'est invalide, on return NULL et notre main quitte 
 		bool						valid_line(std::string line);
+		void 						split(std::string line);
 };

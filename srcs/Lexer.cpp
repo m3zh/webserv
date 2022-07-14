@@ -9,9 +9,10 @@ int     Lexer::read(char   *config)
     if  (file.good() && valid_brackets(file))
     {
 		std::string line;
+        file.seekg(0);
         while (getline( file, line ))
         {
-			std::cout << "ici\n";
+            std::cout << line << std::endl;
             while (line.length() == 0)
                 getline(file, line); // skip blank lines
             line = trim(line);
@@ -62,18 +63,40 @@ int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed
     return 1;
 }
 
-void	Lexer::tokenize()
+void	Lexer::tokenize(std::string line)
 {
-
+    // line.
 }
 
 bool	Lexer::valid_line(std::string line)
 {
-	std::cout << line << std::endl;
+    tokenize(line);
+
 	return true;
 }
 
 // string manipulation functions
+
+void Lexer::split(std::string line)
+{
+    std::string separators = " \n\r\t\f\v\0";
+    std::string::iterator it = line.begin();
+
+    size_t start = 0;
+    size_t pos = 0;
+    while (it != line.end())
+    {
+        if (pos = line.find_first_of(separators))
+        {
+            current_line.push_back(line.substr(start, pos - start));
+            while (pos = line.find_first_of(separators))
+                {   it++; pos++;}
+            start = pos;
+        }
+        else
+            it++;
+    }
+}
 
 std::string     Lexer::trim(std::string s)
 {
