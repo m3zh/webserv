@@ -9,9 +9,9 @@ int     Lexer::read(char   *config)
     if  (file.good() && valid_brackets(file))
     {
 		std::string line;
+        file.seekg(0);
         while (getline( file, line ))
         {
-			std::cout << "ici\n";
             while (line.length() == 0)
                 getline(file, line); // skip blank lines
             line = trim(line);
@@ -69,6 +69,7 @@ void	Lexer::tokenize()
 
 bool	Lexer::valid_line(std::string line)
 {
+    //std::cout << line << std::endl;
 	split(line);
 	return true;
 }
@@ -95,22 +96,42 @@ int             Lexer::match_any(char c, std::string set)
     return 0;
 }
 
-int     Lexer::split(std::string s)
+// void    Lexer::split(std::string s)
+// {
+//     std::string spaces = " \n\r\t\f\v";
+//     std::string::iterator it = s.begin();
+//  	std::string::size_type	start = 0;
+// 	std::string::size_type	end = 0;
+//     std::cout << "LINE: ";
+//     std::cout << s << std::endl;
+//     while ( it != s.end() )
+//     {
+//         end = it - s.begin();
+//         if (match_any(*it, spaces))
+//         {
+//             std::cout << s.substr(start, end - start) << std::endl;
+//             _words.push_back(s.substr(start, end - start));
+//             while (it != s.end() && match_any(*it, spaces))
+//                 it++;
+//             start = it - s.begin();
+//             // for (size_t i = 0; i < _words.size(); i++)
+                
+//             //     std::cout << _words[i] << " ";
+//             // std::cout << std::endl;
+//         }
+//         else it++;
+//     }
+// }
+
+void     Lexer::split(std::string line)
 {
-    std::string spaces = " \n\r\t\f\v";
-    std::string::iterator it = s.begin();
-    int start = 0;
-            std::cout << "ici" << _words[0];
-    while ( it != s.end() )
+    std::size_t prev = 0, pos;
+    while ((pos = line.find_first_of(" \n\r\t\f\v", prev)) != std::string::npos)
     {
-        if (match_any(*it, spaces))
-        {
-            _words.push_back(s.substr(start, *it));
-            while (it != s.end() && match_any(*it, spaces))
-                it++;
-            start = *it;
-        }
-        else it++;
+        if (pos > prev)
+            _words.push_back(line.substr(prev, pos-prev));
+        prev = pos+1;
     }
-    return 1;
+    if (prev < line.length())
+        _words.push_back(line.substr(prev, std::string::npos));
 }
