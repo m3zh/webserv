@@ -69,7 +69,7 @@ void	Lexer::tokenize()
 
 bool	Lexer::valid_line(std::string line)
 {
-	std::cout << line << std::endl;
+	split(line);
 	return true;
 }
 
@@ -91,24 +91,26 @@ int             Lexer::match_any(char c, std::string set)
     {   
         if (*it == c) return 1;
         it++;     
-    };
+    }
     return 0;
 }
 
-std::string     Lexer::split(std::string s)
+int     Lexer::split(std::string s)
 {
     std::string spaces = " \n\r\t\f\v";
     std::string::iterator it = s.begin();
-    start = 0;
+    int start = 0;
+            std::cout << "ici" << _words[0];
     while ( it != s.end() )
     {
         if (match_any(*it, spaces))
         {
-            tokens.push_back(s.substr(start, it))
+            _words.push_back(s.substr(start, *it));
             while (it != s.end() && match_any(*it, spaces))
                 it++;
-            start = it;
+            start = *it;
         }
         else it++;
     }
+    return 1;
 }
