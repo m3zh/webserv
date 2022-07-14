@@ -62,15 +62,32 @@ int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed
     return 1;
 }
 
-void	Lexer::tokenize()
-{
 
+
+std::vector<AToken>	Lexer::tokenize()
+{
+    std::vector<AToken> curr_line_tokens;
+
+    for (size_t i=0; i < current_line.size(); i++)
+    {
+        AToken elem(current_line[i]);
+
+        if (current_line[i] == "server" || current_line[i] == "location")
+            elem.setType("Namespace");
+
+        curr_line_tokens.push_back(elem);
+    }
+    return curr_line_tokens;
 }
 
 bool	Lexer::valid_line(std::string line)
 {
-    //std::cout << line << std::endl;
+    std::vector<AToken> line_tokens;
+
+    current_line.clear();
 	split(line);
+    line_tokens = tokenize();
+    tokens.push_back(line_tokens);
 	return true;
 }
 
@@ -96,42 +113,15 @@ int             Lexer::match_any(char c, std::string set)
     return 0;
 }
 
-// void    Lexer::split(std::string s)
-// {
-//     std::string spaces = " \n\r\t\f\v";
-//     std::string::iterator it = s.begin();
-//  	std::string::size_type	start = 0;
-// 	std::string::size_type	end = 0;
-//     std::cout << "LINE: ";
-//     std::cout << s << std::endl;
-//     while ( it != s.end() )
-//     {
-//         end = it - s.begin();
-//         if (match_any(*it, spaces))
-//         {
-//             std::cout << s.substr(start, end - start) << std::endl;
-//             _words.push_back(s.substr(start, end - start));
-//             while (it != s.end() && match_any(*it, spaces))
-//                 it++;
-//             start = it - s.begin();
-//             // for (size_t i = 0; i < _words.size(); i++)
-                
-//             //     std::cout << _words[i] << " ";
-//             // std::cout << std::endl;
-//         }
-//         else it++;
-//     }
-// }
-
 void     Lexer::split(std::string line)
 {
     std::size_t prev = 0, pos;
     while ((pos = line.find_first_of(" \n\r\t\f\v", prev)) != std::string::npos)
     {
         if (pos > prev)
-            _words.push_back(line.substr(prev, pos-prev));
+            current_line.push_back(line.substr(prev, pos-prev));
         prev = pos+1;
     }
     if (prev < line.length())
-        _words.push_back(line.substr(prev, std::string::npos));
+        current_line.push_back(line.substr(prev, std::string::npos));
 }

@@ -5,13 +5,17 @@ class AToken
 {
 	private:
 
-		std::string	content;
-		std::string	type;
+		std::string	_content;
+		std::string	_type;
 
 	public:
-		AToken();
-		virtual ~AToken();
+		AToken(std::string c);
+		~AToken();
 		
-		bool	validate();
+		bool			validate();
+		void 			setType(std::string t);
+		std::string 	getType();
+		void 			setContent(std::string c);
+		std::string 	getContent();
 
 };
