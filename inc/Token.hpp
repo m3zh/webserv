@@ -11,6 +11,7 @@ class Token
 		size_t		_allowed_words;
 
 	public:
+	
 		Token(std::string c, size_t p);
 		~Token();
 		

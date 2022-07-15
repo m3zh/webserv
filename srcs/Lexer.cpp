@@ -121,7 +121,7 @@ bool    Lexer::handleComments(Token& token)
     std::cout << before_comment << "\n";
     token.setContent(before_comment);
     tag(token);
-    return true;
+    return false;
 }
 
 bool    Lexer::tag(Token& token)
@@ -184,7 +184,7 @@ std::string     Lexer::trim(std::string s)
     size_t end = s.find_last_not_of(spaces);
     if  ( start == end )
         return s;
-    return s.substr(start, end);
+    return s.substr(start, start - end);
 }
 
 
