@@ -16,21 +16,17 @@ int main(int argc, char **args)
     if (config.read(args[1]))
         //webserv(config);
 
-    /* parser: print tokens params
-    for (size_t i = 0; i < config.tokens.size(); i++)
-    {
-        std::cout << "ici\n";
-         for (size_t j = 0; j < config.tokens[i].size(); j++)
-        {
-            std::cout   << "Line " << i << ", Word " << j << "; type= "
-                        << config.tokens[i][j].getType() << "; pos= "
-                        << config.tokens[i][j].getPos() << "; content= "
-                        << config.tokens[i][j].getContent() << std::endl;
-        }
-    }
-    for (auto it = begin (config.tokens); it != end (config.tokens); ++it) {
-        it->doSomething ();
-    }
+    /* ICI
+        parser: print tokens params
     */
+    for (size_t i = 0; i < config.curr_line_tokens.size(); i++)
+    {
+        std::cout  <<  "Word " << i << "; type= "
+                    << config.curr_line_tokens[i].getType() << "; pos= "
+                    << config.curr_line_tokens[i].getPos() << "; content= "
+                    << config.curr_line_tokens[i].getContent() << std::endl;
+        std::cout << "ici\n";
+    }
+
     return EXIT_SUCCESS;
 }

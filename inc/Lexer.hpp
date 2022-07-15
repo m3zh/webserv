@@ -79,7 +79,6 @@ class Lexer
 		};
 		std::string		separator_types = "#{};";
 		
-		std::vector<Token>					curr_line_tokens;
 
 
 	public:
@@ -95,6 +94,7 @@ class Lexer
 		// token methods ?
 		bool    					validate_by_position(Token& tok);
 		
+		std::vector<std::string>			current_line;
+		std::vector<Token>					curr_line_tokens;
 		std::vector<std::vector<Token>>		tokens;
-		std::vector<std::string>	current_line;
 };

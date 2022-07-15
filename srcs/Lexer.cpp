@@ -63,20 +63,19 @@ int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed
 
 bool    Lexer::validate_by_position(Token& tok)
 {
-    // if (tok.getType() == "Namespace" && tok.getPos())
-    (void)tok;
-    return false;
+    if ((tok.getType() == "Namespace" || tok.getType() == "Key") && tok.getPos() != 0)
+        return false;
+    if (tok.getType() == "Value" && tok.getPos() == 0)
+        return false;
+    return true;
 }
 
 void    Lexer::tag(Token& tok, size_t pos)
 {
     tok.setPos(pos);
-    for (size_t i=0; i < separator_types.size(); i++)
-        if (separator_types.find(tok.getContent()))
-            tok.setType("Separator");
     if (std::find(namespace_types.begin(), namespace_types.end(), tok.getContent()) != namespace_types.end())
         tok.setType("Namespace");
-    else if (tok.getContent().find("/")) // a préciser ...
+    else if (!tok.getContent().find("/")) // a préciser ...
         tok.setType("Path");
     else if (std::find(method_types.begin(), method_types.end(), tok.getContent()) != method_types.end())
         tok.setType("Method");
@@ -84,6 +83,9 @@ void    Lexer::tag(Token& tok, size_t pos)
         tok.setType("Key");
     else 
         tok.setType("Value"); // temporaire ...
+    // for (size_t i=0; i < separator_types.size(); i++)
+    //     if (separator_types.find(tok.getContent()))
+    //         tok.setType("Separator");
 }
 
 bool    Lexer::tokenize()
@@ -96,7 +98,7 @@ bool    Lexer::tokenize()
         Token elem(current_line[i]);
 
         tag(elem, i);
-        if (elem.getType() == "None")
+        if (!validate_by_position(elem))
             return false;
 
         curr_line_tokens.push_back(elem);
@@ -112,18 +114,22 @@ bool	Lexer::valid_line(std::string line)
 	split(line);
     if (!tokenize())
         return false;
+    tokens.push_back(line_tokens);
 
-    std::vector<Token>::iterator it = line_tokens.begin();
-    while (it != line_tokens.end()) {
+    /*  ICI 
+        parser: print tokens
+    */
+	std::vector<Token>::iterator it = curr_line_tokens.begin();
+    while (it != curr_line_tokens.end()) {
         std::cout   << "type= "
                     << it->getType() << "; pos= "
                     << it->getPos() << "; content= "
                     << it->getContent() << std::endl;
         it++;
     }
-
-    tokens.push_back(line_tokens);
-	return true;
+    
+    
+    return true;
 }
 
 // string manipulation functions
