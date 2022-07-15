@@ -1,6 +1,6 @@
 # pragma once
 
-# include <iostream>
+# include <algorithm>
 # include <stdlib.h> 
 # include <fstream>
 # include <sstream>
@@ -8,11 +8,9 @@
 # include <vector>
 # include <map>
 
-# include "AToken.hpp"
-# include "TokenType.hpp"
-# include "Parser.hpp"
+# include "Token.hpp"
 
-class AToken;
+class Token;
 
 class Lexer
 {
@@ -27,7 +25,7 @@ class Lexer
         int             			valid_brackets(std::fstream &f);
 
 		std::string					_rawFile;
-		
+
 
 	protected:
 
@@ -35,6 +33,8 @@ class Lexer
 			"Namespace",
 			"Key",
 			"Value",
+			"Path",
+			"Method",
 			"Separator"
 		};
 		std::vector<std::string>	namespace_types = {
@@ -68,7 +68,7 @@ class Lexer
 			"server_name",
 			"allow_methods"
 		};
-		std::vector<std::string>	value_types = {
+		std::vector<std::string>	method_types = {
 			"on",
 			"off",
 			"GET",
@@ -77,9 +77,10 @@ class Lexer
 			"PUT",
 			"DELETE",
 		};
-		std::vector<std::string>	separator_types = {};
+		std::string		separator_types = "#{};";
 		
-		std::vector<std::vector<AToken>>			tokens;
+		std::vector<Token>					curr_line_tokens;
+
 
 	public:
 
@@ -87,8 +88,13 @@ class Lexer
 		~Lexer();
 
         int 						read(char   *config);
-		std::vector<AToken>			tokenize();
+		bool						tokenize();
+		void						tag(Token& tok, size_t pos);
 		bool						valid_line(std::string line);
 		
+		// token methods ?
+		bool    					validate_by_position(Token& tok);
+		
+		std::vector<std::vector<Token>>		tokens;
 		std::vector<std::string>	current_line;
 };

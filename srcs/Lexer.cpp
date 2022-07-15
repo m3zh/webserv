@@ -58,35 +58,70 @@ int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed
         std::cout << "Error\nNo Matching brackets in config file\n";
         return 0;
     }
-    std::cout << "1) Brackets OK\n";
     return 1;
 }
 
-
-
-std::vector<AToken>	Lexer::tokenize()
+bool    Lexer::validate_by_position(Token& tok)
 {
-    std::vector<AToken> curr_line_tokens;
+    // if (tok.getType() == "Namespace" && tok.getPos())
+    (void)tok;
+    return false;
+}
 
+void    Lexer::tag(Token& tok, size_t pos)
+{
+    tok.setPos(pos);
+    for (size_t i=0; i < separator_types.size(); i++)
+        if (separator_types.find(tok.getContent()))
+            tok.setType("Separator");
+    if (std::find(namespace_types.begin(), namespace_types.end(), tok.getContent()) != namespace_types.end())
+        tok.setType("Namespace");
+    else if (tok.getContent().find("/")) // a préciser ...
+        tok.setType("Path");
+    else if (std::find(method_types.begin(), method_types.end(), tok.getContent()) != method_types.end())
+        tok.setType("Method");
+    else if (std::find(key_types.begin(), key_types.end(), tok.getContent()) != key_types.end())
+        tok.setType("Key");
+    else 
+        tok.setType("Value"); // temporaire ...
+}
+
+bool    Lexer::tokenize()
+{
     for (size_t i=0; i < current_line.size(); i++)
     {
-        AToken elem(current_line[i]);
+        // if (current_line[i] == "#") // si notre mot est un #, alors on a pas besoin de tag les mots suivants
+        //     break; => a revoir !! pcq un mot peut contenir un # ...
 
-        if (current_line[i] == "server" || current_line[i] == "location")
-            elem.setType("Namespace");
+        Token elem(current_line[i]);
+
+        tag(elem, i);
+        if (elem.getType() == "None")
+            return false;
 
         curr_line_tokens.push_back(elem);
     }
-    return curr_line_tokens;
+    return true;
 }
 
 bool	Lexer::valid_line(std::string line)
 {
-    std::vector<AToken> line_tokens;
+    std::vector<Token> line_tokens;
 
     current_line.clear();
 	split(line);
-    line_tokens = tokenize();
+    if (!tokenize())
+        return false;
+
+    std::vector<Token>::iterator it = line_tokens.begin();
+    while (it != line_tokens.end()) {
+        std::cout   << "type= "
+                    << it->getType() << "; pos= "
+                    << it->getPos() << "; content= "
+                    << it->getContent() << std::endl;
+        it++;
+    }
+
     tokens.push_back(line_tokens);
 	return true;
 }
