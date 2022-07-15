@@ -61,31 +61,47 @@ int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed
     return 1;
 }
 
-bool    Lexer::validate_by_position(Token& tok)
+bool    Lexer::validate_by_position(Token& token)
 {
-    if ((tok.getType() == "Namespace" || tok.getType() == "Key") && tok.getPos() != 0)
+    if ((token.getType() == "Namespace" || token.getType() == "Key") && token.getPos() != 0)
         return false;
-    if (tok.getType() == "Value" && tok.getPos() == 0)
+    if (token.getType() == "Value" && token.getPos() == 0)
         return false;
     return true;
 }
 
-void    Lexer::tag(Token& tok, size_t pos)
+void    Lexer::setTokenParams(Token& token)
 {
-    tok.setPos(pos);
-    if (std::find(namespace_types.begin(), namespace_types.end(), tok.getContent()) != namespace_types.end())
-        tok.setType("Namespace");
-    else if (!tok.getContent().find("/")) // a préciser ...
-        tok.setType("Path");
-    else if (std::find(method_types.begin(), method_types.end(), tok.getContent()) != method_types.end())
-        tok.setType("Method");
-    else if (std::find(key_types.begin(), key_types.end(), tok.getContent()) != key_types.end())
-        tok.setType("Key");
-    else 
-        tok.setType("Value"); // temporaire ...
-    // for (size_t i=0; i < separator_types.size(); i++)
-    //     if (separator_types.find(tok.getContent()))
-    //         tok.setType("Separator");
+    token.setType("Key");
+    token.setAllowedWords(1); // par défaut chaque clef en a au moins un
+
+    std::map<std::string, int>::iterator    it = n_words_types.begin();
+    while (it != n_words_types.end())
+    {
+        if (it->first == token.getContent())
+            token.setAllowedWords(it->second);
+        it++;
+    }
+}
+
+void    Lexer::tag(Token& token)
+{
+    if (std::find(namespace_types.begin(), namespace_types.end(), token.getContent()) != namespace_types.end())
+        token.setType("Namespace");
+    else if (!token.getContent().find("/")) // a préciser ...
+        token.setType("Path");
+    else if (std::find(method_types.begin(), method_types.end(), token.getContent()) != method_types.end())
+        token.setType("Method");
+    else if (std::find(key_types.begin(), key_types.end(), token.getContent()) != key_types.end())
+        token.setType("Key");
+    else if (token.getContent().find_first_of("{}#"))
+        token.setType("Value"); // temporaire ...
+    else
+    {
+        for (size_t i=0; i < separator_types.size(); i++)
+            if (separator_types.find(token.getContent()))
+                token.setType("Separator"); // à compléter ..
+    }
 }
 
 bool    Lexer::tokenize()
@@ -95,32 +111,28 @@ bool    Lexer::tokenize()
         // if (current_line[i] == "#") // si notre mot est un #, alors on a pas besoin de tag les mots suivants
         //     break; => a revoir !! pcq un mot peut contenir un # ...
 
-        Token elem(current_line[i]);
+        Token elem(current_line[i], i);
 
-        tag(elem, i);
+        tag(elem);
         if (!validate_by_position(elem))
             return false;
 
-        curr_line_tokens.push_back(elem);
+        tokens.push_back(elem);
     }
     return true;
 }
 
 bool	Lexer::valid_line(std::string line)
 {
-    std::vector<Token> line_tokens;
-
     current_line.clear();
 	split(line);
     if (!tokenize())
         return false;
-    tokens.push_back(line_tokens);
 
     /*  ICI 
         parser: print tokens
-    */
-	std::vector<Token>::iterator it = curr_line_tokens.begin();
-    while (it != curr_line_tokens.end()) {
+	std::vector<Token>::iterator it = tokens.begin();
+    while (it != tokens.end()) {
         std::cout   << "type= "
                     << it->getType() << "; pos= "
                     << it->getPos() << "; content= "
@@ -128,7 +140,7 @@ bool	Lexer::valid_line(std::string line)
         it++;
     }
     
-    
+    */
     return true;
 }
 
@@ -139,6 +151,8 @@ std::string     Lexer::trim(std::string s)
     std::string spaces = " \n\r\t\f\v";
     size_t start = s.find_first_not_of(spaces);
     size_t end = s.find_last_not_of(spaces);
+    if  ( start == end )
+        return s;
     return s.substr(start, end);
 }
 
