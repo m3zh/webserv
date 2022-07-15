@@ -66,14 +66,16 @@ class Lexer
 			"workers",
 			"auth",
 			"server_name",
-			"allow_methods"
+			"allowed_methods"
 		};
 
 
 		std::map<std::string, int> 	n_words_types = {
 			{"allowed_methods", 5},
 			{"error_page", 2},
-
+			{"listen", 2},
+			{"index", 2},
+			{"ssl_protocols", 2},
 		};
 		std::vector<std::string>	method_types = {
 			"on",
@@ -95,12 +97,16 @@ class Lexer
 
         int 						read(char   *config);
 		bool						tokenize();
-		void						tag(Token& token);
+		bool						tag(Token& token);
 		bool						valid_line(std::string line);
 		
 		// token methods ?
-		void    					setTokenParams(Token& token);
+		void    					setKeyParams(Token& token);
+		void    					setNamespaceParams(Token& token);
+		bool					    handleComments(Token& token);
+		
 		bool    					validate_by_position(Token& token);
+		size_t						count_words_left(Token& token);
 		
 		std::vector<std::string>			current_line;
 		std::vector<Token>					tokens;

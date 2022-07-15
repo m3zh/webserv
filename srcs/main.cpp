@@ -22,7 +22,10 @@ int main(int argc, char **args)
         std::cout  << "type= "
                     << it->getType() << "; pos= "
                     << it->getPos() << "; content= "
-                    << it->getContent() << std::endl;
+                    << it->getContent();
+        if (it->getType() == "Key")
+            std::cout << "; aw= " << it->getAllowedWords();
+        std::cout << std::endl;
     }
     return EXIT_SUCCESS;
 }
