@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Parser.hpp                                         :+:      :+:    :+:   */
+/*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vmasse <vmasse@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -20,7 +20,7 @@
 # include <vector>
 # include <map>
 
-class Parser
+class Config
 {
     private:
         std::string     _ip; // pourquoi l'ip ici ?
@@ -30,12 +30,12 @@ class Parser
         std::string     trim(std::string s);
         int             valid_brackets(std::fstream &f);
 
-        Parser(Parser const &p);
-        Parser& operator=(Parser const &p);
+        Config(Config const &p);
+        Config& operator=(Config const &p);
 
     public:
-        Parser();
-        ~Parser();
+        Config();
+        ~Config();
 
         std::string     getIP() const;
         int             getPort() const;

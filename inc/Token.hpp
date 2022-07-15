@@ -1,5 +1,5 @@
 # pragma once
-# include "Parser.hpp"
+# include "Config.hpp"
 
 class Token
 {
@@ -11,7 +11,7 @@ class Token
 		size_t		_allowed_words;
 
 	public:
-	
+
 		Token(std::string c, size_t p);
 		~Token();
 		

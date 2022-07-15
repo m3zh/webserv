@@ -28,7 +28,7 @@ int     Lexer::read(char   *config)
     return 1;
 }
 
-int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed  
+int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed, change brackets with tokens
 {
     std::vector<char>   brackets; 
     std::ostringstream  sstr;
@@ -91,6 +91,12 @@ bool    Lexer::validate_by_position(Token& token)
     return true;
 }
 
+void    Lexer::setPathParams(Token& token)
+{
+    token.setType("Path");
+    
+}
+
 void    Lexer::setNamespaceParams(Token& token)
 {
     token.setType("Namespace");
@@ -118,20 +124,20 @@ bool    Lexer::handleComments(Token& token)
 {
     std::string before_comment = token.getContent().substr(0, token.getContent().find("#"));
 
-    std::cout << before_comment << "\n";
     token.setContent(before_comment);
     tag(token);
+    tokens.push_back(token);
     return false;
 }
 
 bool    Lexer::tag(Token& token)
 {
-    if (!token.getContent().find("#"))
+    if (token.getContent().find("#") != std::string::npos)
         return (handleComments(token));
     else if (std::find(namespace_types.begin(), namespace_types.end(), token.getContent()) != namespace_types.end())
         setNamespaceParams(token);
-    else if (!token.getContent().find("/")) // a préciser ...
-        token.setType("Path");
+    else if (token.getContent().find("/") == 0) // a préciser ...
+        setPathParams(token);
     else if (std::find(method_types.begin(), method_types.end(), token.getContent()) != method_types.end())
         token.setType("Method");
     else if (std::find(key_types.begin(), key_types.end(), token.getContent()) != key_types.end())
@@ -151,17 +157,14 @@ bool    Lexer::tokenize()
 {
     for (size_t i=0; i < current_line.size(); i++)
     {
-        // if (current_line[i] == "#") // si notre mot est un #, alors on a pas besoin de tag les mots suivants
-        //     break; => a revoir !! pcq un mot peut contenir un # ...
+        Token token(current_line[i], i);
 
-        Token elem(current_line[i], i);
-
-        if (!tag(elem)) // si on a pas tag l'élément, c'est qu'on a un comment don on skippe la ligne
+        if (!tag(token)) // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
             break;
-        if (!validate_by_position(elem))
+        if (!validate_by_position(token))
             return false;
 
-        tokens.push_back(elem);
+        tokens.push_back(token);
     }
     return true;
 }

@@ -16,7 +16,7 @@ int main(int argc, char **args)
     config.read(args[1]);
 
     /* ICI
-        parser: print tokens params
+        Config: print tokens params
     */
     for (auto it = begin (config.tokens); it != end (config.tokens); ++it) {
         std::cout  << "type= "

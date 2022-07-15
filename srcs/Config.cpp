@@ -1,10 +1,10 @@
-#  include "../inc/Parser.hpp"
+#  include "../inc/Config.hpp"
 
-Parser::Parser ():      _port(0) {};
+Config::Config ():      _port(0) {};
 
-Parser::~Parser()  {};
+Config::~Config()  {};
 
-int     Parser::read(char   *config)
+int     Config::read(char   *config)
 {
     std::fstream file(config, std::fstream::in);
     if  (file.good() && valid_brackets(file))
@@ -30,11 +30,11 @@ int     Parser::read(char   *config)
 
 // Getters and Setters
 
-std::string     Parser::getIP()         const     {   return _ip;         };
-int             Parser::getPort()       const     {   return _port;       };
-std::string     Parser::getProtocol()   const     {   return _protocol;   };
+std::string     Config::getIP()         const     {   return _ip;         };
+int             Config::getPort()       const     {   return _port;       };
+std::string     Config::getProtocol()   const     {   return _protocol;   };
 
-void            Parser::setPort(std::string const s)
+void            Config::setPort(std::string const s)
 {
     if (_port != 0)
         return ;
@@ -47,7 +47,7 @@ void            Parser::setPort(std::string const s)
 
 // private functions
 
-int     Parser::valid_brackets(std::fstream &f) // check if { } are well closed  
+int     Config::valid_brackets(std::fstream &f) // check if { } are well closed  
 {
     std::vector<char>   brackets; 
     std::ostringstream  sstr;
@@ -83,7 +83,7 @@ int     Parser::valid_brackets(std::fstream &f) // check if { } are well closed
 
 // string manipulation functions
 
-std::string     Parser::trim(std::string s)
+std::string     Config::trim(std::string s)
 {
     std::string spaces = " \n\r\t\f\v";
     size_t start = s.find_first_not_of(spaces);

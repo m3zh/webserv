@@ -104,6 +104,7 @@ class Lexer
 		void    					setKeyParams(Token& token);
 		void    					setNamespaceParams(Token& token);
 		bool					    handleComments(Token& token);
+		void    					setPathParams(Token& token);
 		
 		bool    					validate_by_position(Token& token);
 		size_t						count_words_left(Token& token);
