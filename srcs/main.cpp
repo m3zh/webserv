@@ -1,30 +1,31 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/07/10 18:20:35 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/07/10 23:20:06 by mlazzare         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 # include <iostream>
 # include <cstring>
 # include <stdlib.h>
-# include "../inc/Parser.hpp"
+
+# include "../inc/Lexer.hpp"
 
 int main(int argc, char **args)
 {
+    Lexer config;
+
     if (argc != 2)
     {
         std::cout << "Please provide ONE argument only\nUsage: ./webserv [configuration file]\n";
         return EXIT_FAILURE;
     }
-    Parser config;
-    if (config.read(args[1]))
-        config.getPort();
-        //webserv(config);
+    config.read(args[1]);
+
+    /* ICI
+        Config: print tokens params
+    for (auto it = begin (config.tokens); it != end (config.tokens); ++it) {
+        std::cout  << "type= "
+                    << it->getType() << "; pos= "
+                    << it->getPos() << "; content= "
+                    << it->getContent();
+        if (it->getType() == "Key")
+            std::cout << "; aw= " << it->getAllowedWords();
+        std::cout << std::endl;
+    }
+    */
     return EXIT_SUCCESS;
 }
