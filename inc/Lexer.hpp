@@ -1,6 +1,6 @@
 # pragma once
 
-# include <iostream>
+# include <algorithm>
 # include <stdlib.h> 
 # include <fstream>
 # include <sstream>
@@ -8,11 +8,9 @@
 # include <vector>
 # include <map>
 
-# include "AToken.hpp"
-# include "TokenType.hpp"
-# include "Parser.hpp"
+# include "Token.hpp"
 
-class AToken;
+class Token;
 
 class Lexer
 {
@@ -22,13 +20,75 @@ class Lexer
 		Lexer& operator=(Lexer const &rhs);
 
 		std::string     			trim(std::string s);
+		int             			match_any(char c, std::string set);
+		void             			split(std::string line);
         int             			valid_brackets(std::fstream &f);
 
-		std::vector<std::string>	current_line;
+		std::string					_rawFile;
+
 
 	protected:
 
-		std::vector<AToken>			tokens;
+		std::vector<std::string>	types = {
+			"Namespace",
+			"Key",
+			"Value",
+			"Path",
+			"Method",
+			"Separator"
+		};
+		std::vector<std::string>	namespace_types = {
+			"server",
+			"location"
+		};
+		std::vector<std::string>	key_types = {
+			"listen",
+			"ssl",
+			"ssl_certificate",
+			"ssl_certificate_key",
+			"ssl_protocols",
+			"root",
+			"index",
+			"autoindex",
+			"try_files",
+			"fastcgi_split_path_info",
+			"fastcgi_pass",
+			"fastcgi_param",
+			"fastcgi_index",
+			"include",
+			"error_page",
+			"cgi",
+			"cgi_bin",
+			"limit_except",
+			"client_max_body_size",
+			"client_body_buffer_size",
+			"upload",
+			"workers",
+			"auth",
+			"server_name",
+			"allowed_methods"
+		};
+
+
+		std::map<std::string, int> 	n_words_types = {
+			{"allowed_methods", 5},
+			{"error_page", 2},
+			{"listen", 2},
+			{"index", 2},
+			{"ssl_protocols", 2},
+		};
+		std::vector<std::string>	method_types = {
+			"on",
+			"off",
+			"GET",
+			"HEAD",
+			"POST",
+			"PUT",
+			"DELETE",
+		};
+		std::string		separator_types = "#{};";
+		
+
 
 	public:
 
@@ -36,7 +96,19 @@ class Lexer
 		~Lexer();
 
         int 						read(char   *config);
-		void						tokenize(std::string line); // crée l'array de token; si c'est invalide, on return NULL et notre main quitte 
+		bool						tokenize();
+		bool						tag(Token& token);
 		bool						valid_line(std::string line);
-		void 						split(std::string line);
+		
+		// token methods ?
+		void    					setKeyParams(Token& token);
+		void    					setNamespaceParams(Token& token);
+		bool					    handleComments(Token& token);
+		void    					setPathParams(Token& token);
+		
+		bool    					validate_by_position(Token& token);
+		size_t						count_words_left(Token& token);
+		
+		std::vector<std::string>			current_line;
+		std::vector<Token>					tokens;
 };

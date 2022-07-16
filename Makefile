@@ -4,11 +4,13 @@ CXX = c++
 CXXFLAGS = -Wall -Werror -Wextra -g #-std=c++98 -g
 
 SRCS	=	srcs/main.cpp		\
-			srcs/AToken.cpp		\
-			srcs/Lexer.cpp									
+			srcs/Token.cpp		\
+			srcs/Lexer.cpp		\
+			srcs/Config.cpp									
 
-INC		=	inc/AToken.hpp		\
-			inc/Lexer.hpp
+INC		=	inc/Token.hpp		\
+			inc/Lexer.hpp		\
+			inc/Config.hpp
 
 all: $(NAME)
 
