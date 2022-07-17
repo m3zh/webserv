@@ -1,8 +1,4 @@
-# include <iostream>
-# include <cstring>
-# include <stdlib.h>
-
-# include "../inc/Lexer.hpp"
+# include "../inc/Config.hpp"
 
 int main(int argc, char **args)
 {
@@ -15,7 +11,7 @@ int main(int argc, char **args)
     }
     if (config.read(args[1]))
         std::cout << "Webserv class starts here\n";
-    /* ICI
+    /* ICI to DEBUG
         Config: print tokens params
     for (auto it = begin (config.tokens); it != end (config.tokens); ++it) {
         std::cout  << "type= "

@@ -12,10 +12,15 @@
 
 class Lexer;
 
+// ****************************
+// the Config class stocks all information parsed by Lexer
+// in a readable way for the Webserv class
+// ****************************
+
 class Config
 {
     private:
-        std::string     _ip; // pourquoi l'ip ici ?
+        std::string     _ip;        // pourquoi l'ip ici ?
         int             _port;
         std::string     _protocol;
 
@@ -30,7 +35,5 @@ class Config
         int             getPort() const;
         std::string     getProtocol() const;
         void            setPort(std::string const str);
-
         int             read(char   *config);
-
 };

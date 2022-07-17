@@ -40,4 +40,3 @@ void            Config::setPort(std::string const s)
 // private functions
 
 
-

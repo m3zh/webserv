@@ -1,6 +1,6 @@
 # include "../inc/Lexer.hpp"
 
-Lexer::	Lexer() {}
+Lexer::Lexer() {}
 Lexer::~Lexer() {}
 
 int     Lexer::read(char   *config)
