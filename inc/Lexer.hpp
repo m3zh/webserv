@@ -35,10 +35,6 @@ class Lexer
 		};
 		std::vector<std::string>	key_types = {
 			"listen",
-			"ssl",
-			"ssl_certificate",
-			"ssl_certificate_key",
-			"ssl_protocols",
 			"root",
 			"index",
 			"autoindex",
@@ -58,12 +54,12 @@ class Lexer
 			"workers",
 			"auth",
 			"server_name",
-			"allowed_methods"
+			"allowed_methods",
+			"redirect"
 		};
 
-
 		std::map<std::string, int> 	n_words_types = {
-			{"allowed_methods", 5},
+			{"allowed_methods", 4},
 			{"error_page", 2},
 			{"listen", 2},
 			{"index", 2},
@@ -73,7 +69,6 @@ class Lexer
 			"on",
 			"off",
 			"GET",
-			"HEAD",
 			"POST",
 			"PUT",
 			"DELETE",
