@@ -16,20 +16,20 @@ git checkout your-login # to move over to your branch
 ## Pull and Merge  
 ``` 
 # to merge most recent code into your branch
-git checkout common
-git pull origin common
+git checkout main
+git pull origin main
 git checkout your-login
-git merge common
+git merge main
 
-## to merge your branch into common
+## to merge your branch into main
 [ in your branch: commit + push ]
-git checkout common
+git checkout main
 git merge your-login
 git add -u
 git commit -m bulah-bulah
-git push origin common  
+git push origin main  
 ```
-:warning:  Before pushing to the branch `common`, make sure the code compiles
+:warning:  Before pushing to the branch `main`, make sure the code compiles
 ```
 ## side note: 
 ## git add -u > adds only modified ( updated files )
