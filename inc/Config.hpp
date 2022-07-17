@@ -24,6 +24,8 @@ class Config
         int             _port;
         std::string     _protocol;
 
+        void            debug_me(Lexer &parser);
+
         Config(Config const &p);
         Config& operator=(Config const &p);
         

@@ -9,15 +9,14 @@ int     Lexer::read(char   *config)
     if  (file.good() && valid_brackets(file))
     {
 		std::string line;
-        file.seekg(0);
+        file.seekg(0);              // start at beginning of file
         while (getline( file, line ))
         {
-            while (line.length() == 0)
-                getline(file, line); // skip blank lines
+            while (line.length() == 0 || line.find("#") == 0)
+                getline(file, line); // skip blank lines and comment lines
             line = trim(line);
             split(line);
-            if (!tokenize())
-                return 0;
+            if (!tokenize())    return 0;
         } 
         file.close();     
     }
@@ -81,35 +80,46 @@ size_t  Lexer::count_words_left(Token& token)
 
 bool    Lexer::validate_by_position(Token& token)
 {
+    std::cout << "POS\n";
     size_t words_left = count_words_left(token);
     
     if ((token.getType() == "Namespace" || token.getType() == "Key")
     &&  (token.getPos() != 0            || words_left > token.getAllowedWords() || (!token.getAllowedWords() && words_left > 0))) // && is separator ?
     // si allowed words > 1; alors il faut min 1
-        return false;
+        {std::cout << "HERE1\n";return false;}
     if (token.getType() == "Value" && token.getPos() == 0)
-        return false;
+        {std::cout << "HERE2\n";return false;}
     return true;
 }
 
-void    Lexer::setPathParams(Token& token)
+bool    Lexer::setPathParams(Token& token)
 {
-    token.setType("Path");    
+    std::cout << "PATH\n";
+    token.setType("Path");
+    if (access(token.getContent().c_str(), F_OK) < 0)
+    {
+        std::cout << "Invalid path in config" << std::endl;
+        return false;
+    }
+    return true;    
 }
 
-void    Lexer::setNamespaceParams(Token& token)
+bool    Lexer::setNamespaceParams(Token& token)
 {
+    std::cout << "NAMESPACE\n";
     token.setType("Namespace");
     if (token.getContent() == "location")
-        token.setAllowedWords(2); // + 1 pour le {
+        token.setAllowedWords(2);       // + 1 pour le {
     else
         token.setAllowedWords(1);
+    return  true;
 }
 
-void    Lexer::setKeyParams(Token& token)
+bool   Lexer::setKeyParams(Token& token)
 {
+    std::cout << "KEY\n";
     token.setType("Key");
-    token.setAllowedWords(1); // par défaut chaque clef en a au moins un OU PAS ! ex: on peut choisir de laisser "listen"
+    //token.setAllowedWords(1);           // par défaut chaque clef en a au moins un OU PAS ! ex: on peut choisir de laisser "listen"
 
     std::map<std::string, int>::iterator    it = n_words_types.begin();
     while (it != n_words_types.end())
@@ -118,10 +128,12 @@ void    Lexer::setKeyParams(Token& token)
             token.setAllowedWords(it->second);
         it++;
     }
+    return true;
 }
 
 bool    Lexer::handleComments(Token& token)
 {
+    std::cout << "COMMENTS\n";
     std::string before_comment = token.getContent().substr(0, token.getContent().find("#"));
 
     token.setContent(before_comment);
@@ -132,37 +144,39 @@ bool    Lexer::handleComments(Token& token)
 
 bool    Lexer::tag(Token& token)
 {
-    if (token.getContent().find("#") != std::string::npos)
+    std::string token_content = token.getContent();
+
+    if (token_content.find("#") != std::string::npos)
         return (handleComments(token));
-    else if (std::find(namespace_types.begin(), namespace_types.end(), token.getContent()) != namespace_types.end())
-        setNamespaceParams(token);
-    else if (token.getContent().find("/") == 0) // a préciser ...
-        setPathParams(token);
-    else if (std::find(method_types.begin(), method_types.end(), token.getContent()) != method_types.end())
-        token.setType("Method");
-    else if (std::find(key_types.begin(), key_types.end(), token.getContent()) != key_types.end())
-        setKeyParams(token);
-    else if (token.getContent().find_first_of("{}#")) // ???
-        token.setType("Value"); // temporaire ...
-    else
-    {
-        for (size_t i=0; i < separator_types.size(); i++)
-            if (separator_types.find(token.getContent()))
-                token.setType("Separator"); // à compléter ..
-    }
-    return true;
+    else if (std::find(namespace_types.begin(), namespace_types.end(),  // if the token content matches a namespace
+                token_content) != namespace_types.end())
+        return  setNamespaceParams(token);
+    else if (token_content.find("/") == 0)                              // if it starts with a / it's a path.
+        return  setPathParams(token);
+    else if (std::find(method_types.begin(), method_types.end(),        // if the token content matches a method
+                token_content) != method_types.end())
+        { token.setType("Method"); return true; }
+    else if (std::find(key_types.begin(), key_types.end(),              // if the token content matches a keyword
+                token_content) != key_types.end())
+        return  setKeyParams(token);
+    else if (token_content.find_first_of("{}#")) // ???
+        {   token.setType("Value"); return true; }
+    else if (token_content.size() == 1                                  // if the token content matches a separator
+                && match_any(token_content[0], separator_types))       
+        {   token.setType("Separator"); return true; }
+    return false;
 }
 
 bool    Lexer::tokenize()
 {
     for (size_t i=0; i < current_line.size(); i++)
     {
-        Token token(current_line[i], i);
+        Token token(current_line[i], i);            // create token with content and pos
 
         if (!tag(token)) // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
-            break;
-        if (!validate_by_position(token))
             return false;
+        // if (!validate_by_position(token))
+        //     return false;
         tokens.push_back(token);
     }
     return true;

@@ -7,6 +7,9 @@
 # include <cstring>
 # include <vector>
 # include <map>
+# include <fcntl.h>
+# include <stdexcept>
+# include <unistd.h>
 
 # include "Token.hpp"
 
@@ -26,6 +29,7 @@ class Lexer
 {
 	private:
 
+		// string manipulation utils
 		std::string     			trim(std::string s);				   // remove trailing spaces on the left and right of the line
 		int             			match_any(char c, std::string set);    // check if the char argument matches any char in set argument
 		void             			split(std::string line);			   // split lines on multiple separators (i.e. spaces)
@@ -90,17 +94,15 @@ class Lexer
         int 							read(char   *config);
 		bool							tokenize();
 		bool							tag(Token& token);
-		bool							valid_line(std::string line);
-		
-		// token methods
-		void    						setKeyParams(Token& token);
-		void    						setNamespaceParams(Token& token);
 		bool					    	handleComments(Token& token);
-		void    						setPathParams(Token& token);
-		
 		bool    						validate_by_position(Token& token);
 		size_t							count_words_left(Token& token);
 		
-		std::vector<std::string>		current_line; // 
+		// token methods
+		bool    						setKeyParams(Token& token);
+		bool    						setNamespaceParams(Token& token);
+		bool    						setPathParams(Token& token);
+
+		std::vector<std::string>		current_line;
 		std::vector<Token>				tokens;
 };
