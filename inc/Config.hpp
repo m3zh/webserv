@@ -8,19 +8,27 @@
 # include <vector>
 # include <map>
 
+# include "Lexer.hpp"
+
+class Lexer;
+
+// ****************************
+// the Config class stocks all information parsed by Lexer
+// in a readable way for the Webserv class
+// ****************************
+
 class Config
 {
     private:
-        std::string     _ip; // pourquoi l'ip ici ?
+        std::string     _ip;        // pourquoi l'ip ici ?
         int             _port;
         std::string     _protocol;
 
-        std::string     trim(std::string s);
-        int             valid_brackets(std::fstream &f);
+        void            debug_me(Lexer &parser);
 
         Config(Config const &p);
         Config& operator=(Config const &p);
-
+        
     public:
         Config();
         ~Config();
@@ -29,7 +37,5 @@ class Config
         int             getPort() const;
         std::string     getProtocol() const;
         void            setPort(std::string const str);
-
         int             read(char   *config);
-
 };

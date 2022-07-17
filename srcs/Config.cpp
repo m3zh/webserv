@@ -1,13 +1,36 @@
 #  include "../inc/Config.hpp"
 
-Config::Config ():      _port(0) {};
+// *****************************
+// If Lexer returns a valid config,
+// the Config class sets the value to pass to the class Webserv
+// *****************************
 
+Config::Config ():      _port(0) {};
 Config::~Config()  {};
 
+
+void    Config::debug_me(Lexer &parser)
+{
+        for (auto it = std::begin (parser.tokens); it != std::end (parser.tokens); ++it) {
+        std::cout  << "type= "  << it->getType() << "; pos= ";
+        std::cout  << it->getPos() << "; content= ";
+        std::cout  << it->getContent();
+        if (it->getType() == "Key")
+            std::cout << "; aw= " << it->getAllowedWords();
+        std::cout << std::endl;
+        }
+}
 int     Config::read(char   *config)
 {
-    (void)config;
-    return 1;
+    Lexer parser;
+
+    if (parser.read(config))
+    {
+        // debug_me(parser);
+        return 1;
+    }
+    // debug_me(parser);
+    return 0;
 }
 
 // Getters and Setters
@@ -29,46 +52,4 @@ void            Config::setPort(std::string const s)
 
 // private functions
 
-int     Config::valid_brackets(std::fstream &f) // check if { } are well closed  
-{
-    std::vector<char>   brackets; 
-    std::ostringstream  sstr;
-    std::string         s;
-
-    sstr << f.rdbuf();
-    s = sstr.str();
-    size_t len = s.size();
-    for ( size_t i = 0; i < len; i++)
-    {
-        if ( s[i] == '{' || s[i] == '}' )
-            brackets.push_back(s[i]);
-    }
-    std::vector<char>::iterator it = brackets.begin();
-    while (it != brackets.end())
-    {
-        if ( *it == '{' && (it + 1) != brackets.end() && *(it + 1) == '}')
-        {
-            brackets.erase(it, it + 2);
-            it = brackets.begin();
-        }
-        else
-            ++it;
-    }
-    if (brackets.size())
-    {
-        std::cout << "Error\nNo Matching brackets in config file\n";
-        return 0;
-    }
-    return 1;
-}
-
-// string manipulation functions
-
-std::string     Config::trim(std::string s)
-{
-    std::string spaces = " \n\r\t\f\v";
-    size_t start = s.find_first_not_of(spaces);
-    size_t end = s.find_last_not_of(spaces);
-    return s.substr(start, end);
-}
 
