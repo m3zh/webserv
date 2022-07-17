@@ -15,7 +15,6 @@ class Token
 		Token(std::string c, size_t p);
 		~Token();
 		
-		bool			validate();
 		void 			setType(std::string t);
 		std::string 	getType();
 		void 			setContent(std::string c);

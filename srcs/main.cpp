@@ -6,15 +6,15 @@
 
 int main(int argc, char **args)
 {
-    Lexer config;
+    Config config;
 
     if (argc != 2)
     {
         std::cout << "Please provide ONE argument only\nUsage: ./webserv [configuration file]\n";
         return EXIT_FAILURE;
     }
-    config.read(args[1]);
-
+    if (config.read(args[1]))
+        std::cout << "Webserv class starts here\n";
     /* ICI
         Config: print tokens params
     for (auto it = begin (config.tokens); it != end (config.tokens); ++it) {

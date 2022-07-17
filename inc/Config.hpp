@@ -8,6 +8,10 @@
 # include <vector>
 # include <map>
 
+# include "Lexer.hpp"
+
+class Lexer;
+
 class Config
 {
     private:
@@ -15,12 +19,9 @@ class Config
         int             _port;
         std::string     _protocol;
 
-        std::string     trim(std::string s);
-        int             valid_brackets(std::fstream &f);
-
         Config(Config const &p);
         Config& operator=(Config const &p);
-
+        
     public:
         Config();
         ~Config();

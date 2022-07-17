@@ -16,18 +16,10 @@ class Lexer
 {
 	private:
 
-		Lexer(Lexer const &rhs);
-		Lexer& operator=(Lexer const &rhs);
-
-		std::string     			trim(std::string s);
-		int             			match_any(char c, std::string set);
-		void             			split(std::string line);
-        int             			valid_brackets(std::fstream &f);
-
-		std::string					_rawFile;
-
-
-	protected:
+		std::string     			trim(std::string s);				   // remove trailing spaces on the left and right of the line
+		int             			match_any(char c, std::string set);    // check if the char argument matches any char in set argument
+		void             			split(std::string line);			   // split lines on multiple separators (i.e. spaces)
+        int             			valid_brackets(std::fstream &f);       // check if brackets in config are closed
 
 		std::vector<std::string>	types = {
 			"Namespace",
@@ -88,7 +80,8 @@ class Lexer
 		};
 		std::string		separator_types = "#{};";
 		
-
+		Lexer(Lexer const &rhs);
+		Lexer& operator=(Lexer const &rhs);
 
 	public:
 
@@ -98,7 +91,6 @@ class Lexer
         int 						read(char   *config);
 		bool						tokenize();
 		bool						tag(Token& token);
-		bool						valid_line(std::string line);
 		
 		// token methods ?
 		void    					setKeyParams(Token& token);

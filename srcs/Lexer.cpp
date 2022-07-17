@@ -15,8 +15,9 @@ int     Lexer::read(char   *config)
             while (line.length() == 0)
                 getline(file, line); // skip blank lines
             line = trim(line);
-            if (!valid_line(line))
-				return 0;
+            split(line);
+            if (!tokenize())
+                return 0;
         } 
         file.close();     
     }
@@ -93,8 +94,7 @@ bool    Lexer::validate_by_position(Token& token)
 
 void    Lexer::setPathParams(Token& token)
 {
-    token.setType("Path");
-    
+    token.setType("Path");    
 }
 
 void    Lexer::setNamespaceParams(Token& token)
@@ -142,7 +142,7 @@ bool    Lexer::tag(Token& token)
         token.setType("Method");
     else if (std::find(key_types.begin(), key_types.end(), token.getContent()) != key_types.end())
         setKeyParams(token);
-    else if (token.getContent().find_first_of("{}#"))
+    else if (token.getContent().find_first_of("{}#")) // ???
         token.setType("Value"); // temporaire ...
     else
     {
@@ -163,18 +163,8 @@ bool    Lexer::tokenize()
             break;
         if (!validate_by_position(token))
             return false;
-
         tokens.push_back(token);
     }
-    return true;
-}
-
-bool	Lexer::valid_line(std::string line)
-{
-    current_line.clear();
-	split(line);
-    if (!tokenize())
-        return false;
     return true;
 }
 
@@ -204,6 +194,7 @@ int             Lexer::match_any(char c, std::string set)
 
 void     Lexer::split(std::string line)
 {
+    current_line.clear();
     std::size_t prev = 0, pos;
     while ((pos = line.find_first_of(" \n\r\t\f\v", prev)) != std::string::npos)
     {
