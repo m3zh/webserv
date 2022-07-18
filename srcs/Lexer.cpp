@@ -1,7 +1,47 @@
 # include "../inc/Lexer.hpp"
 
-Lexer::Lexer() {}
-Lexer::~Lexer() {}
+Lexer::Lexer()      {} 
+Lexer::~Lexer()     {}
+
+std::string	    Lexer::types[]  =       {
+                                            "Namespace",
+                                            "Key",
+                                            "Value", // to be deleted
+                                            "Digit",
+                                            "Path",
+                                            "Method",
+                                            "Separator"
+                                        };
+std::string	    Lexer::namespace_types[] = {
+                                            "server",
+                                            "location"
+                                        };
+std::string	    Lexer::key_types[] = { // some key types will be deleted afterwards
+                                            "allowed_methods",
+                                            "autoindex",
+                                            "client_max_body_size",
+                                            "client_body_buffer_size",
+                                            "error_page",
+                                            "include",
+                                            "index",
+                                            "limit_except",
+                                            "listen",
+                                            "redirect",
+                                            "root",
+                                            "server_name",
+                                            "try_files",
+                                            "upload",
+                                            "workers"		
+                                        };
+std::string	    Lexer::method_types[] = {
+                                            "on",
+                                            "off",
+                                            "GET",
+                                            "POST",
+                                            "PUT",
+                                            "DELETE",
+                                        };
+std::string		Lexer::separator_types = "#{};";
 
 int     Lexer::read(char   *config)
 {
@@ -139,13 +179,13 @@ bool   Lexer::setKeyParams(Token& token)
     token.setType("Key");
     token.setAllowedWords(1);           // par défaut chaque clef en a au moins un OU PAS ! ex: on peut choisir de laisser "listen"
 
-    std::map<std::string, int>::iterator    it = n_words_types.begin();
-    while (it != n_words_types.end())
-    {
-        if (it->first == token.getContent())
-            token.setAllowedWords(it->second);
-        it++;
-    }
+    // std::map<std::string, int>::iterator    it = n_words_types.begin();
+    // while (it != n_words_types.end())
+    // {
+    //     if (it->first == token.getContent())
+    //         token.setAllowedWords(it->second);
+    //     it++;
+    // }
     return true;
 }
 
@@ -166,21 +206,18 @@ bool    Lexer::tag(Token& token)
 
     if (token_content.find("#") != std::string::npos)
         return (handleComments(token));
-    else if (std::find(namespace_types.begin(), namespace_types.end(),  // if the token content matches a namespace
-                token_content) != namespace_types.end())
+    else if (match_any(token_content, namespace_types))
         return  setNamespaceParams(token);
     else if (token_content.find("/") == 0)                              // if it starts with a / it's a path.
         return  setPathParams(token);
-    else if (std::find(method_types.begin(), method_types.end(),        // if the token content matches a method
-                token_content) != method_types.end())
+    else if (match_any(token_content, method_types))
         { token.setType("Method"); return true; }
-    else if (std::find(key_types.begin(), key_types.end(),              // if the token content matches a keyword
-                token_content) != key_types.end())
+    else if (match_any(token_content, key_types))
         return  setKeyParams(token);
     else if (token_content.find_first_of("{}#")) // ???
         {   token.setType("Value"); return true; }
-    else if (token_content.size() == 1                                  // if the token content matches a separator
-                && match_any(token_content[0], separator_types))       
+    else if (token_content.size() == 1    )                              // if the token content matches a separator
+                //&& match_any(token_content[0], separator_types))       
         {   token.setType("Separator"); return true; }
     return false;
 }
@@ -215,14 +252,11 @@ std::string     Lexer::trim(std::string s)
 }
 
 
-int             Lexer::match_any(char c, std::string set)
+int             Lexer::match_any(std::string word, std::string set[])
 {
-    std::string::iterator it = set.begin();
-    while ( it != set.end() )
-    {   
-        if (*it == c) return 1;
-        it++;     
-    }
+    for ( size_t i = 0; i < set->length(); i++ )
+        if (word.compare(set[i]) == 0)
+            return 1;
     return 0;
 }
 
