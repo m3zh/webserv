@@ -10,6 +10,7 @@
 # include <fcntl.h>
 # include <stdexcept>
 # include <unistd.h>
+# include <limits.h>
 
 # include "Token.hpp"
 

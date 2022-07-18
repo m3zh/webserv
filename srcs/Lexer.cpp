@@ -15,7 +15,7 @@ int     Lexer::read(char   *config)
             while (line.length() == 0 || trim(line).find("#") == 0)
                 getline(file, line); // skip blank lines and comment lines
             line = trim(line);
-            if (!tokenize(split(line)))    return 0;
+            if (!tokenize(split(line))) { file.close();  return 0;  }
         } 
         file.close();     
     }
@@ -91,13 +91,36 @@ bool    Lexer::validate_by_position(Token& token)
     return true;
 }
 
+// bool    Lexer::setPathParams(Token& token)
+// {
+//     int fd;
+//     // std::cout << "PATH\n";
+//     token.setType("Path");
+//     std::cout << token.getContent().c_str() << std::endl;
+//     fd = open(token.getContent().c_str(), O_RDONLY);
+//     if (fd < 0)
+//     {
+//         std::cout << "Invalid path in config" << std::endl;
+//         return false;
+//     }
+//     close(fd);
+//     return true;    
+// }
+
 bool    Lexer::setPathParams(Token& token)
 {
     int fd;
     // std::cout << "PATH\n";
     token.setType("Path");
-    std::cout << token.getContent().c_str() << std::endl;
-    fd = open(token.getContent().c_str(), O_RDONLY);
+    // long    size;
+    // char    *buf;
+
+    // size = pathconf(".", _PC_PATH_MAX);
+    // if ((buf = (char *)malloc((size_t)size)) != NULL)
+    //     getcwd(buf, (size_t)size);
+    // std::string path(buf, sizeof(buf));
+    // std::cout << path + token.getContent() << std::endl;
+    fd = open(("/home/user42/webserv" + token.getContent()).c_str(), O_RDONLY);         // absolute path to rework
     if (fd < 0)
     {
         std::cout << "Invalid path in config" << std::endl;
@@ -176,8 +199,9 @@ bool    Lexer::tokenize(std::vector<std::string> current_line)
     {
         Token token(current_line[i], i);            // create token with content and pos
 
-        if (!tag(token)) // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
+        if (!tag(token))                            // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
             return false;
+        std::cout << "TOKENIZE\n";
         // if (!validate_by_position(token))
         //     return false;
         tokens.push_back(token);
