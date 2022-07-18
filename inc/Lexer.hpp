@@ -47,6 +47,7 @@ class Lexer
 		static std::string				    key_types[];
 		static std::string	    			method_types[];
 		static std::string					separator_types;
+		std::string							curr_workdir;
 		
 		Lexer(Lexer const &rhs);
 		Lexer& operator=(Lexer const &rhs);
@@ -56,7 +57,7 @@ class Lexer
 		Lexer();
 		~Lexer();
 
-        int 							read(char   *config);
+        int 							read(char   *config, char** envp);
 		bool							tokenize(std::vector<std::string> current_line);
 		bool							tag(Token& token);
 		bool					    	handleComments(Token& token);
@@ -67,6 +68,9 @@ class Lexer
 		bool    						setKeyParams(Token& token);
 		bool    						setNamespaceParams(Token& token);
 		bool    						setPathParams(Token& token);
+		void    						setCurrWorkdir(char **envp);
+
+		std::string  					getCurrWorkdir();
 
 		std::vector<std::string>		current_line;
 		std::vector<Token>				tokens;

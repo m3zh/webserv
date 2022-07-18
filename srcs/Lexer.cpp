@@ -43,8 +43,9 @@ std::string	    Lexer::method_types[] = {
                                         };
 std::string		Lexer::separator_types = "#{};";
 
-int     Lexer::read(char   *config)
+int     Lexer::read(char   *config, char **envp)
 {
+    setCurrWorkdir(envp);
     std::fstream file(config, std::fstream::in);
     if  (file.good() && valid_brackets(file))
     {
@@ -144,15 +145,8 @@ bool    Lexer::setPathParams(Token& token)
     int fd;
     // std::cout << "PATH\n";
     token.setType("Path");
-    // long    size;
-    // char    *buf;
 
-    // size = pathconf(".", _PC_PATH_MAX);
-    // if ((buf = (char *)malloc((size_t)size)) != NULL)
-    //     getcwd(buf, (size_t)size);
-    // std::string path(buf, sizeof(buf));
-    // std::cout << path + token.getContent() << std::endl;
-    fd = open(("/home/user42/webserv" + token.getContent()).c_str(), O_RDONLY);         // absolute path to rework
+    fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);         // absolute path to rework
     if (fd < 0)
     {
         std::cout << "Invalid path in config" << std::endl;
@@ -188,6 +182,22 @@ bool   Lexer::setKeyParams(Token& token)
     // }
     return true;
 }
+
+void    						Lexer::setCurrWorkdir(char **envp)
+{
+    size_t i = -1;
+
+    while ( envp[++i] )
+    {
+        if (strncmp(envp[i], "PWD=", 4) == 0)
+        {
+            std::string tmp(envp[i]);
+            curr_workdir = tmp.substr(5, tmp.length() - 5);
+        }    
+    }
+}
+
+std::string    						Lexer::getCurrWorkdir()     {       return curr_workdir;    }
 
 bool    Lexer::handleComments(Token& token)
 {

@@ -37,5 +37,5 @@ class Config
         int             getPort() const;
         std::string     getProtocol() const;
         void            setPort(std::string const str);
-        int             read(char   *config);
+        int             read(char   *config, char **envp);
 };

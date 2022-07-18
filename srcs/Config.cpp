@@ -21,11 +21,11 @@ Config::~Config()  {};
 //         }
 // }
 
-int     Config::read(char   *config)
+int     Config::read(char   *config, char **envp)
 {
     Lexer parser;
 
-    if (parser.read(config))
+    if (parser.read(config, envp))
     {
         // debug_me(parser);
         return 1;
