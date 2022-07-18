@@ -32,7 +32,7 @@ class Lexer
 		// string manipulation utils
 		std::string     			trim(std::string s);				   // remove trailing spaces on the left and right of the line
 		int             			match_any(char c, std::string set);    // check if the char argument matches any char in set argument
-		void             			split(std::string line);			   // split lines on multiple separators (i.e. spaces)
+		std::vector<std::string>	split(std::string line);			   // split lines on multiple separators (i.e. spaces)
         int             			valid_brackets(std::fstream &f);       // check if brackets in config are closed
 
 		// Lexer TAGS
@@ -92,7 +92,7 @@ class Lexer
 		~Lexer();
 
         int 							read(char   *config);
-		bool							tokenize();
+		bool							tokenize(std::vector<std::string> current_line);
 		bool							tag(Token& token);
 		bool					    	handleComments(Token& token);
 		bool    						validate_by_position(Token& token);

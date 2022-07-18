@@ -12,11 +12,10 @@ int     Lexer::read(char   *config)
         file.seekg(0);              // start at beginning of file
         while (getline( file, line ))
         {
-            while (line.length() == 0 || line.find("#") == 0)
+            while (line.length() == 0 || trim(line).find("#") == 0)
                 getline(file, line); // skip blank lines and comment lines
             line = trim(line);
-            split(line);
-            if (!tokenize())    return 0;
+            if (!tokenize(split(line)))    return 0;
         } 
         file.close();     
     }
@@ -80,7 +79,7 @@ size_t  Lexer::count_words_left(Token& token)
 
 bool    Lexer::validate_by_position(Token& token)
 {
-    std::cout << "POS\n";
+    // std::cout << "POS\n";
     size_t words_left = count_words_left(token);
     
     if ((token.getType() == "Namespace" || token.getType() == "Key")
@@ -94,19 +93,23 @@ bool    Lexer::validate_by_position(Token& token)
 
 bool    Lexer::setPathParams(Token& token)
 {
-    std::cout << "PATH\n";
+    int fd;
+    // std::cout << "PATH\n";
     token.setType("Path");
-    if (access(token.getContent().c_str(), F_OK) < 0)
+    std::cout << token.getContent().c_str() << std::endl;
+    fd = open(token.getContent().c_str(), O_RDONLY);
+    if (fd < 0)
     {
         std::cout << "Invalid path in config" << std::endl;
         return false;
     }
+    close(fd);
     return true;    
 }
 
 bool    Lexer::setNamespaceParams(Token& token)
 {
-    std::cout << "NAMESPACE\n";
+    // std::cout << "NAMESPACE\n";
     token.setType("Namespace");
     if (token.getContent() == "location")
         token.setAllowedWords(2);       // + 1 pour le {
@@ -117,9 +120,9 @@ bool    Lexer::setNamespaceParams(Token& token)
 
 bool   Lexer::setKeyParams(Token& token)
 {
-    std::cout << "KEY\n";
+    // std::cout << "KEY\n";
     token.setType("Key");
-    //token.setAllowedWords(1);           // par défaut chaque clef en a au moins un OU PAS ! ex: on peut choisir de laisser "listen"
+    token.setAllowedWords(1);           // par défaut chaque clef en a au moins un OU PAS ! ex: on peut choisir de laisser "listen"
 
     std::map<std::string, int>::iterator    it = n_words_types.begin();
     while (it != n_words_types.end())
@@ -133,7 +136,7 @@ bool   Lexer::setKeyParams(Token& token)
 
 bool    Lexer::handleComments(Token& token)
 {
-    std::cout << "COMMENTS\n";
+    // std::cout << "COMMENTS\n";
     std::string before_comment = token.getContent().substr(0, token.getContent().find("#"));
 
     token.setContent(before_comment);
@@ -167,7 +170,7 @@ bool    Lexer::tag(Token& token)
     return false;
 }
 
-bool    Lexer::tokenize()
+bool    Lexer::tokenize(std::vector<std::string> current_line)
 {
     for (size_t i=0; i < current_line.size(); i++)
     {
@@ -206,9 +209,10 @@ int             Lexer::match_any(char c, std::string set)
     return 0;
 }
 
-void     Lexer::split(std::string line)
+std::vector<std::string>     Lexer::split(std::string line)
 {
-    current_line.clear();
+    std::vector<std::string> current_line;
+
     std::size_t prev = 0, pos;
     while ((pos = line.find_first_of(" \n\r\t\f\v", prev)) != std::string::npos)
     {
@@ -218,4 +222,5 @@ void     Lexer::split(std::string line)
     }
     if (prev < line.length())
         current_line.push_back(line.substr(prev, std::string::npos));
+    return current_line;
 }
