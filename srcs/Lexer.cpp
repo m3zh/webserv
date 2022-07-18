@@ -41,7 +41,7 @@ std::string	    Lexer::method_types[] = {
                                             "PUT",
                                             "DELETE",
                                         };
-std::string		Lexer::separator_types = "#{};";
+std::string		Lexer::separator_types =    "#{};";
 
 int     Lexer::read(char   *config, char **envp)
 {
@@ -54,9 +54,11 @@ int     Lexer::read(char   *config, char **envp)
         while (getline( file, line ))
         {
             while (line.length() == 0 || trim(line).find("#") == 0)
-                getline(file, line); // skip blank lines and comment lines
+                getline(file, line);                                    // skip blank lines and comment lines
             line = trim(line);
-            if (!tokenize(split(line))) {   file.close();  return 0;  }
+            if  (valid_lineending(line))
+                if (!tokenize(split(line.substr(0, line.length() - 1)))) 
+                    {   file.close();  return 0;  }
         } 
         file.close();     
     }
@@ -101,22 +103,8 @@ int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed, 
     return 1;
 }
 
-size_t  Lexer::count_words_left(Token& token)
-{
-    size_t words_left = 0;
-    bool    start_counting = false;
-    std::vector<std::string>::iterator it = current_line.begin();
-
-    while (it != current_line.end())
-    {
-        if (*it == token.getContent() && !start_counting) // et aussi que it n'est pas un séparateur...
-            start_counting = true;
-        else
-            words_left++;
-        it++;
-    }
-    return words_left;
-}
+// check if line ends with a valid separator (  either { ; or }   )
+int     Lexer::valid_lineending(std::string line)                {             return match_anychar(line.back(), "{;}");               };
 
 bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)       // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {
@@ -143,7 +131,6 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
 bool    Lexer::setPathParams(Token& token)
 {
     int fd;
-    // std::cout << "PATH\n";
     token.setType("Path");
 
     fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);         // absolute path to rework
@@ -158,7 +145,6 @@ bool    Lexer::setPathParams(Token& token)
 
 bool    Lexer::setNamespaceParams(Token& token)
 {
-    // std::cout << "NAMESPACE\n";
     token.setType("Namespace");
     if (token.getContent() == "location")
         token.setAllowedWords(2);       // + 1 pour le {
@@ -169,7 +155,6 @@ bool    Lexer::setNamespaceParams(Token& token)
 
 bool   Lexer::setKeyParams(Token& token)
 {
-    // std::cout << "KEY\n";
     token.setType("Key");
     token.setAllowedWords(1);           // par défaut chaque clef en a au moins un OU PAS ! ex: on peut choisir de laisser "listen"
 
@@ -192,12 +177,12 @@ void    						Lexer::setCurrWorkdir(char **envp)
         if (strncmp(envp[i], "PWD=", 4) == 0)
         {
             std::string tmp(envp[i]);
-            curr_workdir = tmp.substr(5, tmp.length() - 5);
+            curr_workdir = tmp.substr(4, tmp.length() - 4);
         }    
     }
 }
 
-std::string    						Lexer::getCurrWorkdir()     {       return curr_workdir;    }
+std::string    					Lexer::getCurrWorkdir()     {       return curr_workdir;    }
 
 bool    Lexer::handleComments(Token& token)
 {
@@ -216,18 +201,18 @@ bool    Lexer::tag(Token& token)
 
     if (token_content.find("#") != std::string::npos)
         return (handleComments(token));
-    else if (match_any(token_content, namespace_types))
+    else if (match_anystring(token_content, namespace_types))
         return  setNamespaceParams(token);
     else if (token_content.find("/") == 0)                              // if it starts with a / it's a path.
         return  setPathParams(token);
-    else if (match_any(token_content, method_types))
+    else if (match_anystring(token_content, method_types))
         { token.setType("Method"); return true; }
-    else if (match_any(token_content, key_types))
+    else if (match_anystring(token_content, key_types))
         return  setKeyParams(token);
     else if (token_content.find_first_of("{}#")) // ???
         {   token.setType("Value"); return true; }
     else if (token_content.size() == 1    )                              // if the token content matches a separator
-                //&& match_any(token_content[0], separator_types))       
+                //&& match_anychar(token_content[0], separator_types))       
         {   token.setType("Separator"); return true; }
     return false;
 }
@@ -238,10 +223,9 @@ bool    Lexer::tokenize(std::vector<std::string> current_line)
 
     for ( i = 0; i < current_line.size(); i++)
     {
-        Token token(current_line[i], i);            // create token with content and pos
+        Token token(current_line[i], i);                        // create token with content and pos
 
-        if (!tag(token))                            // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
-            return false;
+        if (!tag(token))            return false;               // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne   
         tokens.push_back(token);
     }
     if (!validate_by_position(tokens, i))
@@ -261,14 +245,15 @@ std::string     Lexer::trim(std::string s)
     return s.substr(start, start - end);
 }
 
-
-int             Lexer::match_any(std::string word, std::string set[])
+int             Lexer::match_anystring(std::string word, std::string set[])
 {
     for ( size_t i = 0; i < set->length(); i++ )
         if (word.compare(set[i]) == 0)
             return 1;
     return 0;
 }
+
+int             Lexer::match_anychar(char   c, std::string set)         {       return      set.find(c) != std::string::npos;       }
 
 std::vector<std::string>     Lexer::split(std::string line)
 {

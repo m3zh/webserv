@@ -36,18 +36,20 @@ class Lexer
 	private:
 
 		// string manipulation utils
-		std::string     			trim(std::string s);				   // remove trailing spaces on the left and right of the line
-		int             			match_any(std::string word, std::string set[]);    // check if the char argument matches any char in set argument
-		std::vector<std::string>	split(std::string line);			   // split lines on multiple separators (i.e. spaces)
-        int             			valid_brackets(std::fstream &f);       // check if brackets in config are closed
+		std::string     			trim(std::string s);				   		// remove trailing spaces on the left and right of the line
+		int             			match_anystring(std::string word, std::string set[]);    // check if the char argument matches any char in set argument
+		int             			match_anychar(char c, std::string set);    // check if the char argument matches any char in set argument
+		std::vector<std::string>	split(std::string line);			   		// split lines on multiple separators (i.e. spaces)
+        int             			valid_brackets(std::fstream &f);       		// check if brackets in config are closed
+        int             			valid_lineending(std::string line);      	// check if brackets in config are closed
 
 		// Lexer TAGS - static members
-		static std::string				    types[];
-		static std::string				    namespace_types[];
-		static std::string				    key_types[];
-		static std::string	    			method_types[];
-		static std::string					separator_types;
-		std::string							curr_workdir;
+		static std::string			types[];
+		static std::string			namespace_types[];
+		static std::string			key_types[];
+		static std::string			method_types[];
+		static std::string			separator_types;
+		std::string					curr_workdir;
 		
 		Lexer(Lexer const &rhs);
 		Lexer& operator=(Lexer const &rhs);
@@ -62,7 +64,6 @@ class Lexer
 		bool							tag(Token& token);
 		bool					    	handleComments(Token& token);
 		bool    						validate_by_position(std::vector<Token> tokens, size_t num_of_tokens);
-		size_t							count_words_left(Token& token);
 		
 		// token methods
 		bool    						setKeyParams(Token& token);
