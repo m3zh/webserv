@@ -56,15 +56,15 @@ int     Lexer::read(char   *config, char **envp)
             while (line.length() == 0 || trim(line).find("#") == 0)
                 getline(file, line);                                    // skip blank lines and comment lines
             line = trim(line);
-            if  (valid_lineending(line))
-                if (!tokenize(split(line.substr(0, line.length() - 1)))) 
-                    {   file.close();  return 0;  }
+            if  (!valid_lineending(line)
+                || !tokenize(split(line.substr(0, line.length() - 1)))) 
+                    {   std::cout << "Error in config\n"; file.close();  return 0;  }
         } 
         file.close();     
     }
     else
     {
-        std::cout << "Error opening file" << std::endl;
+        std::cout << "Error opening file\n";
         return 0;
     }
     return 1;
