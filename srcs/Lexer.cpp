@@ -204,6 +204,27 @@ bool    Lexer::tokenize(std::vector<std::string> current_line)
 
 // string manipulation functions
 
+void Lexer::split(std::string line)
+{
+    std::string separators = " \n\r\t\f\v\0";
+    std::string::iterator it = line.begin();
+
+    size_t start = 0;
+    size_t pos = 0;
+    while (it != line.end())
+    {
+        if (pos = line.find_first_of(separators))
+        {
+            current_line.push_back(line.substr(start, pos - start));
+            while (pos = line.find_first_of(separators))
+                {   it++; pos++;}
+            start = pos;
+        }
+        else
+            it++;
+    }
+}
+
 std::string     Lexer::trim(std::string s)
 {
     std::string spaces = " \n\r\t\f\v";
