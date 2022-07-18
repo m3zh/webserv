@@ -96,7 +96,7 @@ class Lexer
 		bool							tokenize(std::vector<std::string> current_line);
 		bool							tag(Token& token);
 		bool					    	handleComments(Token& token);
-		bool    						validate_by_position(Token& token);
+		bool    						validate_by_position(std::vector<Token> tokens, size_t num_of_tokens);
 		size_t							count_words_left(Token& token);
 		
 		// token methods

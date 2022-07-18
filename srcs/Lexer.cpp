@@ -15,7 +15,7 @@ int     Lexer::read(char   *config)
             while (line.length() == 0 || trim(line).find("#") == 0)
                 getline(file, line); // skip blank lines and comment lines
             line = trim(line);
-            if (!tokenize(split(line))) { file.close();  return 0;  }
+            if (!tokenize(split(line))) {   file.close();  return 0;  }
         } 
         file.close();     
     }
@@ -77,35 +77,27 @@ size_t  Lexer::count_words_left(Token& token)
     return words_left;
 }
 
-bool    Lexer::validate_by_position(Token& token)
+bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)       // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {
-    // std::cout << "POS\n";
-    size_t words_left = count_words_left(token);
-    
-    if ((token.getType() == "Namespace" || token.getType() == "Key")
-    &&  (token.getPos() != 0            || words_left > token.getAllowedWords() || (!token.getAllowedWords() && words_left > 0))) // && is separator ?
-    // si allowed words > 1; alors il faut min 1
-        {std::cout << "HERE1\n";return false;}
-    if (token.getType() == "Value" && token.getPos() == 0)
-        {std::cout << "HERE2\n";return false;}
+    (void)tokens;
+    (void)num_of_tokens;
+    // std::vector<Token>::iterator it = tokens.rbegin() - num_of_tokens;
+
+    // while ( it != tokens(end) )
+    // {
+    //     if (*it.getType() == "Namespace")
+    //     {
+
+    //     }
+    //     else
+    //     {
+            
+    //     }
+    //     it++;
+
+    // }
     return true;
 }
-
-// bool    Lexer::setPathParams(Token& token)
-// {
-//     int fd;
-//     // std::cout << "PATH\n";
-//     token.setType("Path");
-//     std::cout << token.getContent().c_str() << std::endl;
-//     fd = open(token.getContent().c_str(), O_RDONLY);
-//     if (fd < 0)
-//     {
-//         std::cout << "Invalid path in config" << std::endl;
-//         return false;
-//     }
-//     close(fd);
-//     return true;    
-// }
 
 bool    Lexer::setPathParams(Token& token)
 {
@@ -195,17 +187,18 @@ bool    Lexer::tag(Token& token)
 
 bool    Lexer::tokenize(std::vector<std::string> current_line)
 {
-    for (size_t i=0; i < current_line.size(); i++)
+    size_t  i;
+
+    for ( i = 0; i < current_line.size(); i++)
     {
         Token token(current_line[i], i);            // create token with content and pos
 
         if (!tag(token))                            // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
             return false;
-        std::cout << "TOKENIZE\n";
-        // if (!validate_by_position(token))
-        //     return false;
         tokens.push_back(token);
     }
+    if (!validate_by_position(tokens, i))
+        return false;
     return true;
 }
 

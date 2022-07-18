@@ -26,13 +26,10 @@ int     Config::read(char   *config)
 
     if (parser.read(config))
     {
-        debug_me(parser);
-        std::cout << "HERE 1\n";
-
+        // debug_me(parser);
         return 1;
     }
-    std::cout << "HERE 0\n";
-    debug_me(parser);
+    // debug_me(parser);
     return 0;
 }
 
