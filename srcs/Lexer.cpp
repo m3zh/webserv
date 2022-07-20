@@ -3,10 +3,10 @@
 Lexer::Lexer()      {} 
 Lexer::~Lexer()     {}
 
-std::string	    Lexer::types[]  =       {
+std::string	    Lexer::types[]           = {
                                             "Namespace",
                                             "Key",
-                                            "Value", // to be deleted
+                                            "Value",                        // to be deleted
                                             "Digit",
                                             "Path",
                                             "Method",
@@ -16,7 +16,7 @@ std::string	    Lexer::namespace_types[] = {
                                             "server",
                                             "location"
                                         };
-std::string	    Lexer::key_types[] = { // some key types will be deleted afterwards
+std::string	    Lexer::key_types[]       = {                               // some key types will be deleted afterwards
                                             "allowed_methods",
                                             "autoindex",
                                             "client_max_body_size",
@@ -33,15 +33,15 @@ std::string	    Lexer::key_types[] = { // some key types will be deleted afterwa
                                             "upload",
                                             "workers"		
                                         };
-std::string	    Lexer::method_types[] = {
-                                            "on",
-                                            "off",
+std::string	    Lexer::method_types[]    = {                               // some key types will be deleted afterwards
                                             "GET",
+                                            "DELETE",
                                             "POST",
                                             "PUT",
-                                            "DELETE",
+                                            "off",
+                                            "on"	
                                         };
-std::string		Lexer::separator_types =    "#{};";
+std::string		Lexer::separator_types   =  "#{};";
 
 int     Lexer::read(char   *config, char **envp)
 {
@@ -50,14 +50,14 @@ int     Lexer::read(char   *config, char **envp)
     if  (file.good() && valid_brackets(file))
     {
 		std::string line;
-        file.seekg(0);              // start at beginning of file
+        file.seekg(0);                                                      // start at beginning of file
         while (getline( file, line ))
         {
             while (line.length() == 0 || trim(line).find("#") == 0)
-                getline(file, line);                                    // skip blank lines and comment lines
+                getline(file, line);                                        // skip blank lines and comment lines
             line = trim(line);
             if  (!valid_lineending(line)
-                || !tokenize(split(line.substr(0, line.length() - 1)))) 
+                || !tokenize(split(line.substr(0, line.length() - 1))))     // substr remove last character of each line, ie { ; }
                     {   std::cout << "Error in config\n"; file.close();  return 0;  }
         } 
         file.close();     
@@ -70,7 +70,7 @@ int     Lexer::read(char   *config, char **envp)
     return 1;
 }
 
-int     Lexer::valid_brackets(std::fstream &f) // check if { } are well closed, change brackets with tokens
+int     Lexer::valid_brackets(std::fstream &f)                          // check if { } are well closed, change brackets with tokens
 {
     std::vector<char>   brackets; 
     std::ostringstream  sstr;
@@ -133,7 +133,7 @@ bool    Lexer::setPathParams(Token& token)
     int fd;
     token.setType("Path");
 
-    fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);         // absolute path to rework
+    fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);         // check if absolute path exists
     if (fd < 0)
     {
         std::cout << "Invalid path in config" << std::endl;
@@ -147,7 +147,7 @@ bool    Lexer::setNamespaceParams(Token& token)
 {
     token.setType("Namespace");
     if (token.getContent() == "location")
-        token.setAllowedWords(2);       // + 1 pour le {
+        token.setAllowedWords(2);
     else
         token.setAllowedWords(1);
     return  true;
@@ -186,7 +186,6 @@ std::string    					Lexer::getCurrWorkdir()     {       return curr_workdir;    
 
 bool    Lexer::handleComments(Token& token)
 {
-    // std::cout << "COMMENTS\n";
     std::string before_comment = token.getContent().substr(0, token.getContent().find("#"));
 
     token.setContent(before_comment);
@@ -209,11 +208,10 @@ bool    Lexer::tag(Token& token)
         { token.setType("Method"); return true; }
     else if (match_anystring(token_content, key_types))
         return  setKeyParams(token);
-    else if (token_content.find_first_of("{}#")) // ???
+    else if (token_content.find_first_not_of("0123456789") == std::string::npos) // ???
+        {   token.setType("Digit"); return true; }
+    else if (token_content.find_first_not_of("0123456789abcdefghijklmnopqrstuwxyz.") == std::string::npos)                              // if the token content matches a separator     
         {   token.setType("Value"); return true; }
-    else if (token_content.size() == 1    )                              // if the token content matches a separator
-                //&& match_anychar(token_content[0], separator_types))       
-        {   token.setType("Separator"); return true; }
     return false;
 }
 

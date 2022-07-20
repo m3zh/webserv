@@ -38,7 +38,7 @@ class Lexer
 		// string manipulation utils
 		std::string     			trim(std::string s);				   		// remove trailing spaces on the left and right of the line
 		int             			match_anystring(std::string word, std::string set[]);    // check if the char argument matches any char in set argument
-		int             			match_anychar(char c, std::string set);    // check if the char argument matches any char in set argument
+		int             			match_anychar(char c, std::string set);    	// check if the char argument matches any char in set argument
 		std::vector<std::string>	split(std::string line);			   		// split lines on multiple separators (i.e. spaces)
         int             			valid_brackets(std::fstream &f);       		// check if brackets in config are closed
         int             			valid_lineending(std::string line);      	// check if brackets in config are closed
