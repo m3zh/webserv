@@ -210,7 +210,7 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
 
     if ((*it).getContent() != "allowed_methods")
         if ((*it).getAllowedWords() > num_of_tokens)
-            { std::cout << "NUM\n"; return false;}
+            return false;
     while ( it != tokens.end() )
     {
         if ((*it).getContent() == "location" && (*(it + 1)).getType() == "Path")                      // if pairs with path ok
