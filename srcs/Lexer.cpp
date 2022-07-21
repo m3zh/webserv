@@ -12,8 +12,8 @@ std::string	    Lexer::types[]           = {
                                             "Value"                       // to be deleted
                                         };
 std::string	    Lexer::namespace_types[] = {
-                                            "server",
-                                            "location"
+                                            "location",
+                                            "server"
                                         };
 std::string	    Lexer::key_types[]       = {                               // some key types will be deleted afterwards
                                             "allowed_methods",
@@ -130,6 +130,8 @@ bool    Lexer::setPathParams(Token& token)
 
 bool    Lexer::setNamespaceParams(Token& token)
 {
+    std::cout << "Namesp" << std::endl;
+    std::cout << token.getContent() << std::endl;
     token.setType("Namespace");
     token.setAllowedWords(1);
     if (token.getContent() == "server")
@@ -141,8 +143,10 @@ bool            Lexer::setKeyParams(Token& token)
 {
     token.setType("Key");
     token.setAllowedWords(1);
-    if (token.getContent().compare("allowed_methods"))
+    std::cout << "key: " << token.getContent() << std::endl;
+    if (token.getContent().compare("allowed_methods") == 0)
         token.setAllowedWords(4);
+    std::cout << "SET AW: " << token.getAllowedWords() << std::endl;
     return true;
 }
 
@@ -203,23 +207,26 @@ int     Lexer::valid_lineending(std::string line)                {             r
 
 bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)            // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {
-    std::vector<Token>::reverse_iterator it = tokens.rbegin();
+    std::vector<Token>::iterator it = tokens.end();
     
     it = it - num_of_tokens;
-
-    if ((*it).getAllowedWords() > num_of_tokens + 1)
+    std::cout << "AW: " << (*it).getContent() << std::endl;
+    std::cout << "AW: " << (*it).getAllowedWords() << std::endl;
+    if ((*it).getAllowedWords() > num_of_tokens)
         return false;
-    while ( it != tokens.rbegin() )
+    while ( it != tokens.end() )
     {
-        if (pair_wdigits((*it).getType()) && (*(it + 1)).getType() == "Digit")                      // if pairs with digit ok
+        if ((*it).getContent() == "location" && (*(it + 1)).getType() == "Path")                      // if pairs with path ok
             return true;
-        if (pair_wvalues((*it).getType()) && (*(it + 1)).getType() == "Value")                      // if pairs with value ok ( ie, generci string, website name )
+        if (pair_wdigits((*it).getContent()) && (*(it + 1)).getType() == "Digit")                      // if pairs with digit ok
             return true;
-        if (pair_wmethods((*it).getType()) && (*(it + 1)).getType() == "Method")                    // if pairs with methods ok
+        if (pair_wvalues((*it).getContent()) && (*(it + 1)).getType() == "Value")                      // if pairs with value ok ( ie, generci string, website name )
+            return true;
+        if (pair_wmethods((*it).getContent()) && (*(it + 1)).getType() == "Method")                    // if pairs with methods ok
         {
             it++;
-            while ( it != tokens.rbegin() )
-                if (!(pair_wmethods((*it).getType())))
+            while ( it != tokens.end() )
+                if (!(pair_wmethods((*it).getContent())))
                     return false;
             return true;
         }                     
@@ -281,9 +288,10 @@ std::string     Lexer::trim(std::string s)
 
 int             Lexer::match_anystring(std::string word, std::string set[])
 {
-    for ( size_t i = 0; i < set->length(); i++ )
-        if (word.compare(set[i]) == 0)
-            return 1;
+    for ( size_t i = 0; i < set->size(); i++ )
+    {    std::cout << "SET: " << set[i] << std::endl;
+        if (word == set[i])
+            return 1;}
     return 0;
 }
 
