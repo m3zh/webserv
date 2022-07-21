@@ -266,12 +266,16 @@ std::vector<std::string>     Lexer::split(std::string line)
 
 bool            Lexer::pair_wdigits(std::string word, std::string set[]);    		// check if the word argument pairs with digits
 {
-
+    if ( word.compare("listen") == 0 || word.compare("client_max_body_size") == 0
+        || word.compare("workers") == 0 || word.compare("client_body_buffer_size") == 0
+            || word.compare("limit_except") == 0 )
+        return true;
+    return false;
 }
 
 bool            Lexer::pair_wvalues(std::string word, std::string set[]);    		// check if the word argument pairs with values
 {
-
+    return (!pair_wdigits(word) && !pair_wmethods(word));
 }
 
 bool            Lexer::pair_wmethods(std::string word, std::string set[]);    		// check if the word argument pairs with values
