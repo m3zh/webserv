@@ -41,6 +41,10 @@ std::string	    Lexer::method_types[]    = {                               // so
                                         };
 std::string		Lexer::separator_types   =  "#{};";
 
+// ************
+// READ, TAG, TOKENIZE functions
+// ************
+
 int     Lexer::read(char   *config, char **envp)
 {
     setCurrWorkdir(envp);
@@ -67,6 +71,100 @@ int     Lexer::read(char   *config, char **envp)
     }
     return 1;
 }
+
+bool            Lexer::tag(Token& token)
+{
+    std::string token_content = token.getContent();
+
+    if (token_content.find("#") != std::string::npos)
+        return (handleComments(token));
+    else if (match_anystring(token_content, namespace_types))
+        return  setNamespaceParams(token);
+    else if (token_content.find("/") == 0)                                          // if it starts with a / it's a path.
+        return  setPathParams(token);
+    else if (match_anystring(token_content, method_types))
+        { token.setType("Method"); return true;             }
+    else if (match_anystring(token_content, key_types))
+        return  setKeyParams(token);
+    else if (token_content.find_first_not_of("0123456789") == std::string::npos)    // if it's only digits
+        {   token.setType("Digit"); return true;            }
+    else if (token_content.find_first_not_of("0123456789abcdefghijklmnopqrstuwxyz.") == std::string::npos)          // if it's a string of type mywebsite.com     
+        {   token.setType("Value"); return true;            }
+    return false;
+}
+
+bool            Lexer::tokenize(std::vector<std::string> current_line)
+{
+    size_t  i;
+
+    for ( i = 0; i < current_line.size(); i++)
+    {
+        Token token(current_line[i], i);                                        // create token with content and pos
+
+        if (!tag(token))            return false;                               // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne   
+        tokens.push_back(token);
+    }
+    if (!validate_by_position(tokens, i))
+        return false;
+    return true;
+}
+
+// ************
+// SET and GET functions
+// ************
+
+bool    Lexer::setPathParams(Token& token)
+{
+    int fd;
+    token.setType("Path");
+
+    fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);         // check if absolute path exists
+    if (fd < 0)
+    {
+        std::cout << "Invalid path in config" << std::endl;
+        return false;
+    }
+    close(fd);
+    return true;    
+}
+
+bool    Lexer::setNamespaceParams(Token& token)
+{
+    token.setType("Namespace");
+    token.setAllowedWords(1);
+    if (token.getContent() == "server")
+        token.setAllowedWords(0);        
+    return  true;
+}
+
+bool            Lexer::setKeyParams(Token& token)
+{
+    token.setType("Key");
+    token.setAllowedWords(1);
+    if (token.getContent().compare("allowed_methods"))
+        token.setAllowedWords(4);
+    return true;
+}
+
+void    	    Lexer::setCurrWorkdir(char **envp)
+{
+    size_t i = -1;
+
+    while ( envp[++i] )
+    {
+        if (strncmp(envp[i], "PWD=", 4) == 0)
+        {
+            std::string tmp(envp[i]);
+            curr_workdir = tmp.substr(4, tmp.length() - 4);
+        }    
+    }
+}
+
+std::string    	Lexer::getCurrWorkdir()     {       return curr_workdir;    }
+
+// ************
+// VALIDATE functions
+// ************
 
 int     Lexer::valid_brackets(std::fstream &f)                          // check if { } are well closed, change brackets with tokens
 {
@@ -101,26 +199,27 @@ int     Lexer::valid_brackets(std::fstream &f)                          // check
     return 1;
 }
 
-// check if line ends with a valid separator (  either { ; or }   )
 int     Lexer::valid_lineending(std::string line)                {             return match_anychar(line.back(), "{;}");               };
 
-bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)       // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
+bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)            // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {
-    std::vector<Token>::iterator it = tokens.rbegin() - num_of_tokens;
+    std::vector<Token>::reverse_iterator it = tokens.rbegin();
+    
+    it = it - num_of_tokens;
 
-    if (*it.getAllowedWords() > num_of_tokens + 1)
+    if ((*it).getAllowedWords() > num_of_tokens + 1)
         return false;
-    while ( it != tokens(end) )
+    while ( it != tokens.rbegin() )
     {
-        if (match_digits(*it.getType()) && *(it + 1).getType() == "Digit")                  // if pairs with digit ok
+        if (pair_wdigits((*it).getType()) && (*(it + 1)).getType() == "Digit")                      // if pairs with digit ok
             return true;
-        if (match_values(*it.getType()) && *(it + 1).getType() == "Value")                   // if pairs with value ok ( ie, generci string, website name )
+        if (pair_wvalues((*it).getType()) && (*(it + 1)).getType() == "Value")                      // if pairs with value ok ( ie, generci string, website name )
             return true;
-        if (match_methods(*it.getType()) && *(it + 1).getType() == "Method")                  // if pairs with methods ok
+        if (pair_wmethods((*it).getType()) && (*(it + 1)).getType() == "Method")                    // if pairs with methods ok
         {
             it++;
-            while ( it != tokens(end) )
-                if (!(match_value(*it.getType()) && *(it + 1).getType() == "Method"))
+            while ( it != tokens.rbegin() )
+                if (!(pair_wmethods((*it).getType())))
                     return false;
             return true;
         }                     
@@ -129,55 +228,6 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
     }
     return true;
 }
-
-bool    Lexer::setPathParams(Token& token)
-{
-    int fd;
-    token.setType("Path");
-
-    fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);         // check if absolute path exists
-    if (fd < 0)
-    {
-        std::cout << "Invalid path in config" << std::endl;
-        return false;
-    }
-    close(fd);
-    return true;    
-}
-
-bool    Lexer::setNamespaceParams(Token& token)
-{
-    token.setType("Namespace");
-    token.setAllowedWords(1);
-    if (token.getContent() == "server")
-        token.setAllowedWords(0);        
-    return  true;
-}
-
-bool   Lexer::setKeyParams(Token& token)
-{
-    token.setType("Key");
-    token.setAllowedWords(1);
-    if (token.getContent().compare("allowed_methods"))
-        token.setAllowedWords(4);
-    return true;
-}
-
-void    						Lexer::setCurrWorkdir(char **envp)
-{
-    size_t i = -1;
-
-    while ( envp[++i] )
-    {
-        if (strncmp(envp[i], "PWD=", 4) == 0)
-        {
-            std::string tmp(envp[i]);
-            curr_workdir = tmp.substr(4, tmp.length() - 4);
-        }    
-    }
-}
-
-std::string    					Lexer::getCurrWorkdir()     {       return curr_workdir;    }
 
 bool    Lexer::handleComments(Token& token)
 {
@@ -189,44 +239,35 @@ bool    Lexer::handleComments(Token& token)
     return false;
 }
 
-bool    Lexer::tag(Token& token)
-{
-    std::string token_content = token.getContent();
+// ************
+// PAIR functions
+// ************
 
-    if (token_content.find("#") != std::string::npos)
-        return (handleComments(token));
-    else if (match_anystring(token_content, namespace_types))
-        return  setNamespaceParams(token);
-    else if (token_content.find("/") == 0)                                          // if it starts with a / it's a path.
-        return  setPathParams(token);
-    else if (match_anystring(token_content, method_types))
-        { token.setType("Method"); return true;             }
-    else if (match_anystring(token_content, key_types))
-        return  setKeyParams(token);
-    else if (token_content.find_first_not_of("0123456789") == std::string::npos)    // if it's only digits
-        {   token.setType("Digit"); return true;            }
-    else if (token_content.find_first_not_of("0123456789abcdefghijklmnopqrstuwxyz.") == std::string::npos)          // if it's a string of type mywebsite.com     
-        {   token.setType("Value"); return true;            }
+bool            Lexer::pair_wdigits(std::string word)    		// check if the word argument pairs with digits
+{
+    if ( word.compare("listen") == 0 || word.compare("client_max_body_size") == 0
+        || word.compare("workers") == 0 || word.compare("client_body_buffer_size") == 0
+            || word.compare("limit_except") == 0 )
+        return true;
     return false;
 }
 
-bool    Lexer::tokenize(std::vector<std::string> current_line)
+bool            Lexer::pair_wvalues(std::string word)     		// check if the word argument pairs with values
 {
-    size_t  i;
-
-    for ( i = 0; i < current_line.size(); i++)
-    {
-        Token token(current_line[i], i);                        // create token with content and pos
-
-        if (!tag(token))            return false;               // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne   
-        tokens.push_back(token);
-    }
-    if (!validate_by_position(tokens, i))
-        return false;
-    return true;
+    return (!pair_wdigits(word) && !pair_wmethods(word));
 }
 
-// string manipulation functions
+bool            Lexer::pair_wmethods(std::string word)    		// check if the word argument pairs with values
+{
+    if (word.compare("allowed_methods") == 0
+        || word.compare("autoindex") == 0)
+        return true;
+    return false;
+}
+
+// ************
+// STRING manipulations functions
+// ************
 
 std::string     Lexer::trim(std::string s)
 {
@@ -262,26 +303,4 @@ std::vector<std::string>     Lexer::split(std::string line)
     if (prev < line.length())
         current_line.push_back(line.substr(prev, std::string::npos));
     return current_line;
-}
-
-bool            Lexer::pair_wdigits(std::string word, std::string set[]);    		// check if the word argument pairs with digits
-{
-    if ( word.compare("listen") == 0 || word.compare("client_max_body_size") == 0
-        || word.compare("workers") == 0 || word.compare("client_body_buffer_size") == 0
-            || word.compare("limit_except") == 0 )
-        return true;
-    return false;
-}
-
-bool            Lexer::pair_wvalues(std::string word, std::string set[]);    		// check if the word argument pairs with values
-{
-    return (!pair_wdigits(word) && !pair_wmethods(word));
-}
-
-bool            Lexer::pair_wmethods(std::string word, std::string set[]);    		// check if the word argument pairs with values
-{
-    if (word.compare("allowed_methods") == 0
-        || word.compare("autoindex") == 0)
-        return true;
-    return false;
 }
