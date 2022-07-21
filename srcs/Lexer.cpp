@@ -78,13 +78,13 @@ bool            Lexer::tag(Token& token)
 
     if (token_content.find("#") != std::string::npos)
         return (handleComments(token));
-    else if (match_anystring(token_content, namespace_types))
+    else if (match_anystring(token_content, namespace_types, 2))
         return  setNamespaceParams(token);
     else if (token_content.find("/") == 0)                                          // if it starts with a / it's a path.
         return  setPathParams(token);
-    else if (match_anystring(token_content, method_types))
+    else if (match_anystring(token_content, method_types, 6))
         { token.setType("Method"); return true;             }
-    else if (match_anystring(token_content, key_types))
+    else if (match_anystring(token_content, key_types, 13))
         return  setKeyParams(token);
     else if (token_content.find_first_not_of("0123456789") == std::string::npos)    // if it's only digits
         {   token.setType("Digit"); return true;            }
@@ -97,6 +97,8 @@ bool            Lexer::tokenize(std::vector<std::string> current_line)
 {
     size_t  i;
 
+    if (current_line.size() == 0)                                               // if line is empty, we do not tokenize
+        return true;
     for ( i = 0; i < current_line.size(); i++)
     {
         Token token(current_line[i], i);                                        // create token with content and pos
@@ -104,9 +106,7 @@ bool            Lexer::tokenize(std::vector<std::string> current_line)
         if (!tag(token))            return false;                               // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne   
         tokens.push_back(token);
     }
-    if (!validate_by_position(tokens, i))
-        return false;
-    return true;
+    return validate_by_position(tokens, i);
 }
 
 // ************
@@ -130,8 +130,6 @@ bool    Lexer::setPathParams(Token& token)
 
 bool    Lexer::setNamespaceParams(Token& token)
 {
-    std::cout << "Namesp" << std::endl;
-    std::cout << token.getContent() << std::endl;
     token.setType("Namespace");
     token.setAllowedWords(1);
     if (token.getContent() == "server")
@@ -143,10 +141,8 @@ bool            Lexer::setKeyParams(Token& token)
 {
     token.setType("Key");
     token.setAllowedWords(1);
-    std::cout << "key: " << token.getContent() << std::endl;
     if (token.getContent().compare("allowed_methods") == 0)
         token.setAllowedWords(4);
-    std::cout << "SET AW: " << token.getAllowedWords() << std::endl;
     return true;
 }
 
@@ -209,11 +205,12 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
 {
     std::vector<Token>::iterator it = tokens.end();
     
+    
     it = it - num_of_tokens;
-    std::cout << "AW: " << (*it).getContent() << std::endl;
-    std::cout << "AW: " << (*it).getAllowedWords() << std::endl;
-    if ((*it).getAllowedWords() > num_of_tokens)
-        return false;
+
+    if ((*it).getContent() != "allowed_methods")
+        if ((*it).getAllowedWords() > num_of_tokens)
+            { std::cout << "NUM\n"; return false;}
     while ( it != tokens.end() )
     {
         if ((*it).getContent() == "location" && (*(it + 1)).getType() == "Path")                      // if pairs with path ok
@@ -224,9 +221,8 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
             return true;
         if (pair_wmethods((*it).getContent()) && (*(it + 1)).getType() == "Method")                    // if pairs with methods ok
         {
-            it++;
-            while ( it != tokens.end() )
-                if (!(pair_wmethods((*it).getContent())))
+            while ( ++it != tokens.end() )
+                if ((*it).getType() != "Method")
                     return false;
             return true;
         }                     
@@ -286,12 +282,11 @@ std::string     Lexer::trim(std::string s)
     return s.substr(start, start - end);
 }
 
-int             Lexer::match_anystring(std::string word, std::string set[])
+int             Lexer::match_anystring(std::string word, std::string set[], size_t len)
 {
-    for ( size_t i = 0; i < set->size(); i++ )
-    {    std::cout << "SET: " << set[i] << std::endl;
+    for ( size_t i = 0; i < len; i++ )
         if (word == set[i])
-            return 1;}
+            return 1;
     return 0;
 }
 
