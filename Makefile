@@ -1,25 +1,26 @@
-NAME = webserv
+NAME 	 = webserv
 
-CXX = c++
-CXXFLAGS = -Wall -Werror -Wextra -g #-std=c++98 -g
+CXX 	 = c++
+CXXFLAGS = -Wall -Werror -Wextra -g -std=c++98
 
 SRCS	=	srcs/main.cpp		\
 			srcs/Token.cpp		\
 			srcs/Lexer.cpp		\
-			srcs/Config.cpp									
+			srcs/Config.cpp	
 
-INC		=	inc/Token.hpp		\
-			inc/Lexer.hpp		\
-			inc/Config.hpp
+INC		=	inc/
+
+OBJ = $(SRCS:%.cpp=%.o)
 
 all: $(NAME)
 
-$(NAME): $(SRCS) $(INC)
-	$(CXX) $(CXXFLAGS) $(SRCS) -o $@
+$(NAME): $(OBJ)
+	$(CXX) $(CXXFLAGS) -I$(INC) $(OBJ) -o $@
 
-clean: fclean
+clean:
+	@rm -rf $(OBJ)
 
-fclean:
+fclean: clean
 	@rm -f $(NAME)
 
 re: fclean all
