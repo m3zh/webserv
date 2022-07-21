@@ -4,13 +4,12 @@ Lexer::Lexer()      {}
 Lexer::~Lexer()     {}
 
 std::string	    Lexer::types[]           = {
-                                            "Namespace",
-                                            "Key",
-                                            "Value",                        // to be deleted
                                             "Digit",
-                                            "Path",
+                                            "Key",
                                             "Method",
-                                            "Separator"
+                                            "Namespace",
+                                            "Path",
+                                            "Value"                       // to be deleted
                                         };
 std::string	    Lexer::namespace_types[] = {
                                             "server",
@@ -22,7 +21,6 @@ std::string	    Lexer::key_types[]       = {                               // so
                                             "client_max_body_size",
                                             "client_body_buffer_size",
                                             "error_page",
-                                            "include",
                                             "index",
                                             "limit_except",
                                             "listen",
@@ -108,23 +106,27 @@ int     Lexer::valid_lineending(std::string line)                {             r
 
 bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)       // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {
-    (void)tokens;
-    (void)num_of_tokens;
-    // std::vector<Token>::iterator it = tokens.rbegin() - num_of_tokens;
+    std::vector<Token>::iterator it = tokens.rbegin() - num_of_tokens;
 
-    // while ( it != tokens(end) )
-    // {
-    //     if (*it.getType() == "Namespace")
-    //     {
+    if (*it.getAllowedWords() > num_of_tokens + 1)
+        return false;
+    while ( it != tokens(end) )
+    {
+        if (match_digits(*it.getType()) && *(it + 1).getType() == "Digit")                  // if pairs with digit ok
+            return true;
+        if (match_values(*it.getType()) && *(it + 1).getType() == "Value")                   // if pairs with value ok ( ie, generci string, website name )
+            return true;
+        if (match_methods(*it.getType()) && *(it + 1).getType() == "Method")                  // if pairs with methods ok
+        {
+            it++;
+            while ( it != tokens(end) )
+                if (!(match_value(*it.getType()) && *(it + 1).getType() == "Method"))
+                    return false;
+            return true;
+        }                     
+        it++;
 
-    //     }
-    //     else
-    //     {
-            
-    //     }
-    //     it++;
-
-    // }
+    }
     return true;
 }
 
@@ -146,25 +148,18 @@ bool    Lexer::setPathParams(Token& token)
 bool    Lexer::setNamespaceParams(Token& token)
 {
     token.setType("Namespace");
-    if (token.getContent() == "location")
-        token.setAllowedWords(2);
-    else
-        token.setAllowedWords(1);
+    token.setAllowedWords(1);
+    if (token.getContent() == "server")
+        token.setAllowedWords(0);        
     return  true;
 }
 
 bool   Lexer::setKeyParams(Token& token)
 {
     token.setType("Key");
-    token.setAllowedWords(1);           // par défaut chaque clef en a au moins un OU PAS ! ex: on peut choisir de laisser "listen"
-
-    // std::map<std::string, int>::iterator    it = n_words_types.begin();
-    // while (it != n_words_types.end())
-    // {
-    //     if (it->first == token.getContent())
-    //         token.setAllowedWords(it->second);
-    //     it++;
-    // }
+    token.setAllowedWords(1);
+    if (token.getContent().compare("allowed_methods"))
+        token.setAllowedWords(4);
     return true;
 }
 
@@ -202,16 +197,16 @@ bool    Lexer::tag(Token& token)
         return (handleComments(token));
     else if (match_anystring(token_content, namespace_types))
         return  setNamespaceParams(token);
-    else if (token_content.find("/") == 0)                              // if it starts with a / it's a path.
+    else if (token_content.find("/") == 0)                                          // if it starts with a / it's a path.
         return  setPathParams(token);
     else if (match_anystring(token_content, method_types))
-        { token.setType("Method"); return true; }
+        { token.setType("Method"); return true;             }
     else if (match_anystring(token_content, key_types))
         return  setKeyParams(token);
-    else if (token_content.find_first_not_of("0123456789") == std::string::npos) // ???
-        {   token.setType("Digit"); return true; }
-    else if (token_content.find_first_not_of("0123456789abcdefghijklmnopqrstuwxyz.") == std::string::npos)                              // if the token content matches a separator     
-        {   token.setType("Value"); return true; }
+    else if (token_content.find_first_not_of("0123456789") == std::string::npos)    // if it's only digits
+        {   token.setType("Digit"); return true;            }
+    else if (token_content.find_first_not_of("0123456789abcdefghijklmnopqrstuwxyz.") == std::string::npos)          // if it's a string of type mywebsite.com     
+        {   token.setType("Value"); return true;            }
     return false;
 }
 
@@ -267,4 +262,22 @@ std::vector<std::string>     Lexer::split(std::string line)
     if (prev < line.length())
         current_line.push_back(line.substr(prev, std::string::npos));
     return current_line;
+}
+
+bool            Lexer::pair_wdigits(std::string word, std::string set[]);    		// check if the word argument pairs with digits
+{
+
+}
+
+bool            Lexer::pair_wvalues(std::string word, std::string set[]);    		// check if the word argument pairs with values
+{
+
+}
+
+bool            Lexer::pair_wmethods(std::string word, std::string set[]);    		// check if the word argument pairs with values
+{
+    if (word.compare("allowed_methods") == 0
+        || word.compare("autoindex") == 0)
+        return true;
+    return false;
 }
