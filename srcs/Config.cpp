@@ -9,17 +9,17 @@ Config::Config ():      _port(0) {};
 Config::~Config()  {};
 
 
-void    Config::debug_me(Lexer &parser)
-{
-        for (auto it = std::begin (parser.tokens); it != std::end (parser.tokens); ++it) {
-        std::cout  << "type= "  << it->getType() << "; pos= ";
-        std::cout  << it->getPos() << "; content= ";
-        std::cout  << it->getContent();
-        if (it->getType() == "Key")
-            std::cout << "; aw= " << it->getAllowedWords();
-        std::cout << std::endl;
-        }
-}
+// void    Config::debug_me(Lexer &parser)
+// {
+//         for (auto it = std::begin (parser.tokens); it != std::end (parser.tokens); ++it) {
+//         std::cout  << "type= "  << it->getType() << "; pos= ";
+//         std::cout  << it->getPos() << "; content= ";
+//         std::cout  << it->getContent();
+//         if (it->getType() == "Key")
+//             std::cout << "; aw= " << it->getAllowedWords();
+//         std::cout << std::endl;
+//         }
+// }
 
 int     Config::read(char   *config, char **envp)
 {
@@ -27,10 +27,10 @@ int     Config::read(char   *config, char **envp)
 
     if (parser.read(config, envp))
     {
-        debug_me(parser);
+        // debug_me(parser);
         return 1;
     }
-    debug_me(parser);
+    // debug_me(parser);
     return 0;
 }
 
