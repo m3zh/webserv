@@ -25,7 +25,7 @@ struct page
     std::string                 upload_path;
     std::string                 redirect;
     std::vector<std::string>    methods;
-    int                         autoindex;
+    std::string                 autoindex;
     int                         error;
 };
 
@@ -35,19 +35,21 @@ class Server
         Server() {};
         ~Server() {};
 
-        std::string     getServerName() { return _server_name; };
-        void            setServerName(std::string s) { _server_name = s; };
-        int             getPort() { return _port; };
-        void            setPort(int p) { _port = p; };
-        int             getClientMaxBodySize() { return _client_max_body_size; };
-        void            setClientMaxBodySize(int c) { _client_max_body_size = c; };
+        std::string             getServerName() { return _server_name; };
+        void                    setServerName(std::string s) { _server_name = s; };
+        int                     getPort() { return _port; };
+        void                    setPort(int p) { _port = p; };
+        int                     getClientMaxBodySize() { return _client_max_body_size; };
+        void                    setClientMaxBodySize(int c) { _client_max_body_size = c; };
+        std::vector<page>       getPages() { return _pages; };
+        void                    setPages(page p) { _pages.push_back(p); };
 
     private:
         std::string                 _server_name;
         int                         _port;
         int                         _client_max_body_size;
         std::vector<page>           _pages;
-        page                        _error_page; // not sure this one needs a struct...
+        page                        _error_page;
 };
 
 class Config
@@ -63,9 +65,10 @@ class Config
         Config();
         ~Config();
 
-        void            setServers(std::vector<Server> s);
-        void            setPort(Server s, std::string const str);
+        void            setServers(Server &s);
         int             read(char   *config, char **envp);
         void            debug_final();
+        void            setServerParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
+        void            setServerPageParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
 
 };
