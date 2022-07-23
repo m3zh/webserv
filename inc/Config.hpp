@@ -35,11 +35,21 @@ class Server
         Server() {};
         ~Server() {};
 
-        std::string                 server_name;
-        int                         port;
-        int                         client_max_body_size;
-        std::vector<page>           pages;
-        page                        error_page;
+        std::string             getServerName() { return _server_name; };
+        void                    setServerName(std::string s) { _server_name = s; };
+        int                     getPort() { return _port; };
+        void                    setPort(int p) { _port = p; };
+        int                     getClientMaxBodySize() { return _client_max_body_size; };
+        void                    setClientMaxBodySize(int c) { _client_max_body_size = c; };
+        std::vector<page>       getPages() { return _pages; };
+        void                    setPages(std::vector<page> p) {_pages = p; };
+
+    private:
+        std::string                 _server_name;
+        int                         _port;
+        int                         _client_max_body_size;
+        std::vector<page>           _pages;
+        page                        _error_page;
 };
 
 class Config
@@ -55,7 +65,10 @@ class Config
         Config();
         ~Config();
 
-        void            setServers(std::vector<Server> s);
-        void            setPort(Server s, std::string const str);
+        void            setServers(Server &s);
         int             read(char   *config, char **envp);
+        void            debug_final();
+        void            setServerParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
+        void            setServerPageParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
+
 };
