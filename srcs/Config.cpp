@@ -8,7 +8,6 @@
 Config::Config()      {};
 Config::~Config()     {};
 
-
 // void    Config::debug_me(Lexer &parser)
 // {
 //         for (auto it = std::begin (parser.tokens); it != std::end (parser.tokens); ++it) {
@@ -48,12 +47,12 @@ int     Config::read(char   *config, char **envp)
     {
         // debug_me(parser);
         std::vector<Server>             servers;
-        std::vector<Token>::iterator   it = parser.tokens.begin();
+        std::vector<Token>::iterator    it = parser.tokens.begin();
 
         // si la config est valide, on parcourt les tokens
         while (it != parser.tokens.end())
         {
-            // si on le token est un server, on l'instancie
+            // si le token est un server, on l'instancie
             if (it->getType() == "Namespace"
                 && it->getContent() == "server"
                 && ++it != parser.tokens.end())
@@ -64,12 +63,26 @@ int     Config::read(char   *config, char **envp)
                 while (it != parser.tokens.end()
                         && it->getType() != "server")
                 {
-                    // if (it->getType() == "Key")
-
-
+                    // on checke si c'est une clef, puis combien de mots cette clef autorise; 
+                    if (it->getType() == "Key"
+                        && (it + 1) != parser.tokens.end())
+                    {
+                        Token key_tmp = *it;  // save la clef avant d'itérer sur la/les valeur(s) 
+                        it++;
+                        //  on ajoute la valeur ou les valeurs a la config et on itère sur le nb de mots autorisés
+                        for (size_t i = 0; i < it->getAllowedWords(); i++, it++)
+                        {
+                            if (key_tmp.getContent() == "listen")
+                                server.setPort(stoi(it->getContent()));
+                            if (key_tmp.getContent() == "server_name")
+                                server.setServerName(it->getContent());
+                            if (key_tmp.getContent() == "client_max_body_size")
+                                server.setClientMaxBodySize(stoi(it->getContent()));
+                        }
+                    }
                     it++;
                 }
-                // _servers.push_back(server);
+                _servers.push_back(server);
             }
             it++;
         }
