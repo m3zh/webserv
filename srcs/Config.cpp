@@ -5,8 +5,8 @@
 // the Config class sets the value to pass to the class Webserv
 // *****************************
 
-Config::Config ():      _port(0) {};
-Config::~Config()  {};
+Config::Config()      {};
+Config::~Config()     {};
 
 
 // void    Config::debug_me(Lexer &parser)
@@ -28,7 +28,7 @@ int     Config::read(char   *config, char **envp)
     if (parser.read(config, envp))
     {
         // debug_me(parser);
-        return 1;
+        setServers(_servers);
     }
     // debug_me(parser);
     return 0;
@@ -36,20 +36,22 @@ int     Config::read(char   *config, char **envp)
 
 // Getters and Setters
 
-std::string     Config::getIP()         const     {   return _ip;         };
-int             Config::getPort()       const     {   return _port;       };
-std::string     Config::getProtocol()   const     {   return _protocol;   };
+// std::string     Config::getIP()         const     {   return _ip;         };
+// int             Config::getPort()       const     {   return _port;       };
+// std::string     Config::getProtocol()   const     {   return _protocol;   };
 
-void            Config::setPort(std::string const s)
+void            Config::setPort(Server s, std::string const str)
 {
-    if (_port != 0)
-        return ;
-    std::stringstream tmp;
-    std::string nums = "0123456789";
-    size_t start = s.find_first_of(nums);
-    size_t end = s.find_last_of(nums) + 1;
-    _port = stoi(s.substr(start, end));
-};
+    (void)s;
+    (void)str;
+    // std::stringstream tmp;
+    // std::string nums = "0123456789";
+    // size_t start = s.find_first_of(nums);
+    // size_t end = s.find_last_of(nums) + 1;
+    // s->port = stoi(str.substr(start, end));
+}
+
+void            Config::setServers(std::vector<Server> s) { (void)s; };
 
 // private functions
 
