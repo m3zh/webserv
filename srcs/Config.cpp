@@ -30,20 +30,24 @@ void    Config::debug_final()
     {
         std::cout << "server_name: " << it->getServerName() << ",\n"
                   << "  - port: " << it->getPort() << ",\n"
-                  << "  - client_max:  " << it->getClientMaxBodySize() << ",\n";
+                  << "  - client_max:  " << it->getClientMaxBodySize() << ",\n"
+                    << "    - location " << it->getPages()[0].location_path << "\n"
+                    << "        - autoindex: " << it->getPages()[0].autoindex << "\n";
 
-        std::vector<page>::iterator it2 = it->getPages().begin();
-        while (it2 != it->getPages().end())
-        {
-            std::cout << "  - location " << it2->location_path << ",\n"
-                        << "        - " << it2->autoindex << ",\n";
-                // if (it2->methods[0])
-                // {
+        std::cout << "size pages : " << it->getPages().size() << "\n";
+        // std::vector<page>::iterator it2 = it->getPages().begin();
+        // while (it2 != it->getPages().end())
+        // {
+        //     std::cout << _servers.size() << "\n";
+        //     std::cout << "  - location " << it2->location_path << ",\n"
+        //                 << "        - " << it2->autoindex << ",\n";
+        //         // if (it2->methods[0])
+        //         // {
 
-                //     std::cout   << "        - " << it2->methods[0] << ",\n";
-                // }
-            it2++;
-        }
+        //         //     std::cout   << "        - " << it2->methods[0] << ",\n";
+        //         // }
+        //     it2++;
+        // }
         it++;
     }
 }
@@ -78,33 +82,35 @@ void    Config::setServerPageParams(Lexer &parser, Server &server, std::vector<T
         it++;
         location.location_path = it->getContent();
         it++;
-        while (it->getType() == "Key")
+        while (it != parser.tokens.end() && it->getType() == "Key")
         {
             Token key_tmp = *it;  // save la clef avant d'itérer sur la/les valeur(s) 
             it++;
             while (it != parser.tokens.end() && it->getType() != "Key" && it->getType() != "Namespace")
             {
                 if (key_tmp.getContent() == "root")
-                    {location.root = it->getContent(); it++; }
+                    location.root = it->getContent();
                 else if (key_tmp.getContent() == "index")
-                    {location.index = it->getContent(); it++; }
+                    location.index = it->getContent();
                 else if (key_tmp.getContent() == "upload")
-                    {location.upload_path = it->getContent(); it++; }
+                    location.upload_path = it->getContent();
                 else if (key_tmp.getContent() == "redirect")
-                    {location.redirect = it->getContent(); it++; }
+                    location.redirect = it->getContent();
+                 else if (key_tmp.getContent() == "autoindex")
+                    location.autoindex = it->getContent();
                 else if (key_tmp.getContent() == "allowed_methods")
                 {
-                    while (it->getType() == "Method")
+                    while (it != parser.tokens.end() && it->getType() == "Method")
                     {
                         location.methods.push_back(it->getContent());
                         it++;
                     }
+                    break ;
                 }
-                else
-                    it++;
+                it++;
             }
         }
-        server.getPages().push_back(location);
+        server.setPages(location);
     }
 }
 
@@ -114,8 +120,8 @@ int     Config::read(char   *config, char **envp)
 
     if (parser.read(config, envp))
     {
-        debug_me(parser);
-        std::cout << std::endl;
+        // debug_me(parser);
+        // std::cout << std::endl;
         std::vector<Token>::iterator    it = parser.tokens.begin();
 
         // si la config est valide, on parcourt les tokens
@@ -130,7 +136,7 @@ int     Config::read(char   *config, char **envp)
             setServers(server);
         }
     }
-    debug_final();
+    // debug_final();
     return 0;
 }
 

@@ -39,7 +39,7 @@ std::string	    Lexer::method_types[]    = {                               // so
                                             "off",
                                             "on"	
                                         };
-std::string		Lexer::separator_types   =  "#{};";
+std::string		Lexer::separator_types   =  "#{};\0";
 
 // ************
 // READ, TAG, TOKENIZE functions

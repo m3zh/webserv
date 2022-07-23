@@ -25,7 +25,7 @@ struct page
     std::string                 upload_path;
     std::string                 redirect;
     std::vector<std::string>    methods;
-    int                         autoindex;
+    std::string                 autoindex;
     int                         error;
 };
 
@@ -42,7 +42,7 @@ class Server
         int                     getClientMaxBodySize() { return _client_max_body_size; };
         void                    setClientMaxBodySize(int c) { _client_max_body_size = c; };
         std::vector<page>       getPages() { return _pages; };
-        void                    setPages(std::vector<page> p) {_pages = p; };
+        void                    setPages(page p) { _pages.push_back(p); };
 
     private:
         std::string                 _server_name;
