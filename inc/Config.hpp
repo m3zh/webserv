@@ -17,15 +17,37 @@ class Lexer;
 // in a readable way for the Webserv class
 // ****************************
 
+struct page 
+{
+    std::string                 location_path;
+    std::string                 root;
+    std::string                 index;
+    std::string                 upload_path;
+    std::string                 redirect;
+    std::vector<std::string>    methods;
+    int                         autoindex;
+    int                         error;
+};
+
+class Server 
+{
+    public:
+        Server() {};
+        ~Server() {};
+
+        std::string                 server_name;
+        int                         port;
+        int                         client_max_body_size;
+        std::vector<page>           pages;
+        page                        error_page;
+};
+
 class Config
 {
     private:
-        std::string     _ip;        // pourquoi l'ip ici ?
-        int             _port;
-        std::string     _protocol;
+        std::vector<Server>   _servers;
 
         void            debug_me(Lexer &parser);
-
         Config(Config const &p);
         Config& operator=(Config const &p);
         
@@ -33,9 +55,7 @@ class Config
         Config();
         ~Config();
 
-        std::string     getIP() const;
-        int             getPort() const;
-        std::string     getProtocol() const;
-        void            setPort(std::string const str);
+        void            setServers(std::vector<Server> s);
+        void            setPort(Server s, std::string const str);
         int             read(char   *config, char **envp);
 };
