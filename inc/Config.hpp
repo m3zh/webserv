@@ -35,11 +35,19 @@ class Server
         Server() {};
         ~Server() {};
 
-        std::string                 server_name;
-        int                         port;
-        int                         client_max_body_size;
-        std::vector<page>           pages;
-        page                        error_page;
+        std::string     getServerName() { return _server_name; };
+        void            setServerName(std::string s) { _server_name = s; };
+        int             getPort() { return _port; };
+        void            setPort(int p) { _port = p; };
+        int             getClientMaxBodySize() { return _client_max_body_size; };
+        void            setClientMaxBodySize(int c) { _client_max_body_size = c; };
+
+    private:
+        std::string                 _server_name;
+        int                         _port;
+        int                         _client_max_body_size;
+        std::vector<page>           _pages;
+        page                        _error_page; // not sure this one needs a struct...
 };
 
 class Config
@@ -58,4 +66,6 @@ class Config
         void            setServers(std::vector<Server> s);
         void            setPort(Server s, std::string const str);
         int             read(char   *config, char **envp);
+        void            debug_final();
+
 };

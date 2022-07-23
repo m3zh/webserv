@@ -21,6 +21,25 @@ Config::~Config()     {};
 //         }
 // }
 
+void    Config::debug_final()
+{
+    std::vector<Server>::iterator it = _servers.begin();
+
+    while (it != _servers.end())
+    {
+        std::cout << "server_name : " << it->getServerName() << " ,\n"
+                  << "  - port : " << it->getPort() << " ,\n"
+                  << "  - client_max : " << it->getClientMaxBodySize() << " ,\n";
+
+        // std::vector<page>::iterator it2 = it->pages.begin();
+        // while (it2 != it->pages.end())
+        // {
+        //     it2++;
+        // }
+        it++;
+    }
+}
+
 int     Config::read(char   *config, char **envp)
 {
     Lexer parser;
@@ -28,9 +47,35 @@ int     Config::read(char   *config, char **envp)
     if (parser.read(config, envp))
     {
         // debug_me(parser);
-        setServers(_servers);
+        std::vector<Server>             servers;
+        std::vector<Token>::iterator   it = parser.tokens.begin();
+
+        // si la config est valide, on parcourt les tokens
+        while (it != parser.tokens.end())
+        {
+            // si on le token est un server, on l'instancie
+            if (it->getType() == "Namespace"
+                && it->getContent() == "server"
+                && ++it != parser.tokens.end())
+            {
+                Server  server;
+
+                // puis on itère tant qu'on a pas un autre token server pour ajouter les variables du server courant
+                while (it != parser.tokens.end()
+                        && it->getType() != "server")
+                {
+                    // if (it->getType() == "Key")
+
+
+                    it++;
+                }
+                // _servers.push_back(server);
+            }
+            it++;
+        }
+        setServers(servers);
     }
-    // debug_me(parser);
+    debug_final();
     return 0;
 }
 
@@ -51,7 +96,7 @@ void            Config::setPort(Server s, std::string const str)
     // s->port = stoi(str.substr(start, end));
 }
 
-void            Config::setServers(std::vector<Server> s) { (void)s; };
+void            Config::setServers(std::vector<Server> s) { _servers = s; }
 
 // private functions
 

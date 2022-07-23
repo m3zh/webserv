@@ -72,9 +72,12 @@ class Lexer
 		bool    						setKeyParams(Token& token);
 		bool    						setNamespaceParams(Token& token);
 		bool    						setPathParams(Token& token);
-		void    						setCurrWorkdir(char **envp);
 
+
+		void    						setCurrWorkdir(char **envp);
 		std::string  					getCurrWorkdir();
+		
+		// Server							createServer();
 
 		std::vector<std::string>		current_line;
 		std::vector<Token>				tokens;
