@@ -1,7 +1,10 @@
 # include "../inc/Token.hpp"
 
-Token::Token(std::string c, size_t p) : _content(c), _type("None"), _pos(p), _allowed_words(0) {}
-Token::~Token() {}
+Token::Token(std::string c, size_t p) : _content(c), 
+                                        _type("None"), 
+                                        _pos(p), 
+                                        _allowed_words(0)   {}
+Token::~Token()                                             {}
 
 void 			Token::setType(std::string t) 			{ 	_type = t;		 		}
 void 			Token::setContent(std::string c) 		{ 	_content = c; 			}
