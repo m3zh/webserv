@@ -55,8 +55,8 @@ int     Lexer::read(char   *config, char **envp)
         file.seekg(0);                                                      // start at beginning of file
         while (getline( file, line ))
         {
-            while (line.length() == 0 || trim(line).find("#") == 0)
-                getline(file, line);                                        // skip blank lines and comment lines
+            if (line.length() == 0 || trim(line).find("#") == 0)
+                continue;                                        // skip blank lines and comment lines
             line = trim(line);
             if  (!valid_lineending(line)
                 || !tokenize(split(line.substr(0, line.length() - 1))))     // substr remove last character of each line, ie { ; }
