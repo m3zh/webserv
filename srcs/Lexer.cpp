@@ -90,6 +90,8 @@ bool            Lexer::tag(Token& token)
         {   token.setType("Digit"); return true;            }
     else if (token_content.find_first_not_of("0123456789abcdefghijklmnopqrstuwxyz.") == std::string::npos)          // if it's a string of type mywebsite.com     
         {   token.setType("Value"); return true;            }
+    else if (token_content.compare(0, 4, "http") == 0)          // if it's a string of type mywebsite.com     
+        {   token.setType("Website"); return true;            }
     return false;
 }
 
@@ -119,15 +121,12 @@ bool    Lexer::setPathParams(Token& token)
     Token   last;
     token.setType("Path");
     
-    std::cout << token.getContent() << std::endl;
     last = tokens[tokens.size() - 1];
-    std::cout << last.getContent() << std::endl;
     if (last.getContent().compare("location") == 0
         || last.getContent().compare("upload_store") == 0)                                  // location and upload must start with '/' ONLY
         if (token.getContent().compare(0, 1, ".") == 0) return false;
     if (token.getContent().compare(0, 1, ".") == 0)
         token.setContent(token.getContent().substr(1, token.getContent().size() - 1));
-    std::cout << token.getContent() << std::endl;
     if (last.getContent().compare("root") == 0)                                             // root must be followed by an EXISTING path
     {
         fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);               // check if absolute path exists
@@ -238,7 +237,10 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
                 if ((*it).getType() != "Method")
                     return false;
             return true;
-        }                     
+        }
+        if ((*it).getContent().compare("redirect") == 0
+            && (*(it + 1)).getType() == "Website")                      
+            return true;                   
         it++;
 
     }
