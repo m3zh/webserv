@@ -39,6 +39,7 @@ class Lexer
 		std::string     			trim(std::string s);				   									// remove trailing spaces on the left and right of the line
 		int             			match_anystring(std::string word, std::string set[], size_t len);    	// check if the char argument matches any char in set argument
 		int             			match_anychar(char c, std::string set);    								// check if the char argument matches any char in set argument
+		bool             			pair_wpath(std::string word);    										// check if the word argument pairs with path
 		bool             			pair_wdigits(std::string word);    										// check if the word argument pairs with digits
 		bool             			pair_wvalues(std::string word);    										// check if the word argument pairs with values
 		bool             			pair_wmethods(std::string word);    									// check if the word argument pairs with methods

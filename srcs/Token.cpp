@@ -1,5 +1,6 @@
 # include "../inc/Token.hpp"
 
+Token::Token()                                              {}
 Token::Token(std::string c, size_t p) : _content(c), 
                                         _type("None"), 
                                         _pos(p), 

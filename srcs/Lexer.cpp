@@ -28,7 +28,7 @@ std::string	    Lexer::key_types[]       = {                               // so
                                             "root",
                                             "server_name",
                                             "try_files",
-                                            "upload",
+                                            "upload_store",
                                             "workers"		
                                         };
 std::string	    Lexer::method_types[]    = {                               // some key types will be deleted afterwards
@@ -80,7 +80,7 @@ bool            Lexer::tag(Token& token)
         return (handleComments(token));
     else if (match_anystring(token_content, namespace_types, 2))
         return  setNamespaceParams(token);
-    else if (token_content.find("/") == 0)                                          // if it starts with a / it's a path.
+    else if (token_content.find("/") == 0 || token_content.compare(0, 2, "./") == 0)                                          // if it starts with a / it's a path.
         return  setPathParams(token);
     else if (match_anystring(token_content, method_types, 6))
         { token.setType("Method"); return true;             }
@@ -115,16 +115,29 @@ bool            Lexer::tokenize(std::vector<std::string> current_line)
 
 bool    Lexer::setPathParams(Token& token)
 {
-    int fd;
+    int     fd;
+    Token   last;
     token.setType("Path");
-
-    fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);         // check if absolute path exists
-    if (fd < 0)
+    
+    std::cout << token.getContent() << std::endl;
+    last = tokens[tokens.size() - 1];
+    std::cout << last.getContent() << std::endl;
+    if (last.getContent().compare("location") == 0
+        || last.getContent().compare("upload_store") == 0)                                  // location and upload must start with '/' ONLY
+        if (token.getContent().compare(0, 1, ".") == 0) return false;
+    if (token.getContent().compare(0, 1, ".") == 0)
+        token.setContent(token.getContent().substr(1, token.getContent().size() - 1));
+    std::cout << token.getContent() << std::endl;
+    if (last.getContent().compare("root") == 0)                                             // root must be followed by an EXISTING path
     {
-        std::cout << "Invalid path in config" << std::endl;
-        return false;
+        fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);               // check if absolute path exists
+        if (fd < 0)
+        {
+            std::cout << "Invalid path in config" << std::endl;
+            return false;
+        }
+        close(fd);
     }
-    close(fd);
     return true;    
 }
 
@@ -211,9 +224,9 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
     if ((*it).getContent() != "allowed_methods")
         if ((*it).getAllowedWords() > num_of_tokens)
             return false;
-    while ( it != tokens.end() )
+    while ( it != tokens.end() - 1 )
     {
-        if ((*it).getContent() == "location" && (*(it + 1)).getType() == "Path")                      // if pairs with path ok
+        if (pair_wpath((*it).getContent()) && (*(it + 1)).getType() == "Path")                         // if pairs with path ok
             return true;
         if (pair_wdigits((*it).getContent()) && (*(it + 1)).getType() == "Digit")                      // if pairs with digit ok
             return true;
@@ -245,6 +258,14 @@ bool    Lexer::handleComments(Token& token)
 // ************
 // PAIR functions
 // ************
+
+bool            Lexer::pair_wpath(std::string word)    		// check if the word argument pairs with digits
+{
+    if ( word.compare("location") == 0 || word.compare("root") == 0
+        || word.compare("upload_store") == 0 )
+        return true;
+    return false;
+}
 
 bool            Lexer::pair_wdigits(std::string word)    		// check if the word argument pairs with digits
 {
@@ -279,7 +300,7 @@ std::string     Lexer::trim(std::string s)
     size_t end = s.find_last_not_of(spaces);
     if  ( start == end )
         return s;
-    return s.substr(start, start - end);
+    return s.substr(start, end - start + 1);
 }
 
 int             Lexer::match_anystring(std::string word, std::string set[], size_t len)

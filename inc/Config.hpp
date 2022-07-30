@@ -27,6 +27,7 @@ struct page
     std::vector<std::string>    methods;
     std::string                 autoindex;
     int                         error;
+    int                         is_cgi;
 };
 
 class Server 
@@ -58,6 +59,7 @@ class Config
         std::vector<Server>   _servers;
 
         void            debug_me(Lexer &parser);
+
         Config(Config const &p);
         Config& operator=(Config const &p);
         

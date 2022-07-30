@@ -24,6 +24,7 @@ class Token
 
 	public:
 
+		Token();
 		Token(std::string c, size_t p);
 		~Token();
 		

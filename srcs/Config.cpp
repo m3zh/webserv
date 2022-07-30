@@ -120,7 +120,7 @@ int     Config::read(char   *config, char **envp)
 
     if (parser.read(config, envp))
     {
-        // debug_me(parser);
+        debug_me(parser);
         // std::cout << std::endl;
         std::vector<Token>::iterator    it = parser.tokens.begin();
 
@@ -136,7 +136,7 @@ int     Config::read(char   *config, char **envp)
             setServers(server);
         }
     }
-    // debug_final();
+    debug_me(parser);
     return 0;
 }
 
