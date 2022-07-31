@@ -6,6 +6,10 @@
 https://www.nginx.com/resources/wiki/start/topics/examples/full/
 # socket programming in C
 https://aticleworld.com/socket-programming-in-c-using-tcpip/
+# How to Load a Webpage in C
+https://www.youtube.com/watch?v=CymFHNqC7n4
+# Web programming (CGI) in C
+https://www.youtube.com/watch?v=rFaRFCyewpA
 ```
 ## Clone and Fetch
 
