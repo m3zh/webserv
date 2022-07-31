@@ -6,7 +6,8 @@ CXXFLAGS = -Wall -Werror -Wextra -g #-std=c++98
 SRCS	=	srcs/main.cpp		\
 			srcs/Token.cpp		\
 			srcs/Lexer.cpp		\
-			srcs/Config.cpp	
+			srcs/Config.cpp		\
+			srcs/Webserv.cpp	
 
 INC		=	inc/
 

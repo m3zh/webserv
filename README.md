@@ -4,6 +4,8 @@
 ```
 # config file will be based on nginx default config
 https://www.nginx.com/resources/wiki/start/topics/examples/full/
+# socket programming in C
+https://aticleworld.com/socket-programming-in-c-using-tcpip/
 ```
 ## Clone and Fetch
 

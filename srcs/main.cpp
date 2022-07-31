@@ -1,8 +1,8 @@
-# include "../inc/Config.hpp"
+# include "../inc/Webserv.hpp"
 
 int main(int argc, char **args, char **envp)
 {
-    Config config;
+    Config  config;
 
     if (argc != 2)
     {
@@ -10,7 +10,9 @@ int main(int argc, char **args, char **envp)
         return EXIT_FAILURE;
     }
     if (config.read(args[1], envp))
+    {
         std::cout << "Webserv class starts here\n";
-    /* ICI to DEBUG Config: print tokens params */
+        Webserv webserv(config.getServers());
+    }
     return EXIT_SUCCESS;
 }

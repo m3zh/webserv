@@ -1,30 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Webserv.hpp                                        :+:      :+:    :+:   */
+/*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/07/31 17:52:46 by mlazzare         ###   ########.fr       */
+/*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
+/*   Updated: 2022/07/31 17:53:07 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# pragma once
-# include "../inc/Config.hpp"
+# include "../inc/Webserv.hpp"
 
-class Config;
+Webserv::Webserv(std::vector<Server> &s)  : _servers(s) 
+                                            {}
+Webserv::~Webserv()                         {}
 
-class Webserv
+std::vector<Server>&     Webserv::getServers()       {   return _servers;    };
+
+bool    Webserv::isCGI_request()
 {
-    private:
-        std::vector<Server> _servers;
-
-    public:
-        Webserv(std::vector<Server> &s);
-        ~Webserv();
-
-        std::vector<Server>&     getServers();
-
-        bool isCGI_request();
-};
+    return false;
+}

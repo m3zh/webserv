@@ -36,14 +36,14 @@ class Server
         Server() {};
         ~Server() {};
 
-        std::string             getServerName() { return _server_name; };
-        void                    setServerName(std::string s) { _server_name = s; };
-        int                     getPort() { return _port; };
-        void                    setPort(int p) { _port = p; };
-        int                     getClientMaxBodySize() { return _client_max_body_size; };
-        void                    setClientMaxBodySize(int c) { _client_max_body_size = c; };
-        std::vector<page>       getPages() { return _pages; };
-        void                    setPages(page p) { _pages.push_back(p); };
+        std::string             getServerName()                 {   return _server_name;          };
+        void                    setServerName(std::string s)    {   _server_name = s;             };
+        int                     getPort()                       {   return _port;                 };
+        void                    setPort(int p)                  {   _port = p;                    };
+        int                     getClientMaxBodySize()          {   return _client_max_body_size; };
+        void                    setClientMaxBodySize(int c)     {   _client_max_body_size = c;    };
+        std::vector<page>       getPages()                      {   return _pages;                };
+        void                    setPages(page p)                {   _pages.push_back(p);          };
 
     private:
         std::string                 _server_name;
@@ -56,9 +56,9 @@ class Server
 class Config
 {
     private:
-        std::vector<Server>   _servers;
+        std::vector<Server>    _servers;
 
-        void            debug_me(Lexer &parser);
+        void                    debug_me(Lexer &parser);
 
         Config(Config const &p);
         Config& operator=(Config const &p);
@@ -67,10 +67,12 @@ class Config
         Config();
         ~Config();
 
-        void            setServers(Server &s);
+        
         int             read(char   *config, char **envp);
-        void            debug_final();
+        
+        void            setServers(Server &s);
         void            setServerParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
         void            setServerPageParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
 
+        std::vector<Server>&     getServers();
 };

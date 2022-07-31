@@ -8,49 +8,37 @@
 Config::Config()      {};
 Config::~Config()     {};
 
-
-void    Config::debug_me(Lexer &parser)
+int     Config::read(char   *config, char **envp)
 {
-        for (auto it = std::begin (parser.tokens); it != std::end (parser.tokens); ++it) {
-        std::cout  << "type= "  << it->getType() << "; pos= ";
-        std::cout  << it->getPos() << "; content= ";
-        std::cout  << it->getContent();
-        if (it->getType() == "Key")
-            std::cout << "; aw= " << it->getAllowedWords();
-        std::cout << std::endl;
-        }
-}
+    Lexer parser;
 
-
-void    Config::debug_final()
-{
-    std::vector<Server>::iterator it = _servers.begin();
-
-    while (it != _servers.end())
+    if (parser.read(config, envp))
     {
-        std::cout << "server_name: " << it->getServerName() << ",\n"
-                  << "  - port: " << it->getPort() << ",\n"
-                  << "  - client_max:  " << it->getClientMaxBodySize() << ",\n"
-                    << "    - location " << it->getPages()[0].location_path << "\n"
-                    << "        - autoindex: " << it->getPages()[0].autoindex << "\n";
+        // debug_me(parser);
+        std::vector<Token>::iterator    it = parser.tokens.begin();
 
-        std::cout << "size pages : " << it->getPages().size() << "\n";
-        // std::vector<page>::iterator it2 = it->getPages().begin();
-        // while (it2 != it->getPages().end())
-        // {
-        //     std::cout << _servers.size() << "\n";
-        //     std::cout << "  - location " << it2->location_path << ",\n"
-        //                 << "        - " << it2->autoindex << ",\n";
-        //         // if (it2->methods[0])
-        //         // {
+        // si la config est valide, on parcourt les tokens
+        while (it != parser.tokens.end() && it->getContent() == "server")
+        {
+            // si le token est un server, on l'instancie
+            Server  server;
 
-        //         //     std::cout   << "        - " << it2->methods[0] << ",\n";
-        //         // }
-        //     it2++;
-        // }
-        it++;
+            it++;
+            setServerParams(parser, server, it);
+            setServerPageParams(parser, server, it);
+            setServers(server);
+        }
+        return 1;
     }
+    // debug_me(parser);
+    return 0;
 }
+
+// ************
+// SETTER functions
+// ************
+
+void    Config::setServers(Server &server) { _servers.push_back(server); };
 
 void    Config::setServerParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it)
 {
@@ -114,34 +102,53 @@ void    Config::setServerPageParams(Lexer &parser, Server &server, std::vector<T
     }
 }
 
-int     Config::read(char   *config, char **envp)
+// ************
+// GETTER functions
+// ************
+
+std::vector<Server>&     Config::getServers()        {   return _servers;    };
+
+// ************
+// DEBUGGING
+// ************
+
+void    Config::debug_me(Lexer &parser)
 {
-    Lexer parser;
-
-    if (parser.read(config, envp))
-    {
-        // debug_me(parser);
-        std::vector<Token>::iterator    it = parser.tokens.begin();
-
-        // si la config est valide, on parcourt les tokens
-        while (it != parser.tokens.end() && it->getContent() == "server")
-        {
-            // si le token est un server, on l'instancie
-            Server  server;
-
-            it++;
-            setServerParams(parser, server, it);
-            setServerPageParams(parser, server, it);
-            setServers(server);
-        }
-        return 1;
+    std::cout << "############### PARSER ###############\n";
+    for (auto it = std::begin (parser.tokens); it != std::end (parser.tokens); ++it) {
+    std::cout  << "type= "  << it->getType() << "; pos= ";
+    std::cout  << it->getPos() << "; content= ";
+    std::cout  << it->getContent();
+    if (it->getType() == "Key")
+        std::cout << "; aw= " << it->getAllowedWords();
+    std::cout << std::endl;
     }
-    // debug_me(parser);
-    return 0;
+
+    std::cout << "############### SERVERS ###############\n";
+    std::vector<Server>::iterator it = _servers.begin();
+
+    while (it != _servers.end())
+    {
+        std::cout << "server_name: " << it->getServerName() << ",\n"
+                << "  - port: " << it->getPort() << ",\n"
+                << "  - client_max:  " << it->getClientMaxBodySize() << ",\n"
+                    << "    - location " << it->getPages()[0].location_path << "\n"
+                    << "        - autoindex: " << it->getPages()[0].autoindex << "\n";
+
+        std::cout << "size pages : " << it->getPages().size() << "\n";
+        std::vector<page>::iterator it2 = it->getPages().begin();
+        while (it2 != it->getPages().end())
+        {
+            std::cout << _servers.size() << "\n";
+            std::cout << "  - location " << it2->location_path << ",\n"
+                        << "        - " << it2->autoindex << ",\n";
+                // if (it2->methods[0])
+                // {
+
+                //     std::cout   << "        - " << it2->methods[0] << ",\n";
+                // }
+            it2++;
+        }
+        it++;
+    }
 }
-
-void            Config::setServers(Server &server) { _servers.push_back(server); };
-
-// private functions
-
-
