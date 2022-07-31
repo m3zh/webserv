@@ -6,36 +6,44 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/07/31 15:34:38 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/07/31 22:21:28 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # pragma once
+# include <iostream>
 # include <unistd.h>
 # include <stdlib.h>
 # include <sys/wait.h>
+# include <map>
 
 class Cgi
 {	
     private:
-        std::map<std::string, std::string> env;
+        std::map<std::string, std::string> _env;
 
-        unsigned char   *_buffer;
-        pid_t           _pid;
-        int             _readfds[2];
-        int             _writefds[2];
-
+        // unsigned char   *_buffer;
+        // pid_t           _pid;
+        // int             _readfds[2];
+        // int             _writefds[2];
+        
     public:
 
-        Cgi(unsigned char *buff, char **env);
+        Cgi(char **env);
         ~Cgi();
 
-        void            http_header();
-        void            exec_cgi();
-        void            child_process();
-        void            parent_process(int status);
+        // void            exec_cgi();
+        // void            child_process();
+        // void            parent_process(int status);
 
-        void            setEnv(char **env)
+        void            setEnv(char **env);
+        std::string     getEnvValue(std::string key);
+        void            getEnv();
+        std::string     getFromQueryString(std::string var);
+
+        void            http_header();
+        void            redirect_http_header(std::string loc);
+        void            cookies_http_header();
 };
 
 

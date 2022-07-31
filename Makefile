@@ -7,7 +7,8 @@ SRCS	=	srcs/main.cpp		\
 			srcs/Token.cpp		\
 			srcs/Lexer.cpp		\
 			srcs/Config.cpp		\
-			srcs/Webserv.cpp	
+			srcs/Webserv.cpp	\
+			srcs/Cgi.cpp	
 
 INC		=	inc/
 

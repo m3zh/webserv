@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/07/31 17:53:07 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/07/31 18:52:03 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,5 +20,5 @@ std::vector<Server>&     Webserv::getServers()       {   return _servers;    };
 
 bool    Webserv::isCGI_request()
 {
-    return false;
+    return true;
 }
