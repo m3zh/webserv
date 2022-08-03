@@ -44,7 +44,7 @@ void    Config::setServers(ServerInfo &server) { _servers.push_back(server); };
 
 void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
-    while (it->getType() == "Key")
+    while (it != parser.tokens.end() && it->getType() == "Key")
     {
         Token key_tmp = *it;  // save la clef avant d'itérer sur la/les valeur(s) 
         it++;
@@ -65,7 +65,7 @@ void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<T
 
 void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
-    while (it->getContent() == "location")
+    while (it != parser.tokens.end() && it->getContent() == "location")
     {
         page    location;
         
@@ -121,6 +121,7 @@ bool                    Config::valid_config(std::vector<ServerInfo>& s)
     while ( it != s.end() - 1)
     {
         int root = 0;
+        if ((*it).getPort() < 0) return false;                                  // check if port has been set
         std::vector<page>::iterator pit = (*it).getPages().begin();                 
         while ( pit != (*it).getPages().end() )
         {    if ((*pit).location_path.compare("/") == 0)                         // check if there is ONE root location /
@@ -169,21 +170,21 @@ void    Config::debug_me(Lexer &parser)
     }
 
     std::cout << "############### SERVERS ###############\n";
-    std::vector<ServerInfo>::iterator it = _servers.begin();
+    std::vector<ServerInfo>::iterator it = getServers().begin();
 
-    while (it != _servers.end())
+    while (it != getServers().end())
     {
-        std::cout << "server_name: " << it->getServerName() << ",\n"
-                << "  - port: " << it->getPort() << ",\n"
-                << "  - client_max:  " << it->getClientMaxBodySize() << ",\n"
-                    << "    - location " << it->getPages()[0].location_path << "\n"
-                    << "        - autoindex: " << it->getPages()[0].autoindex << "\n";
+        std::cout << "server_name: " << (*it).getServerName() << ",\n"
+                << "  - port: " << (*it).getPort() << ",\n"
+                << "  - client_max:  " << (*it).getClientMaxBodySize() << ",\n"
+                    << "    - location " << (*it).getPages()[0].location_path << "\n"
+                    << "        - autoindex: " << (*it).getPages()[0].autoindex << "\n";
 
-        std::cout << "size pages : " << it->getPages().size() << "\n";
-        std::vector<page>::iterator it2 = it->getPages().begin();
-        while (it2 != it->getPages().end())
+        std::cout << "size pages : " << (*it).getPages().size() << "\n";
+        std::vector<page>::iterator it2 = (*it).getPages().begin();
+        while (it2 != (*it).getPages().end())
         {
-            std::cout << _servers.size() << "\n";
+            std::cout << getServers().size() << "\n";
             std::cout << "  - location " << it2->location_path << ",\n"
                         << "        - " << it2->autoindex << ",\n";
                 // if (it2->methods[0])
