@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/03 11:14:40 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/03 22:21:23 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,17 @@
 Cgi::Cgi(char **env)        {     setEnv(env);    }
 Cgi::~Cgi()                 {}
 
+
+
 // void    Cgi::child_process()
 // {
-//     dup2(_fds[0], STDIN_FILENO);
-//     dup2(_fds[1], STDOUT_FILENO);
-//     close(_fds[0]);
+//     std::string cmd[];
+//     cmd[0] = get_CGIfile_extension();
+//     close(_fds[1]);
+//     if (dup2(_fds[0], STDIN_FILENO) < 0);
+//     {    perror("cgi dup2:"); exit(EXIT_FAILURE);  }
+    
+    
 // }
 
 // void    Cgi::parent_process(int status)
@@ -29,19 +35,20 @@ Cgi::~Cgi()                 {}
 //     close(_fds[1]);
 // }
 
-// void    Cgi::exec_cgi()
-// {
-//     int status = 0;
+void    Cgi::exec_CGI()
+{
+    // int status = 0;
     
-//     pipe(_fds);
-//     _pid = fork();
-//     if (_pid < 0)
-//         exit(1);
-//     if (_pid == 0)
-//         child_process();
-//     else
-//         parent_process(status);
-// }
+    if (pipe(_fds) < 0)
+    {    perror("cgi pipe:"); exit(EXIT_FAILURE);  }
+    _pid = fork();
+    if (_pid < 0)
+    {    perror("cgi fork:"); exit(EXIT_FAILURE);  }
+    // if (_pid == 0)
+    //     child_process();
+    // else
+    //     parent_process(status);
+}
 
 void    Cgi::setEnv(char **env)
 {
@@ -93,7 +100,7 @@ bool            Cgi::is_GETmethod()
 // HTTP HEADERS functions
 // ************
 
-void            Cgi::http_header()
+void    Cgi::http_header()
 {
     std::cout << "Content-Type: text/html; charset=utf-8;\r\n\r\n";
 }

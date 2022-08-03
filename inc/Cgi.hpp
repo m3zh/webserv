@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/03 11:14:24 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/03 22:20:31 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,29 +18,38 @@
 # include <sys/wait.h>
 # include <map>
 
+struct CGIrequest
+{
+    std::string path_to_CGI;                    // action field in html 
+    std::string path_to_output;                 // upload_store in config
+    std::string content_length;                 // content length field in HTML header
+};
+
 class Cgi
 {	
     private:
         std::map<std::string, std::string> _env;
 
-        // unsigned char   *_buffer;
-        // pid_t           _pid;
-        // int             _readfds[2];
-        // int             _writefds[2];
+        CGIrequest      _request;
+        
+        pid_t           _pid;
+        int             _fds[2];
         
     public:
 
         Cgi(char **env);
         ~Cgi();
 
-        // void            exec_cgi();
-        // void            child_process();
-        // void            parent_process(int status);
+        void            parse_CGIrequest();                     // parse the HTTP request
+        void            exec_CGI();
+        // void            child_process(CGIrequest& cgireq);
+        // void            parent_process(CGIrequest& cgireq, int status);
 
         void            setEnv(char **env);
         std::string     getEnvValue(std::string key);
         void            getEnv();
         std::string     getFromQueryString(std::string var);
+        std::string     get_CGIfile_extension(std::string action);
 
         bool            is_GETmethod();
 
