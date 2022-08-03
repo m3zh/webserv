@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/07/31 22:20:36 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/03 11:14:40 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ void            Cgi::getEnv()                                           // print
     }
 }
 
-std::string            getFromQueryString(std::string var)
+std::string     Cgi::getFromQueryString(std::string var)
 {
     std::string qs = getenv("QUERY_STRING");
     size_t pos = qs.find(var);
@@ -85,11 +85,15 @@ std::string            getFromQueryString(std::string var)
     return 0;
 }
 
+bool            Cgi::is_GETmethod()
+{
+    return strcmp(getenv("METHOD_REQUEST"),"get") == 0;
+}
 // ************
 // HTTP HEADERS functions
 // ************
 
-void    Cgi::http_header()
+void            Cgi::http_header()
 {
     std::cout << "Content-Type: text/html; charset=utf-8;\r\n\r\n";
 }

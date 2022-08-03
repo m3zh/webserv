@@ -9,54 +9,21 @@
 # include <map>
 
 # include "Lexer.hpp"
+# include "ServerInfo.hpp"
 
 class Lexer;
+class ServerInfo;
 
 // ****************************
 // the Config class stocks all information parsed by Lexer
 // in a readable way for the Webserv class
 // ****************************
 
-struct page 
-{
-    std::string                 location_path;
-    std::string                 root;
-    std::string                 index;
-    std::string                 upload_path;
-    std::string                 redirect;
-    std::vector<std::string>    methods;
-    std::string                 autoindex;
-    int                         error;
-    int                         is_cgi;
-};
-
-class Server 
-{
-    public:
-        Server() {};
-        ~Server() {};
-
-        std::string             getServerName()                 {   return _server_name;          };
-        void                    setServerName(std::string s)    {   _server_name = s;             };
-        int                     getPort()                       {   return _port;                 };
-        void                    setPort(int p)                  {   _port = p;                    };
-        int                     getClientMaxBodySize()          {   return _client_max_body_size; };
-        void                    setClientMaxBodySize(int c)     {   _client_max_body_size = c;    };
-        std::vector<page>       getPages()                      {   return _pages;                };
-        void                    setPages(page p)                {   _pages.push_back(p);          };
-
-    private:
-        std::string                 _server_name;
-        int                         _port;
-        int                         _client_max_body_size;
-        std::vector<page>           _pages;
-        page                        _error_page;
-};
 
 class Config
 {
     private:
-        std::vector<Server>    _servers;
+        std::vector<ServerInfo>    _servers;
 
         void                    debug_me(Lexer &parser);
 
@@ -70,9 +37,11 @@ class Config
         
         int             read(char   *config, char **envp);
         
-        void            setServers(Server &s);
-        void            setServerParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
-        void            setServerPageParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it);
+        void            setServers(ServerInfo &s);
+        void            setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it);
+        void            setServerPageParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it);
 
-        std::vector<Server>&     getServers();
+        std::vector<ServerInfo>&     getServers();
+
+        bool            valid_config(std::vector<ServerInfo>    &s);
 };

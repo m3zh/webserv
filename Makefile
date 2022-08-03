@@ -7,6 +7,7 @@ SRCS	=	srcs/main.cpp		\
 			srcs/Token.cpp		\
 			srcs/Lexer.cpp		\
 			srcs/Config.cpp		\
+			srcs/ServerInfo.cpp		\
 			srcs/Webserv.cpp	\
 			srcs/Cgi.cpp	
 

@@ -21,15 +21,17 @@ int     Config::read(char   *config, char **envp)
         while (it != parser.tokens.end() && it->getContent() == "server")
         {
             // si le token est un server, on l'instancie
-            Server  server;
+            ServerInfo  server;
 
             it++;
             setServerParams(parser, server, it);
             setServerPageParams(parser, server, it);
             setServers(server);
         }
-        return 1;
+        if (valid_config(getServers()))
+            return 1;
     }
+    std::cout << "Error in config\n"; 
     // debug_me(parser);
     return 0;
 }
@@ -38,9 +40,9 @@ int     Config::read(char   *config, char **envp)
 // SETTER functions
 // ************
 
-void    Config::setServers(Server &server) { _servers.push_back(server); };
+void    Config::setServers(ServerInfo &server) { _servers.push_back(server); };
 
-void    Config::setServerParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it)
+void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
     while (it->getType() == "Key")
     {
@@ -61,7 +63,7 @@ void    Config::setServerParams(Lexer &parser, Server &server, std::vector<Token
     }
 }
 
-void    Config::setServerPageParams(Lexer &parser, Server &server, std::vector<Token>::iterator &it)
+void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
     while (it->getContent() == "location")
     {
@@ -106,7 +108,49 @@ void    Config::setServerPageParams(Lexer &parser, Server &server, std::vector<T
 // GETTER functions
 // ************
 
-std::vector<Server>&     Config::getServers()        {   return _servers;    };
+std::vector<ServerInfo>&     Config::getServers()        {   return _servers;    };
+
+// ************
+// VALIDATE functions
+// ************
+
+bool                    Config::valid_config(std::vector<ServerInfo>& s)
+{   
+    std::vector<ServerInfo>::iterator it = s.begin();
+
+    while ( it != s.end() - 1)
+    {
+        int root = 0;
+        std::vector<page>::iterator pit = (*it).getPages().begin();                 
+        while ( pit != (*it).getPages().end() )
+        {    if ((*pit).location_path.compare("/") == 0)                         // check if there is ONE root location /
+                root++;
+            pit++;
+        }
+        std::vector<ServerInfo>::iterator it2 = it + 1;
+        while ( it2 != s.end()) 
+        {
+            if ((*it).getServerName().compare((*it2).getServerName()) == 0
+            && (*it).getPort() == (*it2).getPort())
+                return false;
+            it2++;
+        }
+        if (root != 1)
+            return false;
+        it++;
+    }
+    int root = 0;
+    std::vector<page>::iterator pit = (*it).getPages().begin();                 
+    while ( pit != (*it).getPages().end() )
+    {           
+        if ((*pit).location_path.compare("/") == 0)                         // check if there is ONE root location /
+            root++;
+        pit++;
+    }
+    if (root != 1)
+        return false;
+    return true;
+};
 
 // ************
 // DEBUGGING
@@ -125,7 +169,7 @@ void    Config::debug_me(Lexer &parser)
     }
 
     std::cout << "############### SERVERS ###############\n";
-    std::vector<Server>::iterator it = _servers.begin();
+    std::vector<ServerInfo>::iterator it = _servers.begin();
 
     while (it != _servers.end())
     {

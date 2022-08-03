@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/07/31 22:21:28 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/03 11:14:24 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # include <iostream>
 # include <unistd.h>
 # include <stdlib.h>
+# include <string.h>
 # include <sys/wait.h>
 # include <map>
 
@@ -41,9 +42,12 @@ class Cgi
         void            getEnv();
         std::string     getFromQueryString(std::string var);
 
+        bool            is_GETmethod();
+
         void            http_header();
         void            redirect_http_header(std::string loc);
         void            cookies_http_header();
+        void            session_http_header();                  // TO-DO
 };
 
 

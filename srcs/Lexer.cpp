@@ -56,11 +56,11 @@ int     Lexer::read(char   *config, char **envp)
         while (getline( file, line ))
         {
             if (line.length() == 0 || trim(line).find("#") == 0)
-                continue;                                        // skip blank lines and comment lines
+                continue;                                                   // skip blank lines and comment lines
             line = trim(line);
             if  (!valid_lineending(line)
                 || !tokenize(split(line.substr(0, line.length() - 1))))     // substr remove last character of each line, ie { ; }
-                    {   std::cout << "Error in config\n"; file.close();  return 0;  }
+                    {   file.close();  return 0;  }
         } 
         file.close();     
     }

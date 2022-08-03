@@ -6,17 +6,17 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/07/31 18:52:03 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/03 10:19:12 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/Webserv.hpp"
 
-Webserv::Webserv(std::vector<Server> &s)  : _servers(s) 
+Webserv::Webserv(std::vector<ServerInfo> &s)  : _servers(s) 
                                             {}
 Webserv::~Webserv()                         {}
 
-std::vector<Server>&     Webserv::getServers()       {   return _servers;    };
+std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;    };
 
 bool    Webserv::isCGI_request()
 {
