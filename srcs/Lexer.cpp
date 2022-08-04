@@ -80,17 +80,17 @@ bool            Lexer::tag(Token& token)
         return (handleComments(token));
     else if (match_anystring(token_content, namespace_types, 2))
         return  setNamespaceParams(token);
-    else if (token_content.find("/") == 0 || token_content.compare(0, 2, "./") == 0)                                          // if it starts with a / it's a path.
+    else if (token_content.find("/") == 0 || token_content.compare(0, 2, "./") == 0)    // if it starts with a / it's a path.
         return  setPathParams(token);
     else if (match_anystring(token_content, method_types, 6))
         { token.setType("Method"); return true;             }
     else if (match_anystring(token_content, key_types, 13))
         return  setKeyParams(token);
-    else if (token_content.find_first_not_of("0123456789") == std::string::npos)    // if it's only digits
+    else if (token_content.find_first_not_of("0123456789") == std::string::npos)        // if it's only digits
         {   token.setType("Digit"); return true;            }
     else if (token_content.find_first_not_of("0123456789abcdefghijklmnopqrstuwxyz.") == std::string::npos)          // if it's a string of type mywebsite.com     
         {   token.setType("Value"); return true;            }
-    else if (token_content.compare(0, 4, "http") == 0)          // if it's a string of type mywebsite.com     
+    else if (token_content.compare(0, 4, "http") == 0)                                  // if it's a string starting with http     
         {   token.setType("Website"); return true;            }
     return false;
 }
@@ -231,7 +231,7 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
             return true;
         if (pair_wdigits((*it).getContent()) && (*(it + 1)).getType() == "Digit")                      // if pairs with digit ok
             return true;
-        if (pair_wvalues((*it).getContent()) && (*(it + 1)).getType() == "Value")                      // if pairs with value ok ( ie, generci string, website name )
+        if (pair_wvalues((*it).getContent()) && (*(it + 1)).getType() == "Value")                      // if pairs with value ok ( ie, generic string, website name )
             return true;
         if (pair_wmethods((*it).getContent()) && (*(it + 1)).getType() == "Method")                    // if pairs with methods ok
         {
@@ -285,7 +285,7 @@ bool            Lexer::pair_wvalues(std::string word)     		// check if the word
     return (!pair_wdigits(word) && !pair_wmethods(word));
 }
 
-bool            Lexer::pair_wmethods(std::string word)    		// check if the word argument pairs with values
+bool            Lexer::pair_wmethods(std::string word)    		// check if the word argument pairs with methods
 {
     if (word.compare("allowed_methods") == 0
         || word.compare("autoindex") == 0)

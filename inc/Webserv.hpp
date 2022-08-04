@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/04 11:19:01 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/04 11:36:34 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,6 @@ class Webserv
 
         std::vector<ServerInfo>&    getServers();
 
-        bool                        isCGI_request();            // will take a Request class paramas, check if action and method fit for cgi
+        // it could later be moved to the Request class
+        bool                        isCGI_request(std::string http_content);            // will take a Request class paramas, check if action and method fit for cgi
 };

@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/04 11:12:26 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/04 16:26:23 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ class Cgi
         std::string     getEnvValue(std::string key);
         void            getEnv();
         std::string     getFromQueryString(std::string var);
-        std::string     get_CGIfile_extension(std::string action);
+        //std::string     get_CGIfile_extension(std::string action);
 
         bool            is_GETmethod();
 

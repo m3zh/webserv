@@ -131,7 +131,7 @@ bool                    Config::valid_config(std::vector<ServerInfo>& s)
         std::vector<ServerInfo>::iterator it2 = it + 1;
         while ( it2 != s.end()) 
         {
-            if ((*it).getServerName().compare((*it2).getServerName()) == 0
+            if ((*it).getServerName().compare((*it2).getServerName()) == 0      // check that servers do not run on same port and server name
             && (*it).getPort() == (*it2).getPort())
                 return false;
             it2++;
