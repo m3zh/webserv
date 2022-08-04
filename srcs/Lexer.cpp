@@ -121,7 +121,7 @@ bool    Lexer::setPathParams(Token& token)
     Token   last;
     token.setType("Path");
     
-    last = tokens[tokens.size() - 1];
+    last = tokens[tokens.size() - 1];                                                       // find previous token
     if (last.getContent().compare("location") == 0
         || last.getContent().compare("upload_store") == 0)                                  // location and upload must start with '/' ONLY
         if (token.getContent().compare(0, 1, ".") == 0) return false;
@@ -137,6 +137,8 @@ bool    Lexer::setPathParams(Token& token)
         }
         close(fd);
     }
+    if (token.getContent().back() != '/')                                                    // add a / at the end of the path if not present already
+        token.getContent() += '/';
     return true;    
 }
 

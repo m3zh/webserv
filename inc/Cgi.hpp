@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/03 22:20:31 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/04 11:12:26 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ struct CGIrequest
     std::string path_to_CGI;                    // action field in html 
     std::string path_to_output;                 // upload_store in config
     std::string content_length;                 // content length field in HTML header
+    int         socket_fd;                      // content length field in HTML header
 };
 
 class Cgi
@@ -40,7 +41,7 @@ class Cgi
         Cgi(char **env);
         ~Cgi();
 
-        void            parse_CGIrequest();                     // parse the HTTP request
+        void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
         void            exec_CGI();
         // void            child_process(CGIrequest& cgireq);
         // void            parent_process(CGIrequest& cgireq, int status);
