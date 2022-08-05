@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablondel <ablondel@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 14:00:34 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/05 15:27:40 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,22 @@ Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
         log(GREEN, "SERVER NAME = ", it->getServerName());
         log(GREEN, "SERVER PORT = ", it->getPort());
         log(GREEN, "MAX CLIENT BODY = ", it->getClientMaxBodySize());
+        log(GREEN, "ROOT = ", it->getServerRoot());
+        log(GREEN, "INDEX = ", it->getServerIndex());
         std::vector<page> current_pages = it->getPages();
         for (std::vector<page>::iterator it = current_pages.begin(); it != current_pages.end(); it++)
         {
             log(GREEN, "location = ", it->location_path);
             log(GREEN, "root directory = ", it->root);
-            log(GREEN, "index = ", it->index);
-            log(GREEN, "upload path = ", it->upload_path);
+            //log(GREEN, "index = ", it->index);
+            log(GREEN, "upload path = ", it->upload_store);
             log(GREEN, "redirect = ", it->redirect);
-            log(GREEN, "index = ", it->index);
             for (std::vector<std::string>::iterator rit = it->methods.begin(); rit != it->methods.end(); rit++)
                 log(GREEN, "ALLOWED METHOD = ", *rit);
             log(GREEN, "autoindex = ", it->autoindex);
             log(GREEN, "CGI request = ", it->is_cgi);
         }
-        log(RED, "----------------------------------------------------------", NULL);
+        log(RED, "----------------------------------------------------------", 0);
     }
     return ;
 }
@@ -141,7 +142,7 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<int> &ports, 
     end_server = false;
     rc = set_server(sockets, ports, addrs);
     if (rc < 0)
-        return -1;
+    {    return -1;}
 	fd_set current_sockets;
 	fd_set read_sockets;
     FD_ZERO(&current_sockets);
@@ -221,5 +222,6 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<int> &ports, 
         }
     }
     close_all(sockets);
+    (void)close_conn;
     return 0;
 }

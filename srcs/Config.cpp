@@ -14,7 +14,7 @@ int     Config::read(char   *config, char **envp)
 
     if (parser.read(config, envp))
     {
-        // debug_me(parser);
+        
         std::vector<Token>::iterator    it = parser.tokens.begin();
 
         // si la config est valide, on parcourt les tokens
@@ -28,6 +28,7 @@ int     Config::read(char   *config, char **envp)
             setServerPageParams(parser, server, it);
             setServers(server);
         }
+        debug_me(parser);
         if (valid_config(getServers()))
             return 1;
     }
@@ -40,7 +41,7 @@ int     Config::read(char   *config, char **envp)
 // SETTER functions
 // ************
 
-void    Config::setServers(ServerInfo &server) { _servers.push_back(server); };
+void    Config::setServers(ServerInfo &server) {    _servers.push_back(server); std::cout << _servers.size(); };
 
 void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
@@ -50,14 +51,17 @@ void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<T
         it++;
         while (it != parser.tokens.end() && it->getType() != "Key" && it->getType() != "Namespace")
         {
+            std::cout << key_tmp.getContent() + '\n';
             if (key_tmp.getContent() == "listen")
-            {
                 server.setPort(stoi(it->getContent()));
-            }
             else if (key_tmp.getContent() == "server_name")
                 server.setServerName(it->getContent());
             else if (key_tmp.getContent() == "client_max_body_size")
                 server.setClientMaxBodySize(stoi(it->getContent()));
+            else if (key_tmp.getContent() == "root")
+                server.setServerRoot(it->getContent());
+            else if (key_tmp.getContent() == "index")
+                server.setServerIndex(it->getContent());
             it++;
         }
     }
@@ -67,32 +71,30 @@ void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vect
 {
     while (it != parser.tokens.end() && it->getContent() == "location")
     {
-        page    location;
+        page    p;
         
         it++;
-        location.location_path = it->getContent();
+        p.location_path = it->getContent();
         it++;
-        while (it != parser.tokens.end() && it->getType() == "Key")
+        while (it != parser.tokens.end() && it->getType() != "Namespace")
         {
             Token key_tmp = *it;  // save la clef avant d'itérer sur la/les valeur(s) 
             it++;
-            while (it != parser.tokens.end() && it->getType() != "Key" && it->getType() != "Namespace")
+            while (it != parser.tokens.end() && it->getType() != "Namespace" && it->getType() != "Key")
             {
                 if (key_tmp.getContent() == "root")
-                    location.root = it->getContent();
-                else if (key_tmp.getContent() == "index")
-                    location.index = it->getContent();
-                else if (key_tmp.getContent() == "upload")
-                    location.upload_path = it->getContent();
+                    p.root = it->getContent();
+                else if (key_tmp.getContent() == "upload_store")
+                    p.upload_store = it->getContent();
                 else if (key_tmp.getContent() == "redirect")
-                    location.redirect = it->getContent();
+                    p.redirect = it->getContent();
                  else if (key_tmp.getContent() == "autoindex")
-                    location.autoindex = it->getContent();
+                    p.autoindex = it->getContent();
                 else if (key_tmp.getContent() == "allowed_methods")
                 {
                     while (it != parser.tokens.end() && it->getType() == "Method")
                     {
-                        location.methods.push_back(it->getContent());
+                        p.methods.push_back(it->getContent());
                         it++;
                     }
                     break ;
@@ -100,7 +102,7 @@ void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vect
                 it++;
             }
         }
-        server.setPages(location);
+        server.setPages(p);
     }
 }
 
@@ -174,19 +176,20 @@ void    Config::debug_me(Lexer &parser)
 
     while (it != getServers().end())
     {
+        
         std::cout << "server_name: " << (*it).getServerName() << ",\n"
                 << "  - port: " << (*it).getPort() << ",\n"
                 << "  - client_max:  " << (*it).getClientMaxBodySize() << ",\n"
-                    << "    - location " << (*it).getPages()[0].location_path << "\n"
-                    << "        - autoindex: " << (*it).getPages()[0].autoindex << "\n";
+                << "  - root:  " << (*it).getServerRoot() << ",\n"
+                << "  - index:  " << (*it).getServerIndex() << ",\n";
 
         std::cout << "size pages : " << (*it).getPages().size() << "\n";
         std::vector<page>::iterator it2 = (*it).getPages().begin();
         while (it2 != (*it).getPages().end())
         {
-            std::cout << getServers().size() << "\n";
-            std::cout << "  - location " << it2->location_path << ",\n"
-                        << "        - " << it2->autoindex << ",\n";
+            std::cout << "  - location " << (*it2).location_path << ",\n"
+                        << "        - autoindex " << (*it2).autoindex << ",\n"
+                        << "        - root " << (*it2).root << ",\n";
                 // if (it2->methods[0])
                 // {
 
