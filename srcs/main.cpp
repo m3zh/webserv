@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 09:39:06 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 16:14:08 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ int main(int argc, char **args, char **envp)
         file2test.close();
         std::cout << "Webserv class starts here\n";
         if (CGI.isCGI_request(html_content))
-        {    std::cout << "Ready4CGI\n";  CGI.exec_CGI();};
+        {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());};
         return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;    

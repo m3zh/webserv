@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/05 11:17:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 16:27:20 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,13 @@
 # include <vector>
 # include <sys/wait.h>
 # include <map>
+
+// ****************************
+// the CGI class execute dynamic web pages
+// it supports GET and POST requests
+// GET requests receive args from args
+// POST requests receive args from stdin
+// ****************************
 
 struct CGIrequest
 {
@@ -64,6 +71,7 @@ class Cgi
 
         bool            is_GETmethod();
         bool            isCGI_request(std::string html_content);
+        std::string     get_CGIscript(std::string action);
 
         void            http_header();
         void            redirect_http_header(std::string loc);

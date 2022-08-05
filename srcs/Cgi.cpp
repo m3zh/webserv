@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 13:39:48 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 16:36:09 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,31 +60,39 @@ bool        Cgi::isCGI_request(std::string html_content)
 
 void    Cgi::child_process(CGIrequest& req)
 {
+    std::cerr << "CHILD\n";
+    std::cerr << get_CGImethod() + "\n";
     (void)req;
-    char    **cmd = {};
-    cmd[0] = const_cast<char*>(get_CGIaction().c_str());
+    // char    **cmd = {};
+    // cmd[0] = const_cast<char*>(get_CGIscript(req.action).c_str());      // determine if script is python3 or perl
+    // cmd[1] = const_cast<char*>(get_CGIaction().c_str());
+    // printf("%s\n", cmd[0]);
+    // printf("%s\n", cmd[1]);
     close(_fds[1]);
     if (get_CGImethod() == "get")                                       // GET method
     {
+        std::cerr << "CGI is executing GET request\n";
         if (getenv("QUERY_STRING"))
             std::vector<std::string> vals = getFromQueryString();
 
     }
-    // else                                                                // POST method
-    // {
+    else                                                                // POST method
+    {
+        std::cerr << "CGI is executing POST request\n";
         
-    // }
+    }
     if (dup2(_fds[0], STDIN_FILENO) < 0)
     {    perror("cgi dup2:"); exit(EXIT_FAILURE);  }
-    
+    std::cerr << "END\n";
     
 }
 
 void    Cgi::parent_process(int status)
-{
+{    
     close(_fds[0]);
     close(_fds[1]);
-    waitpid(-1, &status, 0);
+    waitpid(_pid, &status, 0);
+    std::cerr << "PARENT\n";
 }
 
 void    Cgi::exec_CGI(CGIrequest& req)
@@ -174,10 +182,9 @@ std::string     Cgi::get_CGIaction()                     {   return get_CGIreque
 std::string     Cgi::get_CGImethod()                     {   return get_CGIrequest().method;    }
 size_t          Cgi::get_CGIcontent_length()             {   return get_CGIrequest().content_length;    }
 
-bool            Cgi::is_GETmethod()
-{
-    return strcmp(getenv("METHOD_REQUEST"),"get") == 0;
-}
+bool            Cgi::is_GETmethod()                      {   return strcmp(getenv("METHOD_REQUEST"),"get") == 0;    }
+std::string     Cgi::get_CGIscript(std::string action)   {   if (action.back() == 'y')  return "python3";   return "perl";  }
+
 // ************
 // HTTP HEADERS functions
 // ************
