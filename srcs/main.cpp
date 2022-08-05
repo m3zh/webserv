@@ -6,12 +6,18 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2022/08/04 17:28:46 by mlazzare         ###   ########.fr       */
+=======
+/*   Updated: 2022/08/05 14:32:15 by mlazzare         ###   ########.fr       */
+>>>>>>> fix_parsing
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/Webserv.hpp"
 # include "../inc/Cgi.hpp"
+# include "../inc/Config.hpp"
+# include "../inc/ServerInfo.hpp"
 
 int main(int argc, char **args, char **envp)
 {
@@ -39,5 +45,5 @@ int main(int argc, char **args, char **envp)
         {    std::cout << "Ready4CGI\n";    e}
         return EXIT_SUCCESS;
     }
-    return EXIT_FAILURE;    
+    return EXIT_FAILURE;
 }

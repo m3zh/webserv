@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/03 11:31:02 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 15:06:03 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@ ServerInfo::~ServerInfo()       {};
 
 std::string         ServerInfo::getServerName()                 {   return _server_name;          };
 void                ServerInfo::setServerName(std::string s)    {   _server_name = s;             };
+std::string         ServerInfo::getServerRoot()                 {   return _server_root;          };
+void                ServerInfo::setServerRoot(std::string s)    {   _server_root = s;             };
+std::string         ServerInfo::getServerIndex()                {   return _server_index;        };             
+void                ServerInfo::setServerIndex(std::string s)   {   _server_index = s;           };
 int                 ServerInfo::getPort()                       {   return _port;                 };
 void                ServerInfo::setPort(int p)                  {   _port = p;                    };
 int                 ServerInfo::getClientMaxBodySize()          {   return _client_max_body_size; };

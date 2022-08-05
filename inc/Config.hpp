@@ -22,8 +22,9 @@ class ServerInfo;
 
 class Config
 {
-    private:
+    public:
         std::vector<ServerInfo>    _servers;
+    private:
 
         void                    debug_me(Lexer &parser);
 
