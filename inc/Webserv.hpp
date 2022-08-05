@@ -6,14 +6,16 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/04 11:36:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 09:12:11 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # pragma once
 # include "../inc/Config.hpp"
+# include "../inc/Cgi.hpp"
 
 class Config;
+class Cgi;
 
 class Webserv
 {
