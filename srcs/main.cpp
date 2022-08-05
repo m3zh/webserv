@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: ablondel <ablondel@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/07/31 20:53:11 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 13:32:38 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/Webserv.hpp"
 # include "../inc/Cgi.hpp"
+# include "../inc/Config.hpp"
+# include "../inc/ServerInfo.hpp"
 
 int main(int argc, char **args, char **envp)
 {
@@ -25,7 +27,8 @@ int main(int argc, char **args, char **envp)
     if (config.read(args[1], envp))
     {
         std::cout << "Webserv class starts here\n";
+        Webserv(config.getServers());
         return EXIT_SUCCESS;
     }
-    return EXIT_FAILURE;    
+    return EXIT_FAILURE;
 }
