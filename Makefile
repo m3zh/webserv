@@ -1,7 +1,7 @@
 NAME 	 = webserv
 
 CXX 	 = c++
-CXXFLAGS = -Wall -Werror -Wextra -g -std=c++11
+CXXFLAGS = #-Wall -Werror -Wextra -g -std=c++11
 
 SRCS	=	srcs/main.cpp		\
 			srcs/Token.cpp		\
