@@ -1,9 +1,16 @@
-#  include "../inc/Config.hpp"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Config.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/08/05 22:35:05 by mlazzare          #+#    #+#             */
+/*   Updated: 2022/08/05 22:37:34 by mlazzare         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-// *****************************
-// If Lexer returns a valid config,
-// the Config class sets the value to pass to the class Webserv
-// *****************************
+#  include "../inc/Config.hpp"
 
 Config::Config()      {};
 Config::~Config()     {};
@@ -13,10 +20,8 @@ int     Config::read(char   *config, char **envp)
     Lexer parser;
 
     if (parser.read(config, envp))
-    {
-        
+    {        
         std::vector<Token>::iterator    it = parser.tokens.begin();
-
         // si la config est valide, on parcourt les tokens
         while (it != parser.tokens.end() && it->getContent() == "server")
         {
@@ -41,17 +46,16 @@ int     Config::read(char   *config, char **envp)
 // SETTER functions
 // ************
 
-void    Config::setServers(ServerInfo &server) {    _servers.push_back(server); std::cout << _servers.size(); };
+void    Config::setServers(ServerInfo &server)          {    _servers.push_back(server); };
 
 void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
     while (it != parser.tokens.end() && it->getType() == "Key")
     {
-        Token key_tmp = *it;  // save la clef avant d'itérer sur la/les valeur(s) 
+        Token key_tmp = *it;                                    // save la clef avant d'itérer sur la/les valeur(s) 
         it++;
         while (it != parser.tokens.end() && it->getType() != "Key" && it->getType() != "Namespace")
         {
-            std::cout << key_tmp.getContent() + '\n';
             if (key_tmp.getContent() == "listen")
                 server.setPort(stoi(it->getContent()));
             else if (key_tmp.getContent() == "server_name")
@@ -71,14 +75,14 @@ void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vect
 {
     while (it != parser.tokens.end() && it->getContent() == "location")
     {
-        page    p;
+        page  p;
         
         it++;
         p.location_path = it->getContent();
         it++;
         while (it != parser.tokens.end() && it->getType() != "Namespace")
         {
-            Token key_tmp = *it;  // save la clef avant d'itérer sur la/les valeur(s) 
+            Token key_tmp = *it;                        // save la clef avant d'itérer sur la/les valeur(s) 
             it++;
             while (it != parser.tokens.end() && it->getType() != "Namespace" && it->getType() != "Key")
             {

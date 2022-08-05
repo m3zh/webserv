@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 21:27:26 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 23:08:34 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,36 +61,38 @@ bool        Cgi::isCGI_request(std::string html_content)
 void    Cgi::child_process(CGIrequest& req)
 {
     std::cerr << "CHILD\n";
-    std::cerr << get_CGImethod() + "\n";
-    (void)req;
-    // char    **cmd = {};
-    // cmd[0] = const_cast<char*>(get_CGIscript(req.action).c_str());      // determine if script is python3 or perl
-    // cmd[1] = const_cast<char*>(get_CGIaction().c_str());
-    // printf("%s\n", cmd[0]);
-    // printf("%s\n", cmd[1]);
-    close(_fds[1]);
+    
+    char    **cmd = { 0 };
+    cmd[0] = const_cast<char*>(get_CGIscript(req.action).c_str());      // determine if script is python3 or perl
+    cmd[1] = const_cast<char*>(get_CGIaction().c_str());
+    close(_fds[WRITE]);
+    if (dup2(_fds[READ], STDIN_FILENO) < 0)
+        {    perror("cgi dup2 in: "); exit(EXIT_FAILURE);  }    
+    // if (req.socket_fd)
+    //  if (dup2(req.socket_fd, STDOUT_FILENO) < 0)                        // redirect output to socket fd
+    //     {    perror("cgi dup2 out: "); exit(EXIT_FAILURE);  }
     if (get_CGImethod() == "get")                                       // GET method
     {
         std::cerr << "CGI is executing GET request\n";
         if (getenv("QUERY_STRING"))
             std::vector<std::string> vals = getFromQueryString();
-
+        size_t pos = 1;
+        std::vector<std::string>::iterator it = vals.begin();
+        while ( it != vals.end())
+        {    cmd[++pos] = const_cast<char*>((*it).c_str()); it++;   }
+        cmd[pos] = 0;
+        execve(cmd[0], cmd, envp);
     }
-    else                                                                // POST method
+    else                                                                 // POST method
     {
         std::cerr << "CGI is executing POST request\n";
-        
-    }
-    if (dup2(_fds[0], STDIN_FILENO) < 0)
-    {    perror("cgi dup2:"); exit(EXIT_FAILURE);  }
-    std::cerr << "END\n";
     
+    }    
 }
 
 void    Cgi::parent_process(int status)
 {    
-    close(_fds[0]);
-    close(_fds[1]);
+    close(_fds[READ]);
     waitpid(_pid, &status, 0);
     std::cerr << "PARENT\n";
 }
@@ -145,10 +147,7 @@ void    Cgi::clear_CGIrequest()
 // GETTERS functions
 // ************
 
-std::string     Cgi::getEnvValue(std::string key)
-{
-    return _env[key];
-}
+std::string     Cgi::getEnvValue(std::string key)       {       return _env[key];       };
 
 void            Cgi::getEnv()                                           // print ENV for debugging purposes
 {
