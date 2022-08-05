@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/03 22:21:23 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 09:01:31 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,10 @@ void    Cgi::exec_CGI()
     //     parent_process(status);
 }
 
+// ************
+// SETTERS functions ( + UNSETTERS )
+// ************
+
 void    Cgi::setEnv(char **env)
 {
     int i = -1;
@@ -62,6 +66,20 @@ void    Cgi::setEnv(char **env)
         _env.insert(std::make_pair(key, value));
     }
 }
+
+void    Cgi::set_CGIrequest(std::string action, std::string method, std::string content_length)
+{
+    _request.action = action;
+    _request.method = method;
+    _request.content_length = content_length;
+};
+
+void    Cgi::clear_CGIrequest()
+{
+    _request.action = "";
+    _request.method = "";
+    _request.content_length = "";    
+};
 
 // ************
 // GETTERS functions
@@ -91,6 +109,11 @@ std::string     Cgi::getFromQueryString(std::string var)
         return qs.substr(qs.find("=", pos+1) + 1, qs.find("&", pos+1));          // return var value, which is between '=' and '&'
     return 0;
 }
+
+CGIrequest&     Cgi::get_CGIrequest()                    {   return _request;    }
+std::string     Cgi::get_CGIaction()                     {   return get_CGIrequest().action;    }
+std::string     Cgi::get_CGImethod()                     {   return get_CGIrequest().method;    }
+std::string     Cgi::get_CGIcontent_length()             {   return get_CGIrequest().content_length;    }
 
 bool            Cgi::is_GETmethod()
 {

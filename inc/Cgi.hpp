@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/04 16:26:23 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 09:01:41 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@
 
 struct CGIrequest
 {
-    std::string path_to_CGI;                    // action field in html 
+    std::string action;                         // action field in html 
+    std::string method;                         // action field in html 
     std::string path_to_output;                 // upload_store in config
     std::string content_length;                 // content length field in HTML header
     int         socket_fd;                      // content length field in HTML header
@@ -47,10 +48,17 @@ class Cgi
         // void            parent_process(CGIrequest& cgireq, int status);
 
         void            setEnv(char **env);
-        std::string     getEnvValue(std::string key);
-        void            getEnv();
-        std::string     getFromQueryString(std::string var);
-        //std::string     get_CGIfile_extension(std::string action);
+        void            set_CGIrequest(std::string action, std::string method, std::string content_length);
+        void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
+
+        void            getEnv();                                                       // necessary ?
+        std::string     getEnvValue(std::string key);                                   // necessary ?
+        std::string     getFromQueryString(std::string var);            
+
+        CGIrequest&     get_CGIrequest();
+        std::string     get_CGIaction();
+        std::string     get_CGImethod();
+        std::string     get_CGIcontent_length();
 
         bool            is_GETmethod();
 
