@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/05 16:27:20 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 16:56:57 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 // ****************************
 // the CGI class execute dynamic web pages
 // it supports GET and POST requests
-// GET requests receive args from args
+// GET requests receive args from QUERY_STRING and passed as args
 // POST requests receive args from stdin
 // ****************************
 
