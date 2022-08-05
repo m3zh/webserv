@@ -28,7 +28,7 @@ int     Config::read(char   *config, char **envp)
             setServerPageParams(parser, server, it);
             setServers(server);
         }
-        debug_me(parser);
+        // debug_me(parser);
         if (valid_config(getServers()))
             return 1;
     }
@@ -156,36 +156,38 @@ bool                    Config::valid_config(std::vector<ServerInfo>& s)
 };
 
 // ************
-// DEBUGGING
+// DEBUGGING functions
 // ************
 
 void    Config::debug_me(Lexer &parser)
 {
-    std::cout << "############### PARSER ###############\n";
-    for (auto it = std::begin (parser.tokens); it != std::end (parser.tokens); ++it) {
+    std::cout << "############### PARSER class ###############\n";
+    std::vector<Token>::iterator it = parser.tokens.begin();
+    while (it != parser.tokens.end()) {
     std::cout  << "type= "  << it->getType() << "; pos= ";
     std::cout  << it->getPos() << "; content= ";
     std::cout  << it->getContent();
     if (it->getType() == "Key")
         std::cout << "; aw= " << it->getAllowedWords();
     std::cout << std::endl;
+        it++;
     }
 
-    std::cout << "############### SERVERS ###############\n";
-    std::vector<ServerInfo>::iterator it = getServers().begin();
+    std::cout << "############### SERVERINFO class ###############\n";
+    std::vector<ServerInfo>::iterator sit = getServers().begin();
 
-    while (it != getServers().end())
+    while (sit != getServers().end())
     {
         
-        std::cout << "server_name: " << (*it).getServerName() << ",\n"
-                << "  - port: " << (*it).getPort() << ",\n"
-                << "  - client_max:  " << (*it).getClientMaxBodySize() << ",\n"
-                << "  - root:  " << (*it).getServerRoot() << ",\n"
-                << "  - index:  " << (*it).getServerIndex() << ",\n";
+        std::cout << "server_name: " << (*sit).getServerName() << ",\n"
+                << "  - port: " << (*sit).getPort() << ",\n"
+                << "  - client_max:  " << (*sit).getClientMaxBodySize() << ",\n"
+                << "  - root:  " << (*sit).getServerRoot() << ",\n"
+                << "  - index:  " << (*sit).getServerIndex() << ",\n";
 
-        std::cout << "size pages : " << (*it).getPages().size() << "\n";
-        std::vector<page>::iterator it2 = (*it).getPages().begin();
-        while (it2 != (*it).getPages().end())
+        std::cout << "size pages : " << (*sit).getPages().size() << "\n";
+        std::vector<page>::iterator it2 = (*sit).getPages().begin();
+        while (it2 != (*sit).getPages().end())
         {
             std::cout << "  - location " << (*it2).location_path << ",\n"
                         << "        - autoindex " << (*it2).autoindex << ",\n"

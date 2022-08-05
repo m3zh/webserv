@@ -125,7 +125,7 @@ bool    Lexer::setPathParams(Token& token)
     if (last.getContent().compare("location") == 0
         || last.getContent().compare("upload_store") == 0)                                  // location and upload must start with '/' ONLY
         if (token.getContent().compare(0, 1, ".") == 0) return false;
-    if (token.getContent().compare(0, 1, ".") == 0)
+    if (token.getContent().compare(0, 1, ".") == 0)                                         // remove . is path starts with .
         token.setContent(token.getContent().substr(1, token.getContent().size() - 1));
     if (last.getContent().compare("root") == 0)                                             // root must be followed by an EXISTING path
     {
@@ -137,7 +137,7 @@ bool    Lexer::setPathParams(Token& token)
         }
         close(fd);
     }
-    if (token.getContent().back() != '/')                                                    // add a / at the end of the path if not present already
+    if (token.getContent()[token.getContent().size() - 1] != '/')                           // add a / at the end of the path if not present already
         token.getContent() += '/';
     return true;    
 }
@@ -213,7 +213,7 @@ int     Lexer::valid_brackets(std::fstream &f)                          // check
     return 1;
 }
 
-int     Lexer::valid_lineending(std::string line)                {             return match_anychar(line.back(), "{;}");               };
+int     Lexer::valid_lineending(std::string line)                {             return match_anychar(line[line.size() - 1], "{;}");               };
 
 bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)            // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {

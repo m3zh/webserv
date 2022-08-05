@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 16:36:09 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 21:27:26 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ Cgi::~Cgi()                 {}
 // probably to be moved elsewhere
 // params probably to be changed or expanded
 // checks action, method, content-length in html message 
-// returns if it's good for cgi and set CGI request if so
+// returns true if it's good for cgi and set CGI request if so
 bool        Cgi::isCGI_request(std::string html_content)
 {
     std::string root = "/home/user42/webserv/cgi-bin/";                 // hardcoded here; this should be retrieved from ServerInfo > page > root
@@ -43,7 +43,7 @@ bool        Cgi::isCGI_request(std::string html_content)
     while ( html_content[++pos] != '\0'
         && html_content[pos] != '\"')
         method += html_content[pos];
-    if (method.compare("get") != 0                                      // only method get and post are accepted for cgi
+    if (method.compare("get") != 0                                      // only methods get and post are accepted for cgi
         && method.compare("post") != 0)
         {   std::cout << "Invalid method for CGI\n"; return false;              };
     size_t content_length = 0;
@@ -183,7 +183,7 @@ std::string     Cgi::get_CGImethod()                     {   return get_CGIreque
 size_t          Cgi::get_CGIcontent_length()             {   return get_CGIrequest().content_length;    }
 
 bool            Cgi::is_GETmethod()                      {   return strcmp(getenv("METHOD_REQUEST"),"get") == 0;    }
-std::string     Cgi::get_CGIscript(std::string action)   {   if (action.back() == 'y')  return "python3";   return "perl";  }
+std::string     Cgi::get_CGIscript(std::string action)   {   if (action[action.size() - 1] == 'y')  return "python3";   return "perl";  }
 
 // ************
 // HTTP HEADERS functions
