@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 17:33:56 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 17:38:22 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,10 @@
 #define BACKLOG 255
 #define NBPORTS 3
 #define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
+# include "../inc/Cgi.hpp"
 
 class Config;
+class Cgi;
 
 class Webserv: public ServerInfo
 {

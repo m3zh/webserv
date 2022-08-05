@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Lexer.hpp                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/07/15 09:13:31 by mlazzare          #+#    #+#             */
+/*   Updated: 2022/08/05 16:25:39 by mlazzare         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 # pragma once
 
 # include <algorithm>
@@ -21,7 +33,7 @@
 
 // ****************************
 // Token is the smallest unit the config can be divided into
-// the Config text is split into tokens based on the space separators " \n\r\t\f\v"
+// Lexer splits the file.conf split into tokens based on the space separators " \n\r\t\f\v"
 // Each token has:
 // - _content = the actual string found in the config file
 // - _type = the type of token ( is it a namespace? a port? a location? a path? a method? ... )

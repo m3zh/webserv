@@ -6,23 +6,33 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/04 16:26:23 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/05 16:56:57 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # pragma once
+
 # include <iostream>
 # include <unistd.h>
 # include <stdlib.h>
 # include <string.h>
+# include <vector>
 # include <sys/wait.h>
 # include <map>
 
+// ****************************
+// the CGI class execute dynamic web pages
+// it supports GET and POST requests
+// GET requests receive args from QUERY_STRING and passed as args
+// POST requests receive args from stdin
+// ****************************
+
 struct CGIrequest
 {
-    std::string path_to_CGI;                    // action field in html 
+    std::string action;                         // action field in html 
+    std::string method;                         // method field in html 
     std::string path_to_output;                 // upload_store in config
-    std::string content_length;                 // content length field in HTML header
+    size_t      content_length;                 // content length field in HTML header
     int         socket_fd;                      // content length field in HTML header
 };
 
@@ -42,22 +52,31 @@ class Cgi
         ~Cgi();
 
         void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
-        void            exec_CGI();
-        // void            child_process(CGIrequest& cgireq);
-        // void            parent_process(CGIrequest& cgireq, int status);
+        void            exec_CGI(CGIrequest& req);
+        void            child_process(CGIrequest& req);
+        void            parent_process(int status);
 
         void            setEnv(char **env);
-        std::string     getEnvValue(std::string key);
-        void            getEnv();
-        std::string     getFromQueryString(std::string var);
-        //std::string     get_CGIfile_extension(std::string action);
+        void            set_CGIrequest(std::string action, std::string method, size_t content_length); // size_t -> content length is never negative
+        void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
+
+        void                        getEnv();                                                       // necessary ?
+        std::string                 getEnvValue(std::string key);                                   // necessary ?
+        std::vector<std::string>    getFromQueryString();            
+
+        CGIrequest&     get_CGIrequest();
+        std::string     get_CGIaction();
+        std::string     get_CGImethod();
+        size_t          get_CGIcontent_length();
 
         bool            is_GETmethod();
+        bool            isCGI_request(std::string html_content);
+        std::string     get_CGIscript(std::string action);
 
         void            http_header();
         void            redirect_http_header(std::string loc);
         void            cookies_http_header();
-        void            session_http_header();                  // TO-DO
+        void            session_http_header();                                          // TO-DO
 };
 
 

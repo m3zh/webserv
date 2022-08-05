@@ -10,6 +10,8 @@ https://aticleworld.com/socket-programming-in-c-using-tcpip/
 https://www.youtube.com/watch?v=CymFHNqC7n4
 # Web programming (CGI) in C ( from 8:40 )
 https://www.youtube.com/watch?v=rFaRFCyewpA
+# CGI 101
+http://www.cgi101.com/book/ch3/text.html
 ```
 ## Clone and Fetch
 
