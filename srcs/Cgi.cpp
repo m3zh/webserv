@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 23:08:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/06 11:47:55 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,49 +22,53 @@ Cgi::~Cgi()                 {}
 // returns true if it's good for cgi and set CGI request if so
 bool        Cgi::isCGI_request(std::string html_content)
 {
-    std::string root = "/home/user42/webserv/cgi-bin/";                 // hardcoded here; this should be retrieved from ServerInfo > page > root
-    size_t pos = html_content.find("action");
-    if (pos == std::string::npos)
-        {   std::cout << "Invalid action for CGI\n"; return false;              };
-    pos += 7;                                                           // action="........", we want to start from the first \", ie pos + 7
-    std::string action;
-    while ( html_content[++pos] != '\0'
-        && html_content[pos] != '\"')
-        action += html_content[pos];
+    std::string root = "/home/user42/webserv/cgi-bin/";                     // hardcoded here; this should be retrieved from ServerInfo > page > root
+    size_t pos = 0;
+    // ------
+    // ACTION
+    // ------
+    if (get_CGIparam("action", html_content, pos) == false)                 // action="........", we want to start from the first \" after the =
+        return false;
+    std::string action = set_CGIparam(html_content, pos);
     size_t extension = action.size() - 3;
-    if (action.compare(extension, action.size(), ".py")                 // check if it's a pyhton or perl script [ is this necessary ? ]
+    if (action.compare(extension, action.size(), ".py")                     // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
         && action.compare(extension, action.size(), ".pl"))
         {   std::cout << "Invalid file extension for CGI\n"; return false;      };
-    pos = html_content.find("method");
-    if (pos == std::string::npos)
-        {   std::cout << "No method for CGI\n"; return false;                    };
-    pos += 7;                                                           // method="........", we want to start from the first \", ie pos + 7
-    std::string method;
-    while ( html_content[++pos] != '\0'
-        && html_content[pos] != '\"')
-        method += html_content[pos];
-    if (method.compare("get") != 0                                      // only methods get and post are accepted for cgi
+    // ------
+    // METHOD
+    // ------
+    if (get_CGIparam("method", html_content, pos) == false)
+        return false;                                
+    std::string method = set_CGIparam(html_content, pos);
+    if (method.compare("get") != 0                                          // only methods get and post are accepted for cgi
         && method.compare("post") != 0)
         {   std::cout << "Invalid method for CGI\n"; return false;              };
-    size_t content_length = 0;
-    // if (getenv("CONTENT_LENGTH"))                                    // TO BE HANDLED for POST requests
-    //     content_length = atoi(getenv("CONTENT_LENGTH"));
-    // if (!content_length)
-    //     {   std::cout << "No content length for CGI\n"; return false;            };
+    // ------
+    // CONTENT LENGTH
+    // ------
+    // if (method == "post" && get_CGIparam("Content-Length", html_content, pos) == false)
+    //     return false;                                
+    // size_t content_length = stoi(set_CGIparam(html_content, pos));
+    // if (method == "post" && !content_length)
+    //     {   std::cout << "No content length for post method CGI\n"; return false;  };
+    // ------
+    // SCRIPT -> root + action
+    // ------
     root += action;
-    if (access(root.c_str(), X_OK) < 0)                                 // if executable exists and it's executable
-        {   std::cout << "File not executable by CGI\n"; return false;  };
-    set_CGIrequest(action, method, content_length);          
+    if (access(root.c_str(), X_OK) < 0)                                         // if executable exists and it's executable
+        {   std::cout << "Script not executable by CGI\n"; return false;  };
+    set_CGIrequest(action, method, 0);          
     return true;
 }
 
 void    Cgi::child_process(CGIrequest& req)
 {
     std::cerr << "CHILD\n";
-    
-    char    **cmd = { 0 };
-    cmd[0] = const_cast<char*>(get_CGIscript(req.action).c_str());      // determine if script is python3 or perl
-    cmd[1] = const_cast<char*>(get_CGIaction().c_str());
+    char    *cmd[3];
+
+    cmd[0] = (char *)get_CGIscript(req.action).c_str();      // determine if script is python3 or perl
+    cmd[1] = (char *)get_CGIaction().c_str();
+    cmd[2] = 0;
     close(_fds[WRITE]);
     if (dup2(_fds[READ], STDIN_FILENO) < 0)
         {    perror("cgi dup2 in: "); exit(EXIT_FAILURE);  }    
@@ -73,15 +77,18 @@ void    Cgi::child_process(CGIrequest& req)
     //     {    perror("cgi dup2 out: "); exit(EXIT_FAILURE);  }
     if (get_CGImethod() == "get")                                       // GET method
     {
+        std::vector<std::string> vals;
         std::cerr << "CGI is executing GET request\n";
         if (getenv("QUERY_STRING"))
-            std::vector<std::string> vals = getFromQueryString();
+            vals = getFromQueryString();
         size_t pos = 1;
         std::vector<std::string>::iterator it = vals.begin();
         while ( it != vals.end())
         {    cmd[++pos] = const_cast<char*>((*it).c_str()); it++;   }
         cmd[pos] = 0;
-        execve(cmd[0], cmd, envp);
+        if (execve(cmd[0], cmd, cmd) < 0)
+            perror("cgi execve:");
+        exit(EXIT_FAILURE);
     }
     else                                                                 // POST method
     {
@@ -143,6 +150,15 @@ void    Cgi::clear_CGIrequest()
     _request.content_length = 0;    
 };
 
+std::string     Cgi::set_CGIparam(std::string html_content, size_t &pos)
+{
+    std::string str;
+    while ( html_content[++(pos)] != '\0'
+    && html_content[(pos)] != '\"')
+    str += html_content[(pos)];
+    return str;
+}
+
 // ************
 // GETTERS functions
 // ************
@@ -158,6 +174,15 @@ void            Cgi::getEnv()                                           // print
         std::cout << it->first + " " + it->second << std::endl;
         it++;
     }
+}
+
+bool            Cgi::get_CGIparam(std::string param, std::string html_content, size_t &pos)
+{
+    pos = html_content.find(param);
+    if (pos == std::string::npos)
+        {   std::cout << "Invalid " << param << " for CGI\n"; return false;              };
+    pos += param.size() + 1;                                            // the length of the param string + 1 for the =, we start from after that
+    return true; 
 }
 
 std::vector<std::string>     Cgi::getFromQueryString()

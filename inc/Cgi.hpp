@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/05 22:36:11 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/06 11:31:20 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # include <iostream>
 # include <unistd.h>
 # include <stdlib.h>
+# include <string>
 # include <string.h>
 # include <vector>
 # include <sys/wait.h>
@@ -34,9 +35,10 @@ struct CGIrequest
 {
     std::string action;                         // action field in html 
     std::string method;                         // method field in html 
-    std::string path_to_output;                 // upload_store in config
+    std::string path_to_script;                 // abs path to CGI script
+    std::string upload_store;                   // upload_store in config
     size_t      content_length;                 // content length field in HTML header
-    int         socket_fd;                      // content length field in HTML header
+    int         socket_fd;                      // the CGI script output should be written to this fd
 };
 
 class Cgi
@@ -71,6 +73,9 @@ class Cgi
         std::string     get_CGIaction();
         std::string     get_CGImethod();
         size_t          get_CGIcontent_length();
+
+        bool            get_CGIparam(std::string param, std::string html_content, size_t &pos);
+        std::string     set_CGIparam(std::string html_content, size_t &pos);
 
         bool            is_GETmethod();
         bool            isCGI_request(std::string html_content);

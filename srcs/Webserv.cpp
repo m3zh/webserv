@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 17:38:50 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/06 08:46:57 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,4 +249,5 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<int> &ports, 
     (void)close_conn;
     return 0;
 }
+
 std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;    };

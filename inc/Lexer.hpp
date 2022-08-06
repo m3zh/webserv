@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/15 09:13:31 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 16:25:39 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/06 09:01:33 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,7 @@
 // ****************************
 // Token is the smallest unit the config can be divided into
 // Lexer splits the file.conf split into tokens based on the space separators " \n\r\t\f\v"
-// Each token has:
-// - _content = the actual string found in the config file
-// - _type = the type of token ( is it a namespace? a port? a location? a path? a method? ... )
-// - _pos = the pos of the token ( does the pathe follow a location token? )
-// - _allowed_words = the pos of the token ( does the pathe follow a location token? )
+// and check if they are valid tokens according to their content and position in the config
 // ****************************
 
 class Token;
