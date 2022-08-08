@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 11:45:30 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 13:25:31 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,28 +91,39 @@ void    Cgi::child_process(CGIrequest& req)
     std::cerr << "CHILD\n";
     char    *cmd[3];
 
+    // 		env_arr[++i] = new char[curr.length() + 1];
+	// 	strcpy(env_arr[i], curr.c_str());
+    
+    // std::string script = 
+
     cmd[0] = (char *)get_CGIscript(req.action).c_str();      // determine if script is python3 or perl
+    printf("%s\n", cmd[0]);
     cmd[1] = (char *)get_CGIaction().c_str();
     cmd[2] = 0;
+    printf("%s\n", cmd[1]);
+    printf("%s\n", cmd[1]);
     close(_fds[WRITE]);
     if (dup2(_fds[READ], STDIN_FILENO) < 0)
-        {    perror("cgi dup2 in: "); exit(EXIT_FAILURE);  }    
+        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+    printf("3 %s\n", cmd[1]);    
     // if (req.socket_fd)
     //  if (dup2(req.socket_fd, STDOUT_FILENO) < 0)                        // redirect output to socket fd
     //     {    perror("cgi dup2 out: "); exit(EXIT_FAILURE);  }
-    if (get_CGImethod() == "get")                                       // GET method
+    if (get_CGImethod().compare("get") == 0)                                       // GET method
     {
+        printf("4 %s\n", cmd[1]);
         std::vector<std::string> vals;
         std::cerr << "CGI is executing GET request\n";
-        if (getenv("QUERY_STRING"))
+        if ( getEnvValue("QUERY_STRING") != "" )
             vals = getFromQueryString();
-        size_t pos = 1;
-        std::vector<std::string>::iterator it = vals.begin();
-        while ( it != vals.end())
-        {    cmd[++pos] = const_cast<char*>((*it).c_str()); it++;   }
-        cmd[pos] = 0;
-        if (execve(cmd[0], cmd, getEnv()) < 0)
-            perror("cgi execve:");
+        // size_t pos = 1;
+        // std::vector<std::string>::iterator it = vals.begin();
+        // while ( it != vals.end())
+        // {    cmd[++pos] = const_cast<char*>((*it).c_str()); it++;   }
+        // cmd[pos] = 0;
+        printf("%s\n", cmd[1]);
+        if (execve("python3", cmd, getEnv()) < 0)
+            perror("cgi execve");
         exit(EXIT_FAILURE);
     }
     else                                                                 // POST method
@@ -133,10 +144,10 @@ void    Cgi::exec_CGI(CGIrequest& req)
     int status = 0;
     
     if (pipe(_fds) < 0)
-    {    perror("cgi pipe:"); exit(EXIT_FAILURE);  }
+    {    perror("cgi pipe"); exit(EXIT_FAILURE);  }
     _pid = fork();
     if (_pid < 0)
-    {    perror("cgi fork:"); exit(EXIT_FAILURE);  }
+    {    perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
         child_process(req);
     else
