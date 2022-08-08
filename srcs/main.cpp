@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2022/08/08 11:41:09 by mlazzare         ###   ########.fr       */
-=======
-/*   Updated: 2022/08/08 13:15:13 by ablondel         ###   ########.fr       */
->>>>>>> main
+/*   Updated: 2022/08/08 14:01:31 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +57,7 @@ int main(int argc, char **args, char **envp)
         std::vector<int> sockets(size);
         std::vector<struct sockaddr_in> addrs(size);
         webserv.run_server(sockets, addrs);
+        
         return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;

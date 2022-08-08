@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/08 11:43:21 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 14:26:28 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,12 @@
 
 struct CGIrequest                               // would be cool if it could inherit from Request class
 {
-    std::string action;                         // action field in html 
-    std::string method;                         // method field in html 
-    std::string path_to_script;                 // abs path to CGI script
-    std::string upload_store;                   // upload_store in config
-    size_t      content_length;                 // content length field in HTML header
-    int         socket_fd;                      // the CGI script output should be written to this fd
+    std::string     action;                         // action field in html 
+    std::string     method;                         // method field in html 
+    std::string     path_to_script;                 // abs path to CGI script
+    std::string     upload_store;                   // upload_store in config
+    size_t          content_length;                 // content length field in HTML header
+    int             socket_fd;                      // the CGI script output should be written to this fd
 };
 
 class Cgi

@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 13:25:31 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 14:33:19 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ bool        Cgi::isCGI_request(std::string html_content)
     root += action;
     if (access(root.c_str(), X_OK) < 0)                                         // if executable exists and it's executable
         {   std::cout << "Script not executable by CGI\n"; return false;  };
+    _request.path_to_script = root;
     set_CGIrequest(action, method, 0);
     set_CGIenv(html_content);          
     return true;
@@ -89,29 +90,15 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 void    Cgi::child_process(CGIrequest& req)
 {
     std::cerr << "CHILD\n";
-    char    *cmd[3];
 
-    // 		env_arr[++i] = new char[curr.length() + 1];
-	// 	strcpy(env_arr[i], curr.c_str());
-    
-    // std::string script = 
-
-    cmd[0] = (char *)get_CGIscript(req.action).c_str();      // determine if script is python3 or perl
-    printf("%s\n", cmd[0]);
-    cmd[1] = (char *)get_CGIaction().c_str();
-    cmd[2] = 0;
-    printf("%s\n", cmd[1]);
-    printf("%s\n", cmd[1]);
     close(_fds[WRITE]);
     if (dup2(_fds[READ], STDIN_FILENO) < 0)
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    printf("3 %s\n", cmd[1]);    
     // if (req.socket_fd)
     //  if (dup2(req.socket_fd, STDOUT_FILENO) < 0)                        // redirect output to socket fd
     //     {    perror("cgi dup2 out: "); exit(EXIT_FAILURE);  }
     if (get_CGImethod().compare("get") == 0)                                       // GET method
     {
-        printf("4 %s\n", cmd[1]);
         std::vector<std::string> vals;
         std::cerr << "CGI is executing GET request\n";
         if ( getEnvValue("QUERY_STRING") != "" )
@@ -121,8 +108,12 @@ void    Cgi::child_process(CGIrequest& req)
         // while ( it != vals.end())
         // {    cmd[++pos] = const_cast<char*>((*it).c_str()); it++;   }
         // cmd[pos] = 0;
+        char    *cmd[3];
+        cmd[0] = (char *)get_CGIscript(req.action).c_str();      // determine if script is python3 or perl
+        cmd[1] = (char *)req.path_to_script.c_str();
+        cmd[2] = 0;
         printf("%s\n", cmd[1]);
-        if (execve("python3", cmd, getEnv()) < 0)
+        if (execve(cmd[0], cmd, getEnv()) < 0)
             perror("cgi execve");
         exit(EXIT_FAILURE);
     }
@@ -300,7 +291,7 @@ CGIrequest&     Cgi::get_CGIrequest()                    {   return _request;   
 std::string     Cgi::get_CGIaction()                     {   return get_CGIrequest().action;    }
 std::string     Cgi::get_CGImethod()                     {   return get_CGIrequest().method;    }
 size_t          Cgi::get_CGIcontent_length()             {   return get_CGIrequest().content_length;    }
-std::string     Cgi::get_CGIscript(std::string action)   {   if (action[action.size() - 1] == 'y')  return "python3";   return "perl";  }
+std::string     Cgi::get_CGIscript(std::string action)   {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  }
 
 // ************
 // HTTP HEADERS functions
