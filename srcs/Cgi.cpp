@@ -6,13 +6,13 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/06 11:47:55 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 11:45:30 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/Cgi.hpp"
 
-Cgi::Cgi(char **env)        {     setEnv(env);    }
+Cgi::Cgi()                  {}
 Cgi::~Cgi()                 {}
 
 // probably to refactor
@@ -40,7 +40,7 @@ bool        Cgi::isCGI_request(std::string html_content)
     if (get_CGIparam("method", html_content, pos) == false)
         return false;                                
     std::string method = set_CGIparam(html_content, pos);
-    if (method.compare("get") != 0                                          // only methods get and post are accepted for cgi
+    if (method.compare("get") != 0                                              // only methods get and post are accepted for cgi
         && method.compare("post") != 0)
         {   std::cout << "Invalid method for CGI\n"; return false;              };
     // ------
@@ -57,9 +57,34 @@ bool        Cgi::isCGI_request(std::string html_content)
     root += action;
     if (access(root.c_str(), X_OK) < 0)                                         // if executable exists and it's executable
         {   std::cout << "Script not executable by CGI\n"; return false;  };
-    set_CGIrequest(action, method, 0);          
+    set_CGIrequest(action, method, 0);
+    set_CGIenv(html_content);          
     return true;
 }
+
+/*  DIFFERENCE between POST and GET
+[ source: https://www.tutorialspoint.com/perl/perl_cgi.htm ]
+
+The GET method is the defualt method to pass information from browser to web server.
+The GET method sends the encoded user information appended to the page request.
+The page and the encoded information are separated by the ? character as follows − http://www.test.com/cgi-bin/hello.cgi?key1=value1&key2=value2
+This info is written in the URL and is visible to everyone, thus not safe. 
+Never use the GET method if you have password or other sensitive information to pass to the server.
+The GET method has size limtation: only 1024 characters can be in a request string.
+This information is passed using QUERY_STRING header and will be accessible in your CGI Program through QUERY_STRING environment variable.
+
+A generally more reliable method of passing information to a CGI program is the POST method.
+This packages the information in exactly the same way as GET methods,
+but instead of sending it as a text string after a ? in the URL it sends it as a separate message.
+This message comes into the CGI script in the form of the standard input.
+
+Ex.:
+if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
+   read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'}); <--- POST 
+} else {
+   $buffer = $ENV{'QUERY_STRING'}; <--- GET
+}
+*/
 
 void    Cgi::child_process(CGIrequest& req)
 {
@@ -86,14 +111,13 @@ void    Cgi::child_process(CGIrequest& req)
         while ( it != vals.end())
         {    cmd[++pos] = const_cast<char*>((*it).c_str()); it++;   }
         cmd[pos] = 0;
-        if (execve(cmd[0], cmd, cmd) < 0)
+        if (execve(cmd[0], cmd, getEnv()) < 0)
             perror("cgi execve:");
         exit(EXIT_FAILURE);
     }
     else                                                                 // POST method
     {
         std::cerr << "CGI is executing POST request\n";
-    
     }    
 }
 
@@ -123,17 +147,69 @@ void    Cgi::exec_CGI(CGIrequest& req)
 // SETTERS functions ( + UNSETTERS )
 // ************
 
-void    Cgi::setEnv(char **env)
-{
-    int i = -1;
 
-    while (env[++i])
-    {
-        std::string curr(env[i]);
-        std::string key = curr.substr(0, curr.find("=") - 1);
-        std::string value = curr.substr(curr.find("=") + 1, curr.size());
-        _env.insert(std::make_pair(key, value));
-    }
+/*  CGI ENV from http://www.cgi101.com/book/ch3/text.html
+Key 	            Value
+DOCUMENT_ROOT 	    The root directory of your server
+HTTP_COOKIE 	    The visitor's cookie, if one is set
+HTTP_HOST 	        The hostname of the page being attempted
+HTTP_REFERER 	    The URL of the page that called your program
+HTTP_USER_AGENT 	The browser type of the visitor
+HTTPS 	            \"on\" if the program is being called through a secure server
+QUERY_STRING 	    The query string 
+REMOTE_ADDR 	    The IP address of the visitor
+REMOTE_HOST 	    The hostname of the visitor (if your server has reverse-name-lookups on; otherwise this is the IP address again)
+                    // yeah, totally, we have reverse-name-lookups on
+REMOTE_USER 	    The visitor's username (for .htaccess-protected pages)
+REQUEST_METHOD 	    GET or POST
+REQUEST_URI 	    The interpreted pathname of the requested document or CGI (relative to the document root)
+SCRIPT_FILENAME 	The full pathname of the current CGI
+SCRIPT_NAME 	    The interpreted pathname of the current CGI (relative to the document root)
+SERVER_NAME 	    Your server's fully qualified domain name (e.g. www.cgi101.com)
+SERVER_PORT 	    The port number your server is listening on
+SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3) 
+*/
+
+
+// information are parsed from HTTP request header and body
+// https://developer.mozilla.org/en-US/docs/Glossary/Request_header
+// NOTE on PATH_INFO/PATH_TRANSLATED vs SCRIPT_NAME/SCRIPT_FILENAME
+// here they are treated as equivalent
+// more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
+void    Cgi::set_CGIenv(std::string html_content)
+{
+    size_t pos = 0;
+
+    _env["AUTH_TYPE"] = "";
+    _env["DOCUMENT_ROOT"] = "~/webserv";                                                     // add a function get_pwd?
+    // if (get_CGIparam("Cookie", html_header, pos))                                         // need a request with html_header attribute
+	//     _env["HTTP_COOKIE"] = set_CGIparam(html_header, pos);
+    // if (get_CGIparam("Host", html_header, pos))
+	//     _env["HTTP_HOST"] = set_CGIparam(html_header, pos);
+    // if (get_CGIparam("Referer", html_header, pos))
+	//     _env["HTTP_REFERER"] = set_CGIparam(html_header, pos);
+    // if (get_CGIparam("User-Agent", html_header, pos))
+	//     _env["HTTP_USER_AGENT "] = set_CGIparam(html_header, pos);
+    _env["HTTPS"] = "off";
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_env["PATH_INFO"] = "/app";                                                             // the path as requested by the client, eg. www.xxx.com/app
+	_env["PATH_TRANSLATED"] = "/home/user42/webserv/cgi-bin/" + _request.action;            // the actual path to the script 
+	_env["QUERY_STRING"] = "";                                                               // hard-coded here, to be fetched from request
+	// _env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
+	_env["REMOTE_ADDR"] = "127.0.0.1";                                                      // hard-coded here, to be fetched from request
+	_env["REMOTE_USER"] = "";
+	_env["REMOTE_IDENT"] = "";
+	_env["REQUEST_METHOD"] = _request.method;
+	_env["REQUEST_URI"] = "/app";                                                           // hard-coded here, to be fetched from request
+	_env["SCRIPT_NAME"] = _request.action;
+	_env["SCRIPT_FILENAME"] = "/home/user42/webserv/cgi-bin/" + _request.action;
+	_env["SERVER_NAME"] = "codedinbelgium.be";                                              // getEnvValue("HTTP_HOST");
+	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
+	_env["SERVER_PORT"] = "80";                                                             // hard-coded here, to be fetched from request
+	_env["SERVER_SOFTWARE"] = "webserv/1.9";
+    if (get_CGIparam("Content-Length", html_content, pos))
+	    _env["CONTENT_LENGTH"] = set_CGIparam(html_content, pos);                           // we do not take from _request.content_length 
+                                                                                            // because we need it as string
 }
 
 void    Cgi::set_CGIrequest(std::string action, std::string method, size_t content_length)
@@ -165,15 +241,23 @@ std::string     Cgi::set_CGIparam(std::string html_content, size_t &pos)
 
 std::string     Cgi::getEnvValue(std::string key)       {       return _env[key];       };
 
-void            Cgi::getEnv()                                           // print ENV for debugging purposes
+// return _env as char**
+char**          Cgi::getEnv()                                           
 {
+    char**  env_arr;
+    size_t  i = -1;
     std::map<std::string, std::string>::iterator it = _env.begin();
 
-    while (it != _env.end())
+    env_arr = new char* [ _env.size() + 1 ];
+    while ( it != _env.end() )
     {
-        std::cout << it->first + " " + it->second << std::endl;
-        it++;
+		std::string	curr = (*it).first + ':' + (*it).second;
+		env_arr[++i] = new char[curr.length() + 1];
+		strcpy(env_arr[i], curr.c_str());
+		it++;
     }
+	env_arr[i] = 0;
+	return env_arr;
 }
 
 bool            Cgi::get_CGIparam(std::string param, std::string html_content, size_t &pos)
@@ -205,16 +289,18 @@ CGIrequest&     Cgi::get_CGIrequest()                    {   return _request;   
 std::string     Cgi::get_CGIaction()                     {   return get_CGIrequest().action;    }
 std::string     Cgi::get_CGImethod()                     {   return get_CGIrequest().method;    }
 size_t          Cgi::get_CGIcontent_length()             {   return get_CGIrequest().content_length;    }
-
-bool            Cgi::is_GETmethod()                      {   return strcmp(getenv("METHOD_REQUEST"),"get") == 0;    }
 std::string     Cgi::get_CGIscript(std::string action)   {   if (action[action.size() - 1] == 'y')  return "python3";   return "perl";  }
 
 // ************
 // HTTP HEADERS functions
 // ************
 
+
+// information are sent to the HTTP response header
+// https://developer.mozilla.org/en-US/docs/Glossary/Response_header
 void    Cgi::http_header()
 {
+    std::cout << "200 OK\n";
     std::cout << "Content-Type: text/html; charset=utf-8;\r\n\r\n";
 }
 
@@ -228,5 +314,5 @@ void    Cgi::redirect_http_header(std::string loc)
 void    Cgi::cookies_http_header()
 {
     std::cout << "Content-Type: text/html; charset=utf-8;\r\n";                 // getenv("HTTP_COOKIE")
-    std::cout << "Set-Cookie: Hello Cookie World!\r\n\r\n";
+    std::cout << "Set-Cookie: Cookies set\r\n\r\n";
 }

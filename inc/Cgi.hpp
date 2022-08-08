@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/06 11:31:20 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 11:43:21 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 
 # define READ 0
 # define WRITE 1
+# define MAX_SIZE 2000
 
 // ****************************
 // the CGI class execute dynamic web pages
@@ -31,7 +32,7 @@
 // POST requests receive args from stdin
 // ****************************
 
-struct CGIrequest
+struct CGIrequest                               // would be cool if it could inherit from Request class
 {
     std::string action;                         // action field in html 
     std::string method;                         // method field in html 
@@ -47,40 +48,39 @@ class Cgi
         std::map<std::string, std::string> _env;
 
         CGIrequest      _request;
-        
         pid_t           _pid;
         int             _fds[2];
         
-    public:
-
-        Cgi(char **env);
-        ~Cgi();
-
-        void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
-        void            exec_CGI(CGIrequest& req);
         void            child_process(CGIrequest& req);
         void            parent_process(int status);
 
-        void            setEnv(char **env);
-        void            set_CGIrequest(std::string action, std::string method, size_t content_length); // size_t -> content length is never negative
-        void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
-
-        void                        getEnv();                                                       // necessary ?
-        std::string                 getEnvValue(std::string key);                                   // necessary ?
+        void                        set_CGIenv(std::string html_content);                               // it should have two vars, http header and http body
+        char**                      getEnv();                                                       // return env as a char** for execve
+        std::string                 getEnvValue(std::string key);                                   
         std::vector<std::string>    getFromQueryString();            
 
-        CGIrequest&     get_CGIrequest();
+        void            set_CGIrequest(std::string action, std::string method, size_t content_length); // size_t -> content length is never negative
+        void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
+        
         std::string     get_CGIaction();
         std::string     get_CGImethod();
         size_t          get_CGIcontent_length();
+        std::string     get_CGIscript(std::string action);
 
         bool            get_CGIparam(std::string param, std::string html_content, size_t &pos);
         std::string     set_CGIparam(std::string html_content, size_t &pos);
 
-        bool            is_GETmethod();
-        bool            isCGI_request(std::string html_content);
-        std::string     get_CGIscript(std::string action);
+    public:
 
+        Cgi();
+        ~Cgi();
+
+        void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
+        void            exec_CGI(CGIrequest& req);
+
+        bool            isCGI_request(std::string html_content);
+        CGIrequest&     get_CGIrequest();
+        
         void            http_header();
         void            redirect_http_header(std::string loc);
         void            cookies_http_header();

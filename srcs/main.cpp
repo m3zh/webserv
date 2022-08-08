@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 17:38:05 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 11:41:09 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int main(int argc, char **args, char **envp)
     if (config.read(args[1], envp))
     {
         Webserv webserv(config.getServers());
-        Cgi     CGI(envp);
+        Cgi     CGI;
 
         std::fstream file2test;
         file2test.open("/home/user42/webserv/pages/website1/upload.html", std::fstream::in | std::fstream::out | std::fstream::app);
