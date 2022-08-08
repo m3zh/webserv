@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/06 08:46:57 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 13:30:32 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
         log(GREEN, "ROOT = ", it->getServerRoot());
         log(GREEN, "INDEX = ", it->getServerIndex());
         std::vector<page> current_pages = it->getPages();
+        _ports.push_back(it->getPort());
         for (std::vector<page>::iterator it = current_pages.begin(); it != current_pages.end(); it++)
         {
             log(GREEN, "location = ", it->location_path);
@@ -89,11 +90,11 @@ void    Webserv::close_all(std::vector<int> &sockets)
         close(*(it));    
 }
 
-int     Webserv::set_server(std::vector<int> &sockets, std::vector<int> &ports, std::vector<struct sockaddr_in> &addrs)
+int     Webserv::set_server(std::vector<int> &sockets, std::vector<struct sockaddr_in> &addrs)
 {
     int on = 1;
     std::vector<int>::iterator socket_it = sockets.begin();
-    std::vector<int>::iterator ports_it = ports.begin();
+    std::vector<int>::iterator ports_it = _ports.begin();
     std::vector<struct sockaddr_in>::iterator addr_it = addrs.begin();
     for (; socket_it != sockets.end(); ++socket_it, ++addr_it, ++ports_it)
 	{
@@ -144,7 +145,7 @@ void    Webserv::parse_request(std::string &request)
     }
 }
 
-int     Webserv::run_server(std::vector<int> &sockets, std::vector<int> &ports, std::vector<struct sockaddr_in> &addrs)
+int     Webserv::run_server(std::vector<int> &sockets, std::vector<struct sockaddr_in> &addrs)
 {
     std::vector<int> clients;
     struct timeval timeout;
@@ -164,7 +165,7 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<int> &ports, 
     ok.append(index);
     /////////////////////////////////////////
     end_server = false;
-    rc = set_server(sockets, ports, addrs);
+    rc = set_server(sockets, addrs);
     if (rc < 0)
     {    return -1;}
 	fd_set current_sockets;
@@ -251,3 +252,4 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<int> &ports, 
 }
 
 std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;    };
+std::vector<int>&            Webserv::getPorts()        {   return _ports;  };
