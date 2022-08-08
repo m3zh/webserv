@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 17:38:05 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/08 13:15:13 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,20 +26,26 @@ int main(int argc, char **args, char **envp)
     }
     if (config.read(args[1], envp))
     {
+        //Cgi     CGI(envp);
+        //std::fstream file2test;
+        //file2test.open("/home/user42/webserv/pages/website1/upload.html", std::fstream::in | std::fstream::out | std::fstream::app);
+        //std::string html_content;
+        //std::string line;
+        //while (getline(file2test, line))
+        //    html_content.append(line);
+        //file2test.close();
+        //std::cout << "Webserv class starts here\n";
+        //if (CGI.isCGI_request(html_content))
+        //{    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());};
         Webserv webserv(config.getServers());
-        Cgi     CGI(envp);
-
-        std::fstream file2test;
-        file2test.open("/home/user42/webserv/pages/website1/upload.html", std::fstream::in | std::fstream::out | std::fstream::app);
-        std::string html_content;
-        std::string line;
-        while (getline(file2test, line))
-            html_content.append(line);
-        file2test.close();
-        std::cout << "Webserv class starts here\n";
-        if (CGI.isCGI_request(html_content))
-        {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());};
-        return EXIT_SUCCESS;
+        /*
+        Add function to get ports from config into a vector
+        */
+        size_t size = webserv.getPorts().size();
+        std::vector<int> sockets(size);
+        std::vector<struct sockaddr_in> addrs(size);
+        webserv.run_server(sockets, addrs);
+        //return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
 }
