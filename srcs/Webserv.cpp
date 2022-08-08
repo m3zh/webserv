@@ -6,7 +6,7 @@
 /*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 13:08:16 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/08 17:46:39 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,14 +31,10 @@ Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
         for (std::vector<page>::iterator it = current_pages.begin(); it != current_pages.end(); it++)
         {
             log(GREEN, "location = ", it->location_path);
-            log(GREEN, "root directory = ", it->root);
-            //log(GREEN, "index = ", it->index);
-            log(GREEN, "upload path = ", it->upload_store);
-            log(GREEN, "redirect = ", it->redirect);
             for (std::vector<std::string>::iterator rit = it->methods.begin(); rit != it->methods.end(); rit++)
                 log(GREEN, "ALLOWED METHOD = ", *rit);
             log(GREEN, "autoindex = ", it->autoindex);
-            log(GREEN, "CGI request = ", it->is_cgi);
+            log(GREEN, "is CGI = ", it->is_cgi);
         }
         log(RED, "----------------------------------------------------------", 0);
     }
@@ -154,16 +150,18 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<struct sockad
     int close_conn;
 	int rc;
     int max;
+    
     /////////////////////////////////////DATA TESTS
     std::string ok = "HTTP/1.1 200\r\n\r\n";
     std::string index;
     std::ifstream ifs;
-    ifs.open("/Users/ablondel/Desktop/webserv/pages/website1/team.html", std::fstream::in);
+    ifs.open("./pages/website1/index.html", std::fstream::in);
     while(ifs.read(buffer, sizeof(buffer)))
         index.append(buffer, sizeof(buffer));
     index.append(buffer, ifs.gcount());
     ok.append(index);
     /////////////////////////////////////////
+    
     end_server = false;
     rc = set_server(sockets, addrs);
     if (rc < 0)
@@ -202,8 +200,9 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<struct sockad
             rd = recv(*it, buffer, sizeof(buffer), 0);
             buffer[rd] = 0;
             std::string request(buffer);
-            if (request.length() > 0)
-			    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
+            log(RED, "request contains: ", request);
+            //if (request.length() > 0)
+			//    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
             parse_request(request);
             request.clear();
 			if (rd < 0)
@@ -215,6 +214,7 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<struct sockad
 				break ;
 			}
             rw = send(*it, ok.c_str(), ok.size(), 0);
+            log(GREEN, "Bytes sent: ", rw);
 			if (rw < 0)
 			{
 				break ;
