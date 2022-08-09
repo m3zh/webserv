@@ -6,7 +6,7 @@
 /*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 13:15:13 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/08 13:19:15 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ int main(int argc, char **args, char **envp)
         Webserv webserv(config.getServers());
         /*
         Add function to get ports from config into a vector
+        Now its done in the constructor above.
         */
         size_t size = webserv.getPorts().size();
         std::vector<int> sockets(size);
