@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/08 14:26:28 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/09 09:44:53 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 // ****************************
 // the CGI class execute dynamic web pages
 // it supports GET and POST requests
-// GET requests receive args from QUERY_STRING and passed them as args
+// GET requests receive args from QUERY_STRING
 // POST requests receive args from stdin
 // ****************************
 
@@ -70,6 +70,9 @@ class Cgi
         bool            get_CGIparam(std::string param, std::string html_content, size_t &pos);
         std::string     set_CGIparam(std::string html_content, size_t &pos);
 
+        // utils
+        void            string2charstar(char **charstar, std::string str);
+
     public:
 
         Cgi();
@@ -83,8 +86,6 @@ class Cgi
         
         void            http_header();
         void            redirect_http_header(std::string loc);
-        void            cookies_http_header();
-        void            session_http_header();                                          // TO-DO
 };
 
 

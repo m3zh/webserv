@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 14:33:19 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/09 09:46:29 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,45 +89,30 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 
 void    Cgi::child_process(CGIrequest& req)
 {
-    std::cerr << "CHILD\n";
-
-    close(_fds[WRITE]);
+    char    *cmd[3]; 
+    size_t socket_fd = 0;
+    
+    // write(_fds[READ], req.http_body, req.http_body.size());
     if (dup2(_fds[READ], STDIN_FILENO) < 0)
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    // if (req.socket_fd)
-    //  if (dup2(req.socket_fd, STDOUT_FILENO) < 0)                        // redirect output to socket fd
-    //     {    perror("cgi dup2 out: "); exit(EXIT_FAILURE);  }
-    if (get_CGImethod().compare("get") == 0)                                       // GET method
-    {
-        std::vector<std::string> vals;
-        std::cerr << "CGI is executing GET request\n";
-        if ( getEnvValue("QUERY_STRING") != "" )
-            vals = getFromQueryString();
-        // size_t pos = 1;
-        // std::vector<std::string>::iterator it = vals.begin();
-        // while ( it != vals.end())
-        // {    cmd[++pos] = const_cast<char*>((*it).c_str()); it++;   }
-        // cmd[pos] = 0;
-        char    *cmd[3];
-        cmd[0] = (char *)get_CGIscript(req.action).c_str();      // determine if script is python3 or perl
-        cmd[1] = (char *)req.path_to_script.c_str();
-        cmd[2] = 0;
-        printf("%s\n", cmd[1]);
-        if (execve(cmd[0], cmd, getEnv()) < 0)
-            perror("cgi execve");
-        exit(EXIT_FAILURE);
-    }
-    else                                                                 // POST method
-    {
-        std::cerr << "CGI is executing POST request\n";
-    }    
+    if (socket_fd)
+        {   if (dup2(socket_fd, STDOUT_FILENO) < 0) perror("cgi dup2 out: "); exit(EXIT_FAILURE);  }
+    else if (dup2(_fds[WRITE], STDIN_FILENO) < 0)
+        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+                                                   
+    string2charstar(&cmd[0], get_CGIscript(req.action).c_str());                    // we populate cmd[3] for execve
+    string2charstar(&cmd[1], req.path_to_script.c_str()); 
+    cmd[2] = 0;
+    close(_fds[READ]);
+    close(_fds[WRITE]);
+    if (execve(cmd[0], cmd, getEnv()) < 0)
+    {    perror("cgi execve"); exit(EXIT_FAILURE);   }
 }
 
 void    Cgi::parent_process(int status)
 {    
     close(_fds[READ]);
     waitpid(_pid, &status, 0);
-    std::cerr << "PARENT\n";
 }
 
 void    Cgi::exec_CGI(CGIrequest& req)
@@ -196,7 +181,7 @@ void    Cgi::set_CGIenv(std::string html_content)
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["PATH_INFO"] = "/app";                                                             // the path as requested by the client, eg. www.xxx.com/app
 	_env["PATH_TRANSLATED"] = "/home/user42/webserv/cgi-bin/" + _request.action;            // the actual path to the script 
-	_env["QUERY_STRING"] = "";                                                               // hard-coded here, to be fetched from request
+	_env["QUERY_STRING"] = getFromQueryString();                                            // hard-coded here, to be fetched from request
 	// _env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
 	_env["REMOTE_ADDR"] = "127.0.0.1";                                                      // hard-coded here, to be fetched from request
 	_env["REMOTE_USER"] = "";
@@ -254,9 +239,7 @@ char**          Cgi::getEnv()
     while ( it != _env.end() )
     {
 		std::string	curr = (*it).first + ':' + (*it).second;
-		env_arr[++i] = new char[curr.length() + 1];
-		strcpy(env_arr[i], curr.c_str());
-		it++;
+		string2charstar(&env_arr[++i], curr.c_str()); it++;
     }
 	env_arr[i] = 0;
 	return env_arr;
@@ -297,13 +280,13 @@ std::string     Cgi::get_CGIscript(std::string action)   {   if (action[action.s
 // HTTP HEADERS functions
 // ************
 
-
 // information are sent to the HTTP response header
 // https://developer.mozilla.org/en-US/docs/Glossary/Response_header
 void    Cgi::http_header()
 {
     std::cout << "200 OK\n";
-    std::cout << "Content-Type: text/html; charset=utf-8;\r\n\r\n";
+    std::cout << "Content-Type: text/html; charset=utf-8;";
+    std::cout << "Set-Cookie: Cookies are set\r\n\r\n";
 }
 
 void    Cgi::redirect_http_header(std::string loc)
@@ -313,8 +296,12 @@ void    Cgi::redirect_http_header(std::string loc)
     std::cout << "\r\n\r\n";
 }
 
-void    Cgi::cookies_http_header()
+// ************
+// UTILS functions
+// ************
+
+void   Cgi::string2charstar(char** charstar, std::string str)
 {
-    std::cout << "Content-Type: text/html; charset=utf-8;\r\n";                 // getenv("HTTP_COOKIE")
-    std::cout << "Set-Cookie: Cookies set\r\n\r\n";
+    *charstar = new char[ str.size() + 1 ];
+    strcpy(*charstar, str.c_str());
 }
