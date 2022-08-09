@@ -6,7 +6,7 @@
 /*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 13:19:15 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/09 17:07:51 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,8 @@ int main(int argc, char **args, char **envp)
         */
         size_t size = webserv.getPorts().size();
         std::vector<int> sockets(size);
-        std::vector<struct sockaddr_in> addrs(size);
-        webserv.run_server(sockets, addrs);
+        std::vector<struct sockaddr_in> addrs;//(size);
+        webserv.run_server(addrs);
         //return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;

@@ -6,7 +6,7 @@
 /*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 13:26:05 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/09 16:49:55 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,11 @@ class Cgi;
 class Webserv: public ServerInfo
 {
     private:
-        std::vector<ServerInfo> _servers;
-        std::vector<int> _ports;
+        size_t                          _size;
+        std::vector<ServerInfo>         _servers;
+        std::vector<int>                _ports;
+        std::vector<int>                _sockets;
+        std::vector<struct sockaddr_in> _addrs;
 
     public:
         Webserv(std::vector<ServerInfo> &s);
@@ -55,7 +58,7 @@ class Webserv: public ServerInfo
 
         bool    isCGI_request(std::string html_content);            // check if action and method fit for cgi
         void    close_all(std::vector<int> &sockets);
-        int     set_server(std::vector<int> &sockets, std::vector<struct sockaddr_in> &addrs);
+        int     set_server(std::vector<struct sockaddr_in> &addrs);
         void    parse_request(std::string &request);
-        int     run_server(std::vector<int> &sockets, std::vector<struct sockaddr_in> &addrs);
+        int     run_server(std::vector<struct sockaddr_in> &addrs);
 };
