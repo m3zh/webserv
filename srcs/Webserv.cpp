@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 13:30:32 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/09 09:51:03 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,14 +31,10 @@ Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
         for (std::vector<page>::iterator it = current_pages.begin(); it != current_pages.end(); it++)
         {
             log(GREEN, "location = ", it->location_path);
-            log(GREEN, "root directory = ", it->root);
-            //log(GREEN, "index = ", it->index);
-            log(GREEN, "upload path = ", it->upload_store);
-            log(GREEN, "redirect = ", it->redirect);
             for (std::vector<std::string>::iterator rit = it->methods.begin(); rit != it->methods.end(); rit++)
                 log(GREEN, "ALLOWED METHOD = ", *rit);
             log(GREEN, "autoindex = ", it->autoindex);
-            log(GREEN, "CGI request = ", it->is_cgi);
+            log(GREEN, "is CGI = ", it->is_cgi);
         }
         log(RED, "----------------------------------------------------------", 0);
     }
@@ -97,38 +93,38 @@ int     Webserv::set_server(std::vector<int> &sockets, std::vector<struct sockad
     std::vector<int>::iterator ports_it = _ports.begin();
     std::vector<struct sockaddr_in>::iterator addr_it = addrs.begin();
     for (; socket_it != sockets.end(); ++socket_it, ++addr_it, ++ports_it)
-	{
+    {
         if ((*socket_it = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
             close_all(sockets);
-			return -1;
+            return -1;
         }
-		if (fcntl(*socket_it, F_SETFL, O_NONBLOCK) < 0)
+        if (fcntl(*socket_it, F_SETFL, O_NONBLOCK) < 0)
         {
             close_all(sockets);
-			return -2;
+            return -2;
         }
-		if (setsockopt(*socket_it, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+        if (setsockopt(*socket_it, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
         {
             close_all(sockets);
-			return -3;
+            return -3;
         }
-		memset(&*addr_it, 0, sizeof(*addr_it));
-	    addr_it->sin_family = AF_INET;
-	    addr_it->sin_addr.s_addr = inet_addr("127.0.0.1");
-	    addr_it->sin_port = htons(*ports_it);
-		if ((bind(*socket_it, (struct sockaddr *)&*addr_it, sizeof(*addr_it))) < 0)
+        memset(&*addr_it, 0, sizeof(*addr_it));
+        addr_it->sin_family = AF_INET;
+        addr_it->sin_addr.s_addr = inet_addr("127.0.0.1");
+        addr_it->sin_port = htons(*ports_it);
+        if ((bind(*socket_it, (struct sockaddr *)&*addr_it, sizeof(*addr_it))) < 0)
         {
             close_all(sockets);
-			return -4;
+            return -4;
         }
-		if ((listen(*socket_it, BACKLOG) < 0))
+        if ((listen(*socket_it, BACKLOG) < 0))
         {
             close_all(sockets);
-			return -5;
+            return -5;
         }
-	}
-	return 0;
+    }
+    return 0;
 }
 
 void    Webserv::parse_request(std::string &request)
@@ -149,27 +145,29 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<struct sockad
 {
     std::vector<int> clients;
     struct timeval timeout;
-	char buffer[1024];
-	int end_server;
+    char buffer[1024];
+    int end_server;
     int close_conn;
-	int rc;
+    int rc;
     int max;
+    
     /////////////////////////////////////DATA TESTS
     std::string ok = "HTTP/1.1 200\r\n\r\n";
     std::string index;
     std::ifstream ifs;
-    ifs.open("/Users/ablondel/Desktop/webserv/pages/website1/team.html", std::fstream::in);
+    ifs.open("./pages/website1/index.html", std::fstream::in);
     while(ifs.read(buffer, sizeof(buffer)))
         index.append(buffer, sizeof(buffer));
     index.append(buffer, ifs.gcount());
     ok.append(index);
     /////////////////////////////////////////
+    
     end_server = false;
     rc = set_server(sockets, addrs);
     if (rc < 0)
     {    return -1;}
-	fd_set current_sockets;
-	fd_set read_sockets;
+    fd_set current_sockets;
+    fd_set read_sockets;
     FD_ZERO(&current_sockets);
     max = sockets.back();
     for (std::vector<int>::iterator it = sockets.begin(); it != sockets.end(); it++)
@@ -198,33 +196,35 @@ int     Webserv::run_server(std::vector<int> &sockets, std::vector<struct sockad
         close_conn = false;
         for (std::vector<int>::iterator it = clients.begin(); it != clients.end(); it++)
         {
-			bzero(&buffer, sizeof(buffer)); /* Clear the buffer */
+            bzero(&buffer, sizeof(buffer)); /* Clear the buffer */
             rd = recv(*it, buffer, sizeof(buffer), 0);
             buffer[rd] = 0;
             std::string request(buffer);
-            if (request.length() > 0)
-			    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
+            log(RED, "request contains: ", request);
+            //if (request.length() > 0)
+            //    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
             parse_request(request);
             request.clear();
-			if (rd < 0)
-			{
-				break ;
-			}
-			if (rd == 0)
-			{
-				break ;
-			}
+            if (rd < 0)
+            {
+                break ;
+            }
+            if (rd == 0)
+            {
+                break ;
+            }
             rw = send(*it, ok.c_str(), ok.size(), 0);
-			if (rw < 0)
-			{
-				break ;
-			}
-			if (rw == 0)
-			{
-				break ;
-			}
+            log(GREEN, "Bytes sent: ", rw);
+            if (rw < 0)
+            {
+                break ;
+            }
+            if (rw == 0)
+            {
+                break ;
+            }
             close(*it);
-			FD_CLR(*it, &current_sockets);
+            FD_CLR(*it, &current_sockets);
             clients.erase(it);
         }
         for (int i = 0; i < max; i++)

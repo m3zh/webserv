@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/08 14:01:31 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/09 09:51:31 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ int main(int argc, char **args, char **envp)
         {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());};
         /*
         Add function to get ports from config into a vector
+        Now its done in the constructor above.
         */
         size_t size = webserv.getPorts().size();
         std::vector<int> sockets(size);

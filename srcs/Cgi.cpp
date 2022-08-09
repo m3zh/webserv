@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/09 09:46:29 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/09 09:51:34 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,16 +67,14 @@ bool        Cgi::isCGI_request(std::string html_content)
 [ source: https://www.tutorialspoint.com/perl/perl_cgi.htm ]
 
 The GET method is the defualt method to pass information from browser to web server.
-The GET method sends the encoded user information appended to the page request.
-The page and the encoded information are separated by the ? character as follows − http://www.test.com/cgi-bin/hello.cgi?key1=value1&key2=value2
-This info is written in the URL and is visible to everyone, thus not safe. 
+The GET method sends the encoded user information appended to the page request, ie − http://www.test.com/cgi-bin/hello.cgi?key1=value1&key2=value2
+This info is written in the URL and is visible to everyone, thus not safe.
 Never use the GET method if you have password or other sensitive information to pass to the server.
 The GET method has size limtation: only 1024 characters can be in a request string.
 This information is passed using QUERY_STRING header and will be accessible in your CGI Program through QUERY_STRING environment variable.
 
 A generally more reliable method of passing information to a CGI program is the POST method.
-This packages the information in exactly the same way as GET methods,
-but instead of sending it as a text string after a ? in the URL it sends it as a separate message.
+Instead of sending the information in the QUERY STRING, it sends it as a separate message.
 This message comes into the CGI script in the form of the standard input.
 
 Ex.:
@@ -160,8 +158,7 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 
 // information are parsed from HTTP request header and body
 // https://developer.mozilla.org/en-US/docs/Glossary/Request_header
-// NOTE on PATH_INFO/PATH_TRANSLATED vs SCRIPT_NAME/SCRIPT_FILENAME
-// here they are treated as equivalent
+// NOTE on PATH_INFO/PATH_TRANSLATED vs SCRIPT_NAME/SCRIPT_FILENAME > here we treat them as equivalent
 // more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
 void    Cgi::set_CGIenv(std::string html_content)
 {
