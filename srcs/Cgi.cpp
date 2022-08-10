@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/10 09:04:00 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/10 11:36:59 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,16 +88,11 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 void    Cgi::child_process(CGIrequest& req)
 {
     char    *cmd[3]; 
-    size_t socket_fd = 0;
     
-    // write(_fds[READ], req.http_body, req.http_body.size());
-    if (dup2(_fds[READ], STDIN_FILENO) < 0)
+    if (dup2(_fds[READ], STDIN_FILENO) < 0)                                         // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    if (socket_fd)
-        {   if (dup2(socket_fd, STDOUT_FILENO) < 0) perror("cgi dup2 out: "); exit(EXIT_FAILURE);  }
-    else if (dup2(_fds[WRITE], STDIN_FILENO) < 0)
-        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-                                                   
+    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
+        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }                                   
     string2charstar(&cmd[0], get_CGIscript(req.action).c_str());                    // we populate cmd[3] for execve
     string2charstar(&cmd[1], req.path_to_script.c_str()); 
     cmd[2] = 0;
@@ -109,8 +104,8 @@ void    Cgi::child_process(CGIrequest& req)
 
 void    Cgi::parent_process(int status)
 {    
-    close(_fds[READ]);
-    waitpid(_pid, &status, 0);
+    close(_fds[READ]);                                                              // in the parent the output written to the end of the pipe
+    waitpid(_pid, &status, 0);                                                      // is re-written to the socket_fd to be sent to the server
 }
 
 void    Cgi::exec_CGI(CGIrequest& req)
@@ -177,7 +172,7 @@ void    Cgi::set_CGIenv(std::string html_content)
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["PATH_INFO"] = "/app";                                                             // the path as requested by the client, eg. www.xxx.com/app
-	_env["PATH_TRANSLATED"] = "/home/user42/webserv/cgi-bin/" + _request.action;            // the actual path to the script 
+	_env["PATH_TRANSLATED"] = "/home/user42/webserv/cgi-bin/" + _request.action;            // the actual path to the script
 	_env["QUERY_STRING"] = getFromQueryString("blabla.com/en?name=Undi&age=11");            // hard-coded here, to be fetched from request
 	// _env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
 	_env["REMOTE_ADDR"] = "127.0.0.1";                                                      // hard-coded here, to be fetched from request
@@ -235,7 +230,7 @@ char**          Cgi::getEnv()
     env_arr = new char* [ _env.size() + 1 ];
     while ( it != _env.end() )
     {
-		std::string	curr = (*it).first + ':' + (*it).second;
+		std::string	curr = (*it).first + '=' + (*it).second;                // python cgi module splits on =
 		string2charstar(&env_arr[++i], curr.c_str()); it++;
     }
 	env_arr[i] = 0;
