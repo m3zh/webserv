@@ -59,7 +59,7 @@ int     Lexer::read(char   *config, char **envp)
                 continue;                                                   // skip blank lines and comment lines
             line = trim(line);
             if  (!valid_lineending(line)
-                || !tokenize(split(line.substr(0, line.length() - 1))))     // substr remove last character of each line, ie { ; }
+                || !tokenize(split(line.substr(0, line.length() - 1))))     // substr remove last character of each line, ie { ; or }
                     {   file.close();  return 0;  }
         } 
         file.close();     
@@ -218,22 +218,20 @@ int     Lexer::valid_lineending(std::string line)                {             r
 bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)            // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {
     std::vector<Token>::iterator it = tokens.end();
-    
-    
-    it = it - num_of_tokens;
+    it = it - num_of_tokens;                                                                    // we start from the first token pushed from this line
 
     if ((*it).getContent() != "allowed_methods")
         if ((*it).getAllowedWords() > num_of_tokens)
             return false;
     while ( it != tokens.end() - 1 )
     {
-        if (pair_wpath((*it).getContent()) && (*(it + 1)).getType() == "Path")                         // if pairs with path ok
+        if (pair_wpath((*it).getContent()) && (*(it + 1)).getType() == "Path")                         // if it pairs with path, ok
             return true;
-        if (pair_wdigits((*it).getContent()) && (*(it + 1)).getType() == "Digit")                      // if pairs with digit ok
+        if (pair_wdigits((*it).getContent()) && (*(it + 1)).getType() == "Digit")                      // if it pairs with digit, ok
             return true;
-        if (pair_wvalues((*it).getContent()) && (*(it + 1)).getType() == "Value")                      // if pairs with value ok ( ie, generic string, website name )
+        if (pair_wvalues((*it).getContent()) && (*(it + 1)).getType() == "Value")                      // if it pairs with value, ok ( ie, generic string, website name )
             return true;
-        if (pair_wmethods((*it).getContent()) && (*(it + 1)).getType() == "Method")                    // if pairs with methods ok
+        if (pair_wmethods((*it).getContent()) && (*(it + 1)).getType() == "Method")                    // if it pairs with methods, ok
         {
             while ( ++it != tokens.end() )
                 if ((*it).getType() != "Method")

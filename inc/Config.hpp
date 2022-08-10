@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/15 09:13:06 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 09:13:19 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/06 08:48:32 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,16 @@ class Lexer;
 class ServerInfo;
 
 // ****************************
-// the Config class stocks all information parsed by Lexer
+// the Config class stores all information parsed by Lexer
 // in a readable way for the Webserv class
 // ****************************
 
 
 class Config
 {
-    public:
-        std::vector<ServerInfo>    _servers;
     private:
-
+        std::vector<ServerInfo>    _servers;
+        
         void                    debug_me(Lexer &parser);
 
         Config(Config const &p);

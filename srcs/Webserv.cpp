@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/10 08:31:26 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/10 08:34:57 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,5 +215,6 @@ int     Webserv::run_server(std::vector<struct sockaddr_in> &addrs)
     (void)close_conn;
     return 0;
 }
+
 std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;    };
 std::vector<int>&            Webserv::getPorts()        {   return _ports;  };
