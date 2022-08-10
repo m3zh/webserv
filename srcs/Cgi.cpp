@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/10 11:36:59 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/10 17:15:47 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,6 @@
 Cgi::Cgi()                  {}
 Cgi::~Cgi()                 {}
 
-// probably to refactor
-// probably to be moved elsewhere
-// params probably to be changed or expanded
 // checks action, method, content-length in html message 
 // returns true if it's good for cgi and set CGI request if so
 bool        Cgi::isCGI_request(std::string html_content)
@@ -46,11 +43,11 @@ bool        Cgi::isCGI_request(std::string html_content)
     // ------
     // CONTENT LENGTH
     // ------
-    // if (method == "post" && get_CGIparam("Content-Length", html_content, pos) == false)
-    //     return false;                                
-    // size_t content_length = stoi(set_CGIparam(html_content, pos));
-    // if (method == "post" && !content_length)
-    //     {   std::cout << "No content length for post method CGI\n"; return false;  };
+    //if (method == "post" && get_CGIparam("Content-Length", html_content, pos) == false) // !!! Content-Length is in header, not in the body, cannot be parsed like this
+        //return false;                                                                   // hard-coded here for the moment to test post method                               
+    size_t content_length = std::stoi("100");
+    if (method == "post" && !content_length)
+        {   std::cout << "No content length for post method CGI\n"; return false;  };
     // ------
     // SCRIPT -> root + action
     // ------
@@ -66,16 +63,16 @@ bool        Cgi::isCGI_request(std::string html_content)
 /*  DIFFERENCE between POST and GET
 [ source: https://www.tutorialspoint.com/perl/perl_cgi.htm ]
 
-The GET method is the defualt method to pass information from browser to web server.
-The GET method sends the encoded user information appended to the page request, ie − http://www.test.com/cgi-bin/hello.cgi?key1=value1&key2=value2
-This info is written in the URL and is visible to everyone, thus not safe.
-Never use the GET method if you have password or other sensitive information to pass to the server.
-The GET method has size limtation: only 1024 characters can be in a request string.
-This information is passed using QUERY_STRING header and will be accessible in your CGI Program through QUERY_STRING environment variable.
+The GET method is:
+- the defualt method to pass information from browser to web server
+- info is written in the URL and is visible to everyone, thus not safe, ie − http://www.test.com/cgi-bin/hello.cgi?key1=value1&key2=value2
+- size limtation: only 1024 characters can be in a request string
+- info is passed using QUERY_STRING header and  accessible through QUERY_STRING environment variable
 
-A generally more reliable method of passing information to a CGI program is the POST method.
-Instead of sending the information in the QUERY STRING, it sends it as a separate message.
-This message comes into the CGI script in the form of the standard input.
+The POST method id:
+- more reliable
+- information is sends it as a separate message
+- this message comes into the CGI script in the form of the standard input
 
 Ex.:
 if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
@@ -89,14 +86,22 @@ void    Cgi::child_process(CGIrequest& req)
 {
     char    *cmd[3]; 
     
+    if (req.method == "post")                                                       // if post method, we write content to stdin
+    {
+        size_t = html_content.find("\n\r\n\f") + 4;
+        std::string content = html_content.substr(pos, req.content_length - pos);
+        write(_fd[READ], content.c_str(), content_length);
+    }
     if (dup2(_fds[READ], STDIN_FILENO) < 0)                                         // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
-        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }                                   
-    string2charstar(&cmd[0], get_CGIscript(req.action).c_str());                    // we populate cmd[3] for execve
-    string2charstar(&cmd[1], req.path_to_script.c_str()); 
+    // if (req.socket_fd)                                                           // we write the output to socket fd to send to the server
+    //     _fds[WRITE] = req.socket_fd;
+    // if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
+    //     {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+    // we populate cmd[3] for execve                                   
+    string2charstar(&cmd[0], get_CGIscript(req.action).c_str());                    // cmd[0] -> /usr/bin/python                
+    string2charstar(&cmd[1], req.path_to_script.c_str());                           // cmd[1] -> cgi-script.py
     cmd[2] = 0;
-    close(_fds[READ]);
     close(_fds[WRITE]);
     if (execve(cmd[0], cmd, getEnv()) < 0)
     {    perror("cgi execve"); exit(EXIT_FAILURE);   }
@@ -104,8 +109,9 @@ void    Cgi::child_process(CGIrequest& req)
 
 void    Cgi::parent_process(int status)
 {    
-    close(_fds[READ]);                                                              // in the parent the output written to the end of the pipe
-    waitpid(_pid, &status, 0);                                                      // is re-written to the socket_fd to be sent to the server
+    close(_fds[READ]);
+    close(_fds[WRITE]);                                                              // in the parent the output written to the end of the pipe
+    waitpid(_pid, &status, 0);                                                       // is re-written to the socket_fd to be sent to the server
 }
 
 void    Cgi::exec_CGI(CGIrequest& req)
@@ -158,9 +164,10 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 void    Cgi::set_CGIenv(std::string html_content)
 {
     size_t pos = 0;
-
+   
     _env["AUTH_TYPE"] = "";
-    _env["DOCUMENT_ROOT"] = "~/webserv";                                                     // add a function get_pwd?
+    _env["DOCUMENT_ROOT"] = "~/webserv";                                                     // add a function get_pwd?                                  
+	_env["CONTENT_LENGTH"] = set_CGIparam(html_content, pos);                                // because we need it as string, _request.content_length is an int XXXX
     // if (get_CGIparam("Cookie", html_header, pos))                                         // need a request with html_header attribute
 	//     _env["HTTP_COOKIE"] = set_CGIparam(html_header, pos);
     // if (get_CGIparam("Host", html_header, pos))
@@ -186,9 +193,8 @@ void    Cgi::set_CGIenv(std::string html_content)
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["SERVER_PORT"] = "80";                                                             // hard-coded here, to be fetched from request
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
-    if (get_CGIparam("Content-Length", html_content, pos))
-	    _env["CONTENT_LENGTH"] = set_CGIparam(html_content, pos);                           // we do not take from _request.content_length 
-                                                                                            // because we need it as string
+	                                                   // hard-coded here, to be fetched from config
+
 }
 
 void    Cgi::set_CGIrequest(std::string action, std::string method, size_t content_length)
@@ -230,7 +236,7 @@ char**          Cgi::getEnv()
     env_arr = new char* [ _env.size() + 1 ];
     while ( it != _env.end() )
     {
-		std::string	curr = (*it).first + '=' + (*it).second;                // python cgi module splits on =
+		std::string	curr = (*it).first + '=' + (*it).second;                // python cgi module splits env on =
 		string2charstar(&env_arr[++i], curr.c_str()); it++;
     }
 	env_arr[i] = 0;

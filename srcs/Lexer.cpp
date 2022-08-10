@@ -35,7 +35,6 @@ std::string	    Lexer::method_types[]    = {                               // so
                                             "GET",
                                             "DELETE",
                                             "POST",
-                                            "PUT",
                                             "off",
                                             "on"	
                                         };
@@ -156,7 +155,7 @@ bool            Lexer::setKeyParams(Token& token)
     token.setType("Key");
     token.setAllowedWords(1);
     if (token.getContent().compare("allowed_methods") == 0)
-        token.setAllowedWords(4);
+        token.setAllowedWords(3);
     return true;
 }
 

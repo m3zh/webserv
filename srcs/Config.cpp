@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/05 22:35:05 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 22:37:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/10 16:27:23 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ bool                    Config::valid_config(std::vector<ServerInfo>& s)
     std::vector<page>::iterator pit = (*it).getPages().begin();                 
     while ( pit != (*it).getPages().end() )
     {           
-        if ((*pit).location_path.compare("/") == 0)                         // check if there is ONE root location /
+        if ((*pit).location_path.compare("/") == 0)                             // check if there is ONE root location /
             root++;
         pit++;
     }
