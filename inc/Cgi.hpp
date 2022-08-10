@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/09 09:44:53 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/10 09:01:18 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ class Cgi
         void                        set_CGIenv(std::string html_content);                               // it should have two vars, http header and http body
         char**                      getEnv();                                                       // return env as a char** for execve
         std::string                 getEnvValue(std::string key);                                   
-        std::vector<std::string>    getFromQueryString();            
+        std::string                 getFromQueryString(std::string uri);            
 
         void            set_CGIrequest(std::string action, std::string method, size_t content_length); // size_t -> content length is never negative
         void            clear_CGIrequest();                                             // reset CGIrequest fields to ""

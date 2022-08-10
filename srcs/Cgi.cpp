@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/09 09:51:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/10 09:04:00 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,7 +178,7 @@ void    Cgi::set_CGIenv(std::string html_content)
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["PATH_INFO"] = "/app";                                                             // the path as requested by the client, eg. www.xxx.com/app
 	_env["PATH_TRANSLATED"] = "/home/user42/webserv/cgi-bin/" + _request.action;            // the actual path to the script 
-	_env["QUERY_STRING"] = getFromQueryString();                                            // hard-coded here, to be fetched from request
+	_env["QUERY_STRING"] = getFromQueryString("blabla.com/en?name=Undi&age=11");            // hard-coded here, to be fetched from request
 	// _env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
 	_env["REMOTE_ADDR"] = "127.0.0.1";                                                      // hard-coded here, to be fetched from request
 	_env["REMOTE_USER"] = "";
@@ -251,20 +251,10 @@ bool            Cgi::get_CGIparam(std::string param, std::string html_content, s
     return true; 
 }
 
-std::vector<std::string>     Cgi::getFromQueryString()
+std::string     Cgi::getFromQueryString(std::string uri)
 {
-    std::string qs = getenv("QUERY_STRING");
-    std::vector<std::string> ret;
-    size_t pos, start = 0;
-    while (pos != std::string::npos)
-    {
-        pos = qs.find("=", start);
-        start = pos;
-        while (++start != std::string::npos && qs[start] != '&');
-        if (start != std::string::npos)
-            ret.push_back(qs.substr(pos + 1, start));                                // add var value, which is between '=' and '&'
-    }        
-    return ret;
+    size_t pos = uri.find("?") + 1;   
+    return uri.substr(pos, uri.size() - pos);
 }
 
 CGIrequest&     Cgi::get_CGIrequest()                    {   return _request;    }
