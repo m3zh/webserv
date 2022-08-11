@@ -88,9 +88,9 @@ void    Cgi::child_process(CGIrequest& req)
     
     if (req.method == "post")                                                       // if post method, we write content to stdin
     {
-        size_t = html_content.find("\n\r\n\f") + 4;
+        size_t pos = html_content.find("\r\n\r\n") + 4;
         std::string content = html_content.substr(pos, req.content_length - pos);
-        write(_fd[READ], content.c_str(), content_length);
+        write(_fds[READ], content.c_str(), content_length);
     }
     if (dup2(_fds[READ], STDIN_FILENO) < 0)                                         // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
