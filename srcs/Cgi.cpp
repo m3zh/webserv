@@ -19,7 +19,8 @@ Cgi::~Cgi()                 {}
 // returns true if it's good for cgi and set CGI request if so
 bool        Cgi::isCGI_request(std::string html_content)
 {
-    std::string root = "/home/user42/webserv/cgi-bin/";                     // hardcoded here; this should be retrieved from ServerInfo > page > root
+    std::string pwd = getenv("PWD");
+    std::string root = pwd + "/cgi-bin/";                     // hardcoded here; this should be retrieved from ServerInfo > page > root
     size_t pos = 0;
     // ------
     // ACTION
@@ -27,6 +28,7 @@ bool        Cgi::isCGI_request(std::string html_content)
     if (get_CGIparam("action", html_content, pos) == false)                 // action="........", we want to start from the first \" after the =
         return false;
     std::string action = set_CGIparam(html_content, pos);
+    // std::cout << action << std::endl;
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py")                     // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
         && action.compare(extension, action.size(), ".pl"))
@@ -86,12 +88,12 @@ void    Cgi::child_process(CGIrequest& req)
 {
     char    *cmd[3]; 
     
-    if (req.method == "post")                                                       // if post method, we write content to stdin
-    {
-        size_t pos = html_content.find("\r\n\r\n") + 4;
-        std::string content = html_content.substr(pos, req.content_length - pos);
-        write(_fds[READ], content.c_str(), content_length);
-    }
+    // if (req.method == "post")                                                       // if post method, we write content to stdin
+    // {
+    //     size_t pos = html_content.find("\r\n\r\n") + 4;
+    //     std::string content = html_content.substr(pos, req.content_length - pos);
+    //     write(_fds[READ], content.c_str(), content_length);
+    // }
     if (dup2(_fds[READ], STDIN_FILENO) < 0)                                         // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     // if (req.socket_fd)                                                           // we write the output to socket fd to send to the server
@@ -164,6 +166,7 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 void    Cgi::set_CGIenv(std::string html_content)
 {
     size_t pos = 0;
+    std::string pwd = getenv("PWD");
    
     _env["AUTH_TYPE"] = "";
     _env["DOCUMENT_ROOT"] = "~/webserv";                                                     // add a function get_pwd?                                  
@@ -179,7 +182,7 @@ void    Cgi::set_CGIenv(std::string html_content)
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["PATH_INFO"] = "/app";                                                             // the path as requested by the client, eg. www.xxx.com/app
-	_env["PATH_TRANSLATED"] = "/home/user42/webserv/cgi-bin/" + _request.action;            // the actual path to the script
+	_env["PATH_TRANSLATED"] = pwd + "/cgi-bin/" + _request.action;            // the actual path to the script
 	_env["QUERY_STRING"] = getFromQueryString("blabla.com/en?name=Undi&age=11");            // hard-coded here, to be fetched from request
 	// _env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
 	_env["REMOTE_ADDR"] = "127.0.0.1";                                                      // hard-coded here, to be fetched from request
@@ -188,7 +191,7 @@ void    Cgi::set_CGIenv(std::string html_content)
 	_env["REQUEST_METHOD"] = _request.method;
 	_env["REQUEST_URI"] = "/app";                                                           // hard-coded here, to be fetched from request
 	_env["SCRIPT_NAME"] = _request.action;
-	_env["SCRIPT_FILENAME"] = "/home/user42/webserv/cgi-bin/" + _request.action;
+	_env["SCRIPT_FILENAME"] = pwd + "/cgi-bin/" + _request.action;
 	_env["SERVER_NAME"] = "codedinbelgium.be";                                              // getEnvValue("HTTP_HOST");
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["SERVER_PORT"] = "80";                                                             // hard-coded here, to be fetched from request
@@ -245,6 +248,7 @@ char**          Cgi::getEnv()
 
 bool            Cgi::get_CGIparam(std::string param, std::string html_content, size_t &pos)
 {
+    std::cout << html_content << std::endl;
     pos = html_content.find(param);
     if (pos == std::string::npos)
         {   std::cout << "Invalid " << param << " for CGI\n"; return false;              };

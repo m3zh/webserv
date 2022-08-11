@@ -6,8 +6,9 @@ cgitb.enable()
 
 form = cgi.FieldStorage()
 
-# for param in os.environ.keys():                                   <-- check params passed in env
-#    print "<b>%20s</b>: %s<\br>" % (param, os.environ[param])
+# check params passed in env
+for param in os.environ.keys():
+    print "<b>%20s</b>: %s</br>" % (param, os.environ[param])
 
 if "name" not in form or "age" not in form:
     message = "<H1>Error</H1>\nNo name or age field provided."
