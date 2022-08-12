@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/11 16:13:41 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/12 19:26:24 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,15 +41,7 @@ int main(int argc, char **args, char **envp)
         // if (CGI.isCGI_request(html_content))
         // {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());       };
         Webserv webserv(config.getServers());
-        /*
-        Add function to get ports from config into a vector
-        Now its done in the constructor above.
-        */
-        size_t size = webserv.getPorts().size();
-        std::vector<int> sockets(size);
-        std::vector<struct sockaddr_in> addrs;//(size);
-        webserv.run_server(addrs);
-        
+        webserv.run_server();        
         // return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;

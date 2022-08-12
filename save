@@ -3,19 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 19:28:38 by ablondel         ###   ########.fr       */
+<<<<<<< HEAD
+/*   Updated: 2022/08/12 19:14:09 by ablondel         ###   ########.fr       */
+=======
+/*   Updated: 2022/08/10 08:34:57 by mlazzare         ###   ########.fr       */
+>>>>>>> 2d43557884ee6be2ec3be60f7015efff3eeeef26
 /*                                                                            */
-/* ************************************************************************** */
-
 /* ************************************************************************** */
 
 # include "../inc/Webserv.hpp"
 
+<<<<<<< HEAD
 std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;  };
-std::vector<int>&            Webserv::getWbsrvPorts()        {   return _ports;  };
+std::vector<int>&            Webserv::getPorts()        {   return _ports;  };
 
 // probably to refactor
 bool        Webserv::isCGI_request(std::string html_content)
@@ -48,12 +51,20 @@ bool        Webserv::isCGI_request(std::string html_content)
     if (access(root.c_str(), X_OK) < 0)                                 // if executable exist and it's executable
         {   std::cout << "File not executable by CGI\n"; return false;          };
     return true;
+=======
+Webserv::Webserv()
+{
+    return ;
+>>>>>>> 2d43557884ee6be2ec3be60f7015efff3eeeef26
 }
 
 Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
 {
+<<<<<<< HEAD
+=======
     std::vector<int> tmp(s.size());
     _sockets = tmp;
+>>>>>>> 2d43557884ee6be2ec3be60f7015efff3eeeef26
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
     {
         log(GREEN, "SERVER NAME = ", it->getServerName());
@@ -63,23 +74,36 @@ Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
         log(GREEN, "INDEX = ", it->getServerIndex());
         std::vector<page> current_pages = it->getPages();
         _ports.push_back(it->getPort());
+<<<<<<< HEAD
         log(RED, "----------------------------------------------------------", 0);
     }
     _size = _ports.size();
     _sockets.resize(_size);
     _addrs.resize(_size);
-    //for (std::vector<page>::iterator it = current_pages.begin(); it != current_pages.end(); it++)
-    //{
-    //    log(GREEN, "location = ", it->location_path);
-    //    for (std::vector<std::string>::iterator rit = it->methods.begin(); rit != it->methods.end(); rit++)
-    //        log(GREEN, "ALLOWED METHOD = ", *rit);
-    //    log(GREEN, "autoindex = ", it->autoindex);
-    //    log(GREEN, "is CGI = ", it->is_cgi);
-    //}
+=======
+        //for (std::vector<page>::iterator it = current_pages.begin(); it != current_pages.end(); it++)
+        //{
+        //    log(GREEN, "location = ", it->location_path);
+        //    for (std::vector<std::string>::iterator rit = it->methods.begin(); rit != it->methods.end(); rit++)
+        //        log(GREEN, "ALLOWED METHOD = ", *rit);
+        //    log(GREEN, "autoindex = ", it->autoindex);
+        //    log(GREEN, "is CGI = ", it->is_cgi);
+        //}
+        log(RED, "----------------------------------------------------------", 0);
+    }
+>>>>>>> 2d43557884ee6be2ec3be60f7015efff3eeeef26
     return ;
 }
 
 Webserv::~Webserv()
+<<<<<<< HEAD
+=======
+{
+    return ;
+}
+
+void    Webserv::close_all(std::vector<int> &sockets)
+>>>>>>> 2d43557884ee6be2ec3be60f7015efff3eeeef26
 {
     return ;
 }
@@ -214,6 +238,7 @@ void    Webserv::transmit_data()
 int     Webserv::run_server()
 {
     struct timeval timeout;
+    char buffer[1024];
     int end_server;
     int rc;
     
@@ -250,3 +275,82 @@ int     Webserv::run_server()
     close_all();
     return 0;
 }
+
+<<<<<<< HEAD
+=======
+std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;    };
+std::vector<int>&            Webserv::getPorts()        {   return _ports;  };
+>>>>>>> 2d43557884ee6be2ec3be60f7015efff3eeeef26
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
+<<<<<<< HEAD
+/*   Updated: 2022/08/12 17:09:18 by ablondel         ###   ########.fr       */
+=======
+/*   Updated: 2022/08/11 16:13:41 by mlazzare         ###   ########.fr       */
+>>>>>>> 2d43557884ee6be2ec3be60f7015efff3eeeef26
+/*                                                                            */
+/* ************************************************************************** */
+
+# include "../inc/Webserv.hpp"
+# include "../inc/Cgi.hpp"
+# include "../inc/Config.hpp"
+# include "../inc/ServerInfo.hpp"
+
+int main(int argc, char **args, char **envp)
+{
+    Config  config;
+
+    if (argc != 2)
+    {
+        std::cout << "Please provide ONE argument only\nUsage: ./webserv [configuration file]\n";
+        return EXIT_FAILURE;
+    }
+    if (config.read(args[1], envp))
+    {
+        // Cgi     CGI;
+
+        // std::fstream file2test;
+        // std::string pwd = getenv("PWD");
+        // file2test.open(pwd + "/pages/website1/hello.html", std::fstream::in | std::fstream::out | std::fstream::app);
+        // std::string html_content;
+        // std::string line;
+        // file2test.seekg(0); // only for mac
+        // while (getline(file2test, line))
+        //     html_content.append(line);
+        // file2test.close();
+        // std::cout << "Webserv class starts here\n";
+        // if (CGI.isCGI_request(html_content))
+        // {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());       };
+        Webserv webserv(config.getServers());
+        webserv.run_server();
+        //return EXIT_SUCCESS;
+        /*
+        Add function to get ports from config into a vector
+        Now its done in the constructor above.
+        */
+        size_t size = webserv.getPorts().size();
+        std::vector<int> sockets(size);
+        std::vector<struct sockaddr_in> addrs;//(size);
+        webserv.run_server(addrs);
+        
+        // return EXIT_SUCCESS;
+    }
+    return EXIT_FAILURE;
+}
+
+
