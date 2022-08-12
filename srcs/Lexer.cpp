@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Lexer.cpp                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/08/12 16:33:26 by mlazzare          #+#    #+#             */
+/*   Updated: 2022/08/12 16:33:27 by mlazzare         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 # include "../inc/Lexer.hpp"
 
 Lexer::Lexer()      {} 
@@ -329,3 +341,24 @@ std::vector<std::string>     Lexer::split(std::string line)
         current_line.push_back(line.substr(prev, std::string::npos));
     return current_line;
 }
+
+// ************
+// TOKEN class
+// ************
+
+Token::Token()                                              {}
+Token::Token(std::string c, size_t p) : _content(c), 
+                                        _type("None"), 
+                                        _pos(p), 
+                                        _allowed_words(0)   {}
+Token::~Token()                                             {}
+
+void 			Token::setType(std::string t) 			{ 	_type = t;		 		}
+void 			Token::setContent(std::string c) 		{ 	_content = c; 			}
+void 			Token::setPos(size_t p) 				{	_pos = p; 				}
+void 			Token::setAllowedWords(size_t p) 		{ 	_allowed_words = p; 	}
+
+std::string 	Token::getType() 						{ 	return _type; 			}
+std::string 	Token::getContent() 					{	return _content; 		}
+size_t 			Token::getPos() 						{ 	return _pos; 			}
+size_t 			Token::getAllowedWords() 				{ 	return _allowed_words; 	}

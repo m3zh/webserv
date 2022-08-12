@@ -4,11 +4,11 @@ CXX 	 = c++
 CXXFLAGS = -Wall -Werror -Wextra -g #-std=c++98
 
 SRCS	=	srcs/main.cpp		\
-			srcs/Token.cpp		\
 			srcs/Lexer.cpp		\
 			srcs/Config.cpp		\
 			srcs/ServerInfo.cpp		\
 			srcs/Webserv.cpp	\
+			srcs/Exception.cpp	\
 			srcs/Cgi.cpp	
 
 INC		=	inc/
