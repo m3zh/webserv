@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 19:27:12 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/15 10:03:55 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # pragma once
 # include "../inc/Config.hpp"
+# include "../inc/Exception.hpp"
 #define GREEN "\e[92m"
 #define RED	"\033[31m"
 #define RESET "\033[0m"

@@ -3,17 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 19:26:24 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/15 11:38:54 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/Webserv.hpp"
 # include "../inc/Cgi.hpp"
-# include "../inc/Config.hpp"
-# include "../inc/ServerInfo.hpp"
 
 int main(int argc, char **args, char **envp)
 {
@@ -40,8 +38,13 @@ int main(int argc, char **args, char **envp)
         // std::cout << "Webserv class starts here\n";
         // if (CGI.isCGI_request(html_content))
         // {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());       };
-        Webserv webserv(config.getServers());
-        webserv.run_server();        
+
+        try {
+            Webserv webserv(config.getServers());
+            webserv.run_server();
+            throw Exception<int>(RED, "something ain't right", 555);
+        }
+        catch (Exception<int>& e){    std::cout << e.what() << std::endl;      };      
         // return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
