@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/10 08:34:06 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/12 19:27:12 by ablondel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,22 +42,31 @@ class Cgi;
 class Webserv: public ServerInfo
 {
     private:
+        int                             _max;
+        int                             _connection;
         size_t                          _size;
         std::vector<ServerInfo>         _servers;
+        std::vector<int>                _clients;
         std::vector<int>                _ports;
         std::vector<int>                _sockets;
         std::vector<struct sockaddr_in> _addrs;
+        fd_set                          _current_set;
+        fd_set                          _read_set;
 
     public:
         Webserv(std::vector<ServerInfo> &s);
-        Webserv();
         ~Webserv();
 
         std::vector<ServerInfo>&    getServers();
-        std::vector<int>&           getPorts();
+        std::vector<int>&           getWbsrvPorts();
 
+        bool    isCGI_request(std::string html_content);            // check if action and method fit for cgi
+        void    close_all();
+        int     set_server();
         void    close_all(std::vector<int> &sockets);
         int     set_server(std::vector<struct sockaddr_in> &addrs);
         void    parse_request(std::string &request);
-        int     run_server(std::vector<struct sockaddr_in> &addrs);
+        int     run_server();
+        void    accept_clients();
+        void    transmit_data();
 };
