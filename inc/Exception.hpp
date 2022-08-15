@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 15:28:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/15 11:38:24 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/15 12:05:38 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # include <iostream>
 # include <typeinfo>
 # include <string>
+# include <string.h>
 # include <sstream>
 
 # define GREEN  "\e[92m"
@@ -31,8 +32,9 @@ class Exception : public std::exception
         Exception(const char* colour, const char*   message, T var)  {   
                                                                 std::string clr(colour);
                                                                 std::string msg(message);
-                                                                std::string t_type = std::to_string(var);
-                                                                _err = clr + msg + ": " + t_type;
+                                                                std::stringstream ss;
+                                                                ss << var;
+                                                                _err = clr + msg + ": " + ss.str();
                                                             };
         ~Exception() {};
 
