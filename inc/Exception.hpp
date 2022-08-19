@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 15:28:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/15 12:05:38 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/19 15:21:08 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ class Exception : public std::exception
                                                             };
         ~Exception() {};
 
-    virtual const char* what() const throw()
+    const char* what() const noexcept override
     {
         return _err.c_str();
     }
