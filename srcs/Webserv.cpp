@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 19:28:38 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/24 15:49:37 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,8 @@ void    Webserv::transmit_data()
     {
         bzero(&buffer, sizeof(buffer)); /* Clear the buffer */
         rd = recv(*it, buffer, sizeof(buffer), 0);
+
+        std::cout << "Request from " << *it << " : " << buffer << std::endl;
         //std::string request(buffer);
         //log(RED, "request contains: ", request);
         //if (request.length() > 0)

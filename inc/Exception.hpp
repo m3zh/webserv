@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Exception.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 15:28:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/19 15:21:08 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/08/23 17:51:39 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,24 +22,24 @@
 # define RED	"\033[31m"
 # define RESET  "\033[0m"
 
-template< typename T >
-class Exception : public std::exception
-{
-    private:
-        std::string   _err;
+//template< typename T >
+//class Exception : public std::exception
+//{
+//    private:
+//        std::string   _err;
 
-    public:
-        Exception(const char* colour, const char*   message, T var)  {   
-                                                                std::string clr(colour);
-                                                                std::string msg(message);
-                                                                std::stringstream ss;
-                                                                ss << var;
-                                                                _err = clr + msg + ": " + ss.str();
-                                                            };
-        ~Exception() {};
+//    public:
+//        Exception(const char* colour, const char*   message, T var)  {   
+//                                                                std::string clr(colour);
+//                                                                std::string msg(message);
+//                                                                std::stringstream ss;
+//                                                                ss << var;
+//                                                                _err = clr + msg + ": " + ss.str();
+//                                                            };
+//        ~Exception() {};
 
-    const char* what() const noexcept override
-    {
-        return _err.c_str();
-    }
-};
+//    const char* what() const noexcept override
+//    {
+//        return _err.c_str();
+//    }
+//};
