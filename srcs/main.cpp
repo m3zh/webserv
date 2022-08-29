@@ -42,10 +42,10 @@ int main(int argc, char **args, char **envp)
         try {
             Webserv webserv(config.getServers());
             webserv.run_server();
-            throw Exception<int>(RED, "something ain't right", 555);              // templated class, works as well with
-                                                                                  // Exception<std::string>(RED, "something ain't right", "555");
+            throw WebException<std::string>(RED, "something ain't right", "555");              // templated class, works as well with
+                                                                                  // WebException<std::string>(RED, "something ain't right", "555");
         }
-        catch (Exception<int>& e){    std::cout << e.what() << std::endl;      };      
+        catch (WebException<std::string>& e){    std::cout << e.what() << std::endl;      };      
         // return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
