@@ -93,7 +93,7 @@ bool            Lexer::tag(Token& token)
         return  setNamespaceParams(token);
     else if (token_content.find("/") == 0 || token_content.compare(0, 2, "./") == 0)    // if it starts with a / it's a path.
         return  setPathParams(token);
-    else if (match_anystring(token_content, method_types, 6))
+    else if (match_anystring(token_content, method_types, 5))
         { token.setType("Method"); return true;             }
     else if (match_anystring(token_content, key_types, 13))
         return  setKeyParams(token);
@@ -319,8 +319,13 @@ std::string     Lexer::trim(std::string s)
 int             Lexer::match_anystring(std::string word, std::string set[], size_t len)
 {
     for ( size_t i = 0; i < len; i++ )
+    {
+
+        // if (! set[i].empty() && word == set[i])
+        std::cout << set[i] << ", " << len << std::endl;
         if (! set[i].empty() && word == set[i])
             return 1;
+    }
     return 0;
 }
 
