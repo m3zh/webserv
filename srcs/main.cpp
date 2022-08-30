@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/23 17:50:28 by artmende         ###   ########.fr       */
+/*   Updated: 2022/08/30 15:33:02 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ int main(int argc, char **args, char **envp)
     {
         // Cgi     CGI;
 
+
         // std::fstream file2test;
         // std::string pwd = getenv("PWD");
         // file2test.open(pwd + "/pages/website1/hello.html", std::fstream::in | std::fstream::out | std::fstream::app);
@@ -41,6 +42,7 @@ int main(int argc, char **args, char **envp)
 
         //try {
             Webserv webserv(config.getServers());
+
             webserv.run_server();
         //    throw Exception<int>(RED, "something ain't right", 555);              // templated class, works as well with
         //                                                                          // Exception<std::string>(RED, "something ain't right", "555");

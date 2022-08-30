@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/24 15:49:37 by artmende         ###   ########.fr       */
+/*   Updated: 2022/08/30 15:34:48 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ void    Webserv::accept_clients()
             _clients.push_back(_connection);
             if (_connection >= _max)
                 _max = _connection;
-            break ;
+            break ; // as soon as a client is pushed back, we break out of the for loop
         }
     }
 }
@@ -178,48 +178,45 @@ void    Webserv::transmit_data()
     index.append(buffer, ifs.gcount());
     ok.append(index);
     /////////////////////////////////////////
-    for (std::vector<int>::iterator it = _clients.begin(); it != _clients.end(); it++)
+    for (std::vector<int>::iterator it = _clients.begin(); it != _clients.end(); it++) // Is it possible to have more than 1 inside of this vector ?
     {
         bzero(&buffer, sizeof(buffer)); /* Clear the buffer */
         rd = recv(*it, buffer, sizeof(buffer), 0);
 
-        std::cout << "Request from " << *it << " : " << buffer << std::endl;
+
+
+        std::cout << "Request from " << *it << " : \n---------------------------" << buffer << "-----------------------" << std::endl;
         //std::string request(buffer);
         //log(RED, "request contains: ", request);
         //if (request.length() > 0)
         //    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
         //parse_request(request);
         //request.clear();
-        if (rd < 0)
-        {
-            break ;
-        }
-        if (rd == 0)
-        {
-            break ;
-        }
+        if (rd <= 0)
+            break;
+        Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
+
+        std::cout << "\nData recovered :\nMethod : " << req._method << "\nLocation : " << req._location << "\nVersion : " << req._http_version << std::endl;
+
+        std::cout << "header is : \n+++++++\n" << req._header << "\n++++++" << std::endl;
+
         rw = send(*it, ok.c_str(), ok.size(), 0);
-        if (rw < 0)
-        {
-            break ;
-        }
-        if (rw == 0)
-        {
-            break ;
-        }
+        if (rw <= 0)
+            break;
         close(*it);
         FD_CLR(*it, &_current_set);
-        _clients.erase(it);
+        //_clients.erase(it);
     }
+    _clients.clear();
 }
 
 int     Webserv::run_server()
 {
     struct timeval timeout;
-    int end_server;
+    //int end_server;
     int rc;
     
-    end_server = false;
+    //end_server = false;
     rc = set_server();
     if (rc < 0)
         return -1;
@@ -227,25 +224,17 @@ int     Webserv::run_server()
     _max = _sockets.back();
     for (std::vector<int>::iterator it = _sockets.begin(); it != _sockets.end(); it++)
         FD_SET(*it, &_current_set);
-    while (end_server == false)
+    while (/*end_server == false*/ true)
     {
+        std::cout << "in while\n";
         FD_ZERO(&_read_set);
         timeout.tv_usec = 0;
         timeout.tv_sec = 3 * 60;
         _read_set = _current_set;
+ //       accept_clients();
         rc = select(_max + 1, &_read_set, NULL, NULL, &timeout);
-        if (rc < 0) // select() error
-        {
-            close_all();
-            end_server = true;
-            break ;
-        }
-        if (rc == 0) // select() timeout
-        {
-            close_all();
-            end_server = true;
-            break ;
-        }
+        if (rc <= 0) // negative is select() error and 0 is select() timeout
+            break;
         transmit_data();
         accept_clients();
     }
