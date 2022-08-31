@@ -319,13 +319,8 @@ std::string     Lexer::trim(std::string s)
 int             Lexer::match_anystring(std::string word, std::string set[], size_t len)
 {
     for ( size_t i = 0; i < len; i++ )
-    {
-
-        // if (! set[i].empty() && word == set[i])
-        std::cout << set[i] << ", " << len << std::endl;
         if (! set[i].empty() && word == set[i])
             return 1;
-    }
     return 0;
 }
 

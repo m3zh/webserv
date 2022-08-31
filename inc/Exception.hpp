@@ -18,6 +18,10 @@
 # include <string.h>
 # include <sstream>
 
+#if defined(__unix__)
+    #define _NOEXCEPT noexcept
+#endif
+
 # define GREEN  "\e[92m"
 # define RED	"\033[31m"
 # define RESET  "\033[0m"
