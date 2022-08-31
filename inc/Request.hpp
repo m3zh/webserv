@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/08/31 16:41:12 by artmende         ###   ########.fr       */
+/*   Updated: 2022/08/31 18:39:16 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,21 +22,24 @@ class Request
 {
 private:
 public:
-    std::string         _method;
-    std::string         _location;
-    std::string         _http_version;
-    std::string         _content_type;
-    int                 _content_length;
-    std::string         _header;
-    std::string         _body;
-
-    std::stringstream   _request_stream;
-
+    std::stringstream                   _raw_request; // this contains the request untouched
+    std::string                         _method;
+    std::string                         _location;
+    std::string                         _http_version;
     std::map<std::string, std::string>  _header_map;
+    std::stringstream                   _body;
+
+    void    _get_method_location_version(std::string raw_request)
+    {
+        std::stringstream   temp_stream;
+        temp_stream.str(raw_request);
+        temp_stream >> this->_method;
+        temp_stream >> this->_location;
+        temp_stream >> this->_http_version;
+    }
 
     void    _fill_header_map(std::string raw_request)
     {
-        std::remove(raw_request.begin(), raw_request.end(), '\r'); // remove all \r occurences from the string
         raw_request.erase(0, 1 + raw_request.find('\n')); // delete the first line, as it's not part of the header
         raw_request.erase(raw_request.find("\n\n"), std::string::npos); // delete all that is after the header
 
@@ -59,6 +62,13 @@ public:
         }
     }
 
+    void    _fill_body_stream(std::string raw_request)
+    {
+        std::string body(raw_request, raw_request.find("\n\n") + 2);
+        this->_body.str(body);
+    }
+
+
     Request();
     Request(Request const & x);
     Request &   operator=(Request const & x);
@@ -66,31 +76,41 @@ public:
 
     Request(std::string raw_request)
     {
+        this->_raw_request.str(raw_request);
+        std::remove(raw_request.begin(), raw_request.end(), '\r'); // remove all \r occurences from the string
+        this->_get_method_location_version(raw_request);
         this->_fill_header_map(raw_request);
-
-        std::remove(raw_request.begin(), raw_request.end(), '\r');
-        this->_request_stream.str(raw_request);
-        this->_request_stream >> this->_method; // GET / HTTP/1.1
-        this->_request_stream >> this->_location;
-        this->_request_stream >> this->_http_version;
-
-  //      std::string str(this->_request_stream.str().c_str(), strstr(this->_request_stream.str().c_str(), "\n\n"))
-
-
-        //std::cout << "nbr of char is : " << (this->_request_stream.str().begin() + this->_request_stream.str().find("\n")) - (this->_request_stream.str().begin() + this->_request_stream.str().find("\n\n")) << std::endl;
-        //std::cout << "nbr of char is : " << (-1 + this->_request_stream.str().find("\n\n") - this->_request_stream.str().find("\n")) << std::endl;
-
-        //this->_header.assign(this->_request_stream.str().c_str(), 1 + this->_request_stream.str().find("\n"), -1 + this->_request_stream.str().find("\n\n") - this->_request_stream.str().find("\n"));
-
-  //      strstr(this->_request_stream.str().c_str(), "\n\n");
-
+        this->_fill_body_stream(raw_request);
     }
     ~Request() {}
 
+    std::stringstream & get_raw_request()
+    {
+        return (this->_raw_request);
+    }
+
+    std::string &   get_method()
+    {
+        return (this->_method);
+    }
+
+    std::string &   get_location()
+    {
+        return (this->_location);
+    }
+
+    std::string &   get_http_version()
+    {
+        return (this->_http_version);
+    }
 
     std::map<std::string, std::string> &    get_header_map()
     {
         return (this->_header_map);
     }
 
+    std::stringstream & get_body()
+    {
+        return (this->_body);
+    }
 };
