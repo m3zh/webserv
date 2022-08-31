@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablondel <ablondel@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/20 12:14:31 by ablondel         ###   ########.fr       */
+/*   Updated: 2022/08/31 16:50:56 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ int main(int argc, char **args, char **envp)
     {
         // Cgi     CGI;
 
+
         // std::fstream file2test;
         // std::string pwd = getenv("PWD");
         // file2test.open(pwd + "/pages/website1/hello.html", std::fstream::in | std::fstream::out | std::fstream::app);
@@ -41,6 +42,7 @@ int main(int argc, char **args, char **envp)
 
         try {
             Webserv webserv(config.getServers());
+
             webserv.run_server();
             throw WebException<std::string>(RED, "something ain't right", "555");              // templated class, works as well with
                                                                                   // WebException<std::string>(RED, "something ain't right", "555");
