@@ -8,7 +8,6 @@ SRCS	=	srcs/main.cpp		\
 			srcs/Config.cpp		\
 			srcs/ServerInfo.cpp		\
 			srcs/Webserv.cpp	\
-			srcs/Exception.cpp	\
 			srcs/Cgi.cpp	
 
 INC		=	inc/

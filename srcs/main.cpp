@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/30 15:33:02 by artmende         ###   ########.fr       */
+/*   Updated: 2022/08/31 16:48:03 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,10 @@ int main(int argc, char **args, char **envp)
             Webserv webserv(config.getServers());
 
             webserv.run_server();
-        //    throw Exception<int>(RED, "something ain't right", 555);              // templated class, works as well with
-        //                                                                          // Exception<std::string>(RED, "something ain't right", "555");
-        //}
-        //catch (Exception<int>& e){    std::cout << e.what() << std::endl;      };      
+            throw WebException<std::string>(RED, "something ain't right", "555");              // templated class, works as well with
+                                                                                  // WebException<std::string>(RED, "something ain't right", "555");
+        }
+        catch (WebException<std::string>& e){    std::cout << e.what() << std::endl;      };      
         // return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;

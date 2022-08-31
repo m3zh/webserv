@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Exception.hpp                                      :+:      :+:    :+:   */
+/*   WebException.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -18,28 +18,32 @@
 # include <string.h>
 # include <sstream>
 
+#if defined(__unix__)
+    #define _NOEXCEPT noexcept
+#endif
+
 # define GREEN  "\e[92m"
 # define RED	"\033[31m"
 # define RESET  "\033[0m"
 
-//template< typename T >
-//class Exception : public std::exception
-//{
-//    private:
-//        std::string   _err;
+template< typename T >
+class WebException : public std::exception
+{
+    private:
+        std::string   _err;
 
-//    public:
-//        Exception(const char* colour, const char*   message, T var)  {   
-//                                                                std::string clr(colour);
-//                                                                std::string msg(message);
-//                                                                std::stringstream ss;
-//                                                                ss << var;
-//                                                                _err = clr + msg + ": " + ss.str();
-//                                                            };
-//        ~Exception() {};
+    public:
+        WebException(const char* colour, const char*   message, T var)  {   
+                                                                std::string clr(colour);
+                                                                std::string msg(message);
+                                                                std::stringstream ss;
+                                                                ss << var;
+                                                                _err = clr + msg + ": " + ss.str();
+                                                            };
+        virtual ~WebException() _NOEXCEPT {};
 
-//    const char* what() const noexcept override
-//    {
-//        return _err.c_str();
-//    }
-//};
+    virtual const char* what() const _NOEXCEPT
+    {
+        return _err.c_str();
+    };
+};
