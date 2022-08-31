@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/31 16:48:03 by artmende         ###   ########.fr       */
+/*   Updated: 2022/08/31 16:50:56 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int main(int argc, char **args, char **envp)
         // if (CGI.isCGI_request(html_content))
         // {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());       };
 
-        //try {
+        try {
             Webserv webserv(config.getServers());
 
             webserv.run_server();
