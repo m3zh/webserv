@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/30 15:34:48 by artmende         ###   ########.fr       */
+/*   Updated: 2022/08/31 16:31:11 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ void    Webserv::transmit_data()
 
 
 
-        std::cout << "Request from " << *it << " : \n---------------------------" << buffer << "-----------------------" << std::endl;
+        std::cout << "Request from " << *it << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
         //std::string request(buffer);
         //log(RED, "request contains: ", request);
         //if (request.length() > 0)
@@ -198,7 +198,13 @@ void    Webserv::transmit_data()
 
         std::cout << "\nData recovered :\nMethod : " << req._method << "\nLocation : " << req._location << "\nVersion : " << req._http_version << std::endl;
 
-        std::cout << "header is : \n+++++++\n" << req._header << "\n++++++" << std::endl;
+        std::cout << "header is : \n+++++++\n";// << req._header << "\n++++++" << std::endl;
+
+        for (std::map<std::string, std::string>::iterator   it = req._header_map.begin(); it != req._header_map.end(); ++it)
+        {
+            std::cout << (*it).first << ": " << (*it).second << std::endl;
+        }
+        std::cout << "++++++++++++\n";
 
         rw = send(*it, ok.c_str(), ok.size(), 0);
         if (rw <= 0)
