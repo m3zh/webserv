@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/04 18:24:43 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/04 18:28:58 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,6 +167,7 @@ void    Webserv::parse_request(std::string &request)
 void    Webserv::transmit_data()
 {
     int rd = 0;
+    (void)rd; //why ?
     int rw = 0;
     char buffer[1024];
     /////////////////////////////////////DATA TESTS
@@ -233,7 +234,6 @@ int     Webserv::run_server()
         FD_SET(*it, &_current_set);
     while (/*end_server == false*/ true)
     {
-        std::cout << "in while\n";
         FD_ZERO(&_read_set);
         timeout.tv_usec = 0;
         timeout.tv_sec = 3 * 60;
