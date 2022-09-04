@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/04 16:18:09 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/04 18:14:12 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,18 +46,24 @@ public:
         temp_stream >> this->_http_version;
     }
 
-    void    _fill_header_map(std::string raw_request)
+    void    _fill_header_map(std::string raw_request) // there is a bug at the last line retrived
     {
 //        raw_request.erase(0, 1 + raw_request.find('\n')); // delete the first line, as it's not part of the header
 //        raw_request.erase(raw_request.find("\n\n"), std::string::npos); // delete all that is after the header
 
+        std::remove(raw_request.begin(), raw_request.end(), '\r'); // remove all \r occurences from the string
+
         std::stringstream   temp_stream;
         temp_stream.str(raw_request);
+
+        std::cout << "raw_request is +++++++++++++\n" << raw_request << "\n+++++++++++\n";
 
         while (temp_stream.good()) // gonna be false if error or when EOF is reached
         { // each line has format KEY: VALUE | Same Key can be encountered more than once
             std::string temp_string;
             std::getline(temp_stream, temp_string);
+
+            std::cout << "line retrieved is |" << temp_string << "|\n";
 
             size_t  index_of_colon = temp_string.find(':');
             std::string key(temp_string, 0, index_of_colon);
@@ -88,7 +94,7 @@ public:
 
         this->_get_method_location_version(raw_request.substr(0, raw_request.find('\n')));
         this->_index_beginning_body = 4 + raw_request.find("\r\n\r\n");
-        this->_fill_header_map(raw_request.substr(raw_request.find('\n'), this->_index_beginning_body - 4));
+        this->_fill_header_map(raw_request.substr(1 + raw_request.find('\n'), this->_index_beginning_body - (5 + raw_request.find('\n'))));
     }
     ~Request() {}
 

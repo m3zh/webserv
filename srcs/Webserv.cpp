@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/04 16:18:35 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/04 18:24:43 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,9 +132,10 @@ int     Webserv::set_server()
 
 void    Webserv::accept_clients()
 {
+    //std::cout << "_sockets size is : " << _sockets.size() << " and _max is " << _max << std::endl;
     for (int i = 0; i < _max; i++)
     {
-        if (FD_ISSET(_sockets[i], &_read_set)) // this line creates a SEGFAULT in linux
+        if ((unsigned long)i < _sockets.size() && FD_ISSET(_sockets[i], &_read_set)) // this line creates a SEGFAULT in linux
         {
             socklen_t len = sizeof(sockaddr[i]);
             _connection = accept(_sockets[i], (struct sockaddr*)&_addrs[i], &len);
@@ -185,26 +186,26 @@ void    Webserv::transmit_data()
 
 
 
-        std::cout << "Request from " << *it << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
-        //std::string request(buffer);
-        //log(RED, "request contains: ", request);
-        //if (request.length() > 0)
-        //    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
-        //parse_request(request);
-        //request.clear();
-        if (rd <= 0)
-            break;
-        Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
+        //std::cout << "Request from " << *it << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
+        ////std::string request(buffer);
+        ////log(RED, "request contains: ", request);
+        ////if (request.length() > 0)
+        ////    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
+        ////parse_request(request);
+        ////request.clear();
+        //if (rd <= 0)
+        //    break;
+        //Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
 
-        std::cout << "\nData recovered :\nMethod : " << req._method << "\nLocation : " << req._location << "\nVersion : " << req._http_version << std::endl;
+        //std::cout << "\nData recovered :\nMethod : " << req._method << "\nLocation : " << req._location << "\nVersion : " << req._http_version << std::endl;
 
-        std::cout << "header is : \n+++++++\n";// << req._header << "\n++++++" << std::endl;
+        //std::cout << "header is : \n+++++++\n";// << req._header << "\n++++++" << std::endl;
 
-        for (std::map<std::string, std::string>::iterator   it = req._header_map.begin(); it != req._header_map.end(); ++it)
-        {
-            std::cout << (*it).first << ": " << (*it).second << std::endl;
-        }
-        std::cout << "++++++++++++\n";
+        //for (std::map<std::string, std::string>::iterator   it = req._header_map.begin(); it != req._header_map.end(); ++it)
+        //{
+        //    std::cout << (*it).first << ": " << (*it).second << std::endl;
+        //}
+        //std::cout << "++++++++++++\n";
 
         rw = send(*it, ok.c_str(), ok.size(), 0);
         if (rw <= 0)
@@ -237,7 +238,7 @@ int     Webserv::run_server()
         timeout.tv_usec = 0;
         timeout.tv_sec = 3 * 60;
         _read_set = _current_set;
- //       accept_clients();
+ //       accept_clients(); doesnt work if placed here
         rc = select(_max + 1, &_read_set, NULL, NULL, &timeout);
         if (rc <= 0) // negative is select() error and 0 is select() timeout
             break;
