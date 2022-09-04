@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/08/31 18:39:16 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/04 16:18:09 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,19 +18,27 @@
 #include <cstring>
 #include <map>
 
+// Change the way request is parsed. Receive the full request in a string.
+// parse first line and header with small substr, and store the index of the beginning of body
+// in a separate attribute
+// No need to alter or copy the original raw request at all.
+
+
 class Request
 {
 private:
 public:
-    std::stringstream                   _raw_request; // this contains the request untouched
+    std::string                         _raw_request; // this contains the request untouched // make it a string
     std::string                         _method;
     std::string                         _location;
     std::string                         _http_version;
     std::map<std::string, std::string>  _header_map;
-    std::stringstream                   _body;
+//    std::stringstream                   _body; // no need
+    size_t                              _index_beginning_body; // = std::string::npos in case there is no body
 
     void    _get_method_location_version(std::string raw_request)
     {
+        std::remove(raw_request.begin(), raw_request.end(), '\r'); // remove all \r occurences from the string
         std::stringstream   temp_stream;
         temp_stream.str(raw_request);
         temp_stream >> this->_method;
@@ -40,8 +48,8 @@ public:
 
     void    _fill_header_map(std::string raw_request)
     {
-        raw_request.erase(0, 1 + raw_request.find('\n')); // delete the first line, as it's not part of the header
-        raw_request.erase(raw_request.find("\n\n"), std::string::npos); // delete all that is after the header
+//        raw_request.erase(0, 1 + raw_request.find('\n')); // delete the first line, as it's not part of the header
+//        raw_request.erase(raw_request.find("\n\n"), std::string::npos); // delete all that is after the header
 
         std::stringstream   temp_stream;
         temp_stream.str(raw_request);
@@ -62,11 +70,7 @@ public:
         }
     }
 
-    void    _fill_body_stream(std::string raw_request)
-    {
-        std::string body(raw_request, raw_request.find("\n\n") + 2);
-        this->_body.str(body);
-    }
+
 
 
     Request();
@@ -74,17 +78,21 @@ public:
     Request &   operator=(Request const & x);
 public:
 
-    Request(std::string raw_request)
+    Request(std::string raw_request) : _raw_request(raw_request) // potentially we could just use reference and not copy at all from buffer ?
     {
-        this->_raw_request.str(raw_request);
-        std::remove(raw_request.begin(), raw_request.end(), '\r'); // remove all \r occurences from the string
-        this->_get_method_location_version(raw_request);
-        this->_fill_header_map(raw_request);
-        this->_fill_body_stream(raw_request);
+        // First method, location and version of the request are extracted.
+        // Then all header data are put in a std::map
+        // Then the body of the request is saved separately
+
+//        std::remove(raw_request.begin(), raw_request.end(), '\r'); // remove all \r occurences from the string
+
+        this->_get_method_location_version(raw_request.substr(0, raw_request.find('\n')));
+        this->_index_beginning_body = 4 + raw_request.find("\r\n\r\n");
+        this->_fill_header_map(raw_request.substr(raw_request.find('\n'), this->_index_beginning_body - 4));
     }
     ~Request() {}
 
-    std::stringstream & get_raw_request()
+    std::string & get_raw_request()
     {
         return (this->_raw_request);
     }
@@ -109,8 +117,8 @@ public:
         return (this->_header_map);
     }
 
-    std::stringstream & get_body()
-    {
-        return (this->_body);
-    }
+    // std::stringstream & get_body()
+    // {
+    //     return (this->_body);
+    // }
 };

@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/31 16:31:11 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/04 16:18:35 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,7 @@ void    Webserv::accept_clients()
 {
     for (int i = 0; i < _max; i++)
     {
-        if (FD_ISSET(_sockets[i], &_read_set))
+        if (FD_ISSET(_sockets[i], &_read_set)) // this line creates a SEGFAULT in linux
         {
             socklen_t len = sizeof(sockaddr[i]);
             _connection = accept(_sockets[i], (struct sockaddr*)&_addrs[i], &len);
