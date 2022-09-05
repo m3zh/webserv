@@ -14,12 +14,13 @@
 
 # include "../inc/Webserv.hpp"
 
+bool keep_alive = true;
+
 std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;  };
 std::vector<int>&            Webserv::getWbsrvPorts()        {   return _ports;  };
 
 Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
 {
-    keep_alive = true;
     std::vector<int> tmp(s.size());
     _sockets = tmp;
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
@@ -198,7 +199,7 @@ int     Webserv::run_server()
     _max = _sockets.back();
     for (std::vector<int>::iterator it = _sockets.begin(); it != _sockets.end(); it++)
         FD_SET(*it, &_current_set);
-    signal(SIG_INT, signal_handler);
+    signal(SIGINT, signal_handler);
     while (/*end_server == false*/ keep_alive)
     {
         std::cout << "in while\n";
@@ -219,7 +220,8 @@ int     Webserv::run_server()
 
 void signal_handler(int signum)
 {
-    keep_alive = false;
+    if (signum == SIGINT)
+        keep_alive = false;
     std::cout << "Received SIGINT signal\n";
     std::cout << "Shutting down gracefully ...\n";
 }

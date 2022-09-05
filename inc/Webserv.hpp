@@ -12,7 +12,7 @@
 
 # pragma once
 
-static bool keep_alive;
+extern bool keep_alive;
 
 # include "../inc/Config.hpp"
 # include "../inc/Exception.hpp"
