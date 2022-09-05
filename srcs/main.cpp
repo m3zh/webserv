@@ -24,22 +24,6 @@ int main(int argc, char **args, char **envp)
     }
     if (config.read(args[1], envp))
     {
-        // Cgi     CGI;
-
-
-        // std::fstream file2test;
-        // std::string pwd = getenv("PWD");
-        // file2test.open(pwd + "/pages/website1/hello.html", std::fstream::in | std::fstream::out | std::fstream::app);
-        // std::string html_content;
-        // std::string line;
-        // file2test.seekg(0); // only for mac
-        // while (getline(file2test, line))
-        //     html_content.append(line);
-        // file2test.close();
-        // std::cout << "Webserv class starts here\n";
-        // if (CGI.isCGI_request(html_content))
-        // {    std::cout << "Ready4CGI\n";  CGI.exec_CGI(CGI.get_CGIrequest());       };
-
         try {
             Webserv webserv(config.getServers());
 

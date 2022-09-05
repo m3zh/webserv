@@ -11,6 +11,9 @@
 /* ************************************************************************** */
 
 # pragma once
+
+static bool keep_alive;
+
 # include "../inc/Config.hpp"
 # include "../inc/Exception.hpp"
 #define GREEN "\e[92m"
@@ -32,6 +35,9 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+
+# include <csignal>
+
 #define BACKLOG 255
 #define NBPORTS 3
 #define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
@@ -73,3 +79,5 @@ class Webserv: public ServerInfo
         void    accept_clients();
         void    transmit_data();
 };
+
+void signal_handler(int signum);
