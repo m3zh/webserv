@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/04 18:28:58 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/05 15:21:33 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,29 +184,33 @@ void    Webserv::transmit_data()
     {
         bzero(&buffer, sizeof(buffer)); /* Clear the buffer */
         rd = recv(*it, buffer, sizeof(buffer), 0);
+        if (rd <= 0)
+            break;
+
+///////////////////////////////////////////////////////////////////////
+
+        std::cout << "Request from " << *it << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
 
 
+        Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
 
-        //std::cout << "Request from " << *it << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
-        ////std::string request(buffer);
-        ////log(RED, "request contains: ", request);
-        ////if (request.length() > 0)
-        ////    printf("\x1B[32m[[DATA RECEIVED]]\x1B[0m\n\n%s", request.c_str());
-        ////parse_request(request);
-        ////request.clear();
-        //if (rd <= 0)
-        //    break;
-        //Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
+        std::cout << "Data recovered from the request : \n";
+        std::cout << "method : " << req.get_method() << std::endl;
+        std::cout << "location : " << req.get_location() << std::endl;
+        std::cout << "http version : " << req.get_http_version() << std::endl;
+        std::cout << "\nDisplaying header map : \n";
+        for (std::map<std::string, std::string>::const_iterator it = req.get_header_map().begin(); it != req.get_header_map().end(); ++it)
+        {
+            std::cout << (*it).first << ": " << (*it).second << std::endl;
+        }
+        if (req.get_index_beginning_body() != std::string::npos) // it means there is a body
+        {
+            std::cout << "\nDisplaying the request body :\n";
+            std::cout << req.get_body() << std::endl;
+        }
+        std::cout << "\n\n";
 
-        //std::cout << "\nData recovered :\nMethod : " << req._method << "\nLocation : " << req._location << "\nVersion : " << req._http_version << std::endl;
-
-        //std::cout << "header is : \n+++++++\n";// << req._header << "\n++++++" << std::endl;
-
-        //for (std::map<std::string, std::string>::iterator   it = req._header_map.begin(); it != req._header_map.end(); ++it)
-        //{
-        //    std::cout << (*it).first << ": " << (*it).second << std::endl;
-        //}
-        //std::cout << "++++++++++++\n";
+//////////////////////////////////////////////////////////////////////////
 
         rw = send(*it, ok.c_str(), ok.size(), 0);
         if (rw <= 0)
