@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/05 15:21:33 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/12 17:15:05 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 # include "../inc/Webserv.hpp"
 
-bool keep_alive = true;
+bool keep_alive = true; // should we put that as a public attribute of webserv class ?
 
 std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;  };
 std::vector<int>&            Webserv::getWbsrvPorts()        {   return _ports;  };
@@ -101,18 +101,18 @@ int     Webserv::set_server()
 
 void    Webserv::accept_clients()
 {
-    for (size_t i = 0; i < _sockets.size() && (int)i < _max; i++)
+    for (size_t i = 0; i < _sockets.size() && (int)i < _fd_max; i++)
     {
         if (FD_ISSET(_sockets[i], &_read_set))
         {
-            socklen_t len = sizeof(sockaddr[i]);
-            _connection = accept(_sockets[i], (struct sockaddr*)&_addrs[i], &len);
-            if (_connection < 0)
+            socklen_t len = sizeof(sockaddr[i]); // what is that ?
+            int client_socket = accept(_sockets[i], (struct sockaddr*)&_addrs[i], &len);
+            if (client_socket < 0)
                 close_all();
-            FD_SET(_connection, &_current_set);
-            _clients.push_back(_connection);
-            if (_connection >= _max)
-                _max = _connection;
+            FD_SET(client_socket, &_current_set);
+            _clients.push_back(client_socket);
+            if (client_socket >= _fd_max)
+                _fd_max = client_socket;
             break ; // as soon as a client is pushed back, we break out of the for loop
         }
     }
@@ -192,7 +192,6 @@ void    Webserv::transmit_data()
 int     Webserv::run_server()
 {
     struct timeval timeout;
-    //int end_server;
     int rc;
     
     //end_server = false;
@@ -200,19 +199,31 @@ int     Webserv::run_server()
     if (rc < 0)
         return -1;
     FD_ZERO(&_current_set);
-    _max = _sockets.back();
+    _fd_max = _sockets.back(); // better to call std::max or something
     for (std::vector<int>::iterator it = _sockets.begin(); it != _sockets.end(); it++)
         FD_SET(*it, &_current_set);
     signal(SIGINT, signal_handler);
-    while (/*end_server == false*/ keep_alive)
+    while (keep_alive)///////////////////////
     {
-        std::cout << "in while\n";
+
+/*
+        call select with read set and write set
+        loop first over read set and check if its the listening fd
+            if yes, accept and add it to the current set
+            if no, read a chunk of data from it // need to append data at each loop until EOF is reached
+                if EOF is reached, flag that socket as ready to respond (but it still has to be selected by select() for writing)
+                at this stage we generate the response to be sent
+        loop then over the write set
+            for each writable fd that has been fully read from (EOF has been reached, and maybe should not be readable from select() ?)
+                write a chunk of the response to it (if we just wrote the lask chunk, do we just close the socket and remove it from current list ?)
+
+*/
         FD_ZERO(&_read_set);
         timeout.tv_usec = 0;
         timeout.tv_sec = 3 * 60;
         _read_set = _current_set;
- //       accept_clients();
-        rc = select(_max + 1, &_read_set, NULL, NULL, &timeout);
+
+        rc = select(_fd_max + 1, &_read_set, NULL, NULL, &timeout);
         if (rc <= 0) // negative is select() error and 0 is select() timeout
             break;
         transmit_data();
