@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/12 17:15:05 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/13 18:58:11 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ std::vector<int>&            Webserv::getWbsrvPorts()        {   return _ports; 
 Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
 {
     std::vector<int> tmp(s.size());
-    _sockets = tmp;
+    _listening_sockets = tmp;
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
     {
         log(GREEN, "SERVER NAME = ", it->getServerName());
@@ -34,9 +34,9 @@ Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
         _ports.push_back(it->getPort());
         log(RED, "----------------------------------------------------------", 0);
     }
-    _size = _ports.size();
-    _sockets.resize(_size);
-    _addrs.resize(_size);
+    //_size = _ports.size(); // no need
+    _listening_sockets.resize(_ports.size());
+    _listening_addrs.resize(_ports.size());
     //for (std::vector<page>::iterator it = current_pages.begin(); it != current_pages.end(); it++)
     //{
     //    log(GREEN, "location = ", it->location_path);
@@ -55,7 +55,7 @@ Webserv::~Webserv()
 
 void    Webserv::close_all()
 {
-    for (std::vector<int>::iterator it = _sockets.begin(); it != _sockets.end(); it++)
+    for (std::vector<int>::iterator it = _listening_sockets.begin(); it != _listening_sockets.end(); it++)
         close(*(it));
 }
 
@@ -64,31 +64,31 @@ int     Webserv::set_server()
     int on = 1;
     for (size_t i = 0; i != _ports.size(); i++)
     {
-        if ((_sockets[i] = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+        if ((_listening_sockets[i] = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
             close_all();
             return -1;
         }
-        if (fcntl(_sockets[i], F_SETFL, O_NONBLOCK) < 0)
+        if (fcntl(_listening_sockets[i], F_SETFL, O_NONBLOCK) < 0)
         {
             close_all();
             return -2;
         }
-        if (setsockopt(_sockets[i], SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+        if (setsockopt(_listening_sockets[i], SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
         {
             close_all();
             return -3;
         }
-        memset(&_addrs[i], 0, sizeof(_addrs[i]));
-        _addrs[i].sin_family = AF_INET;
-        _addrs[i].sin_addr.s_addr = inet_addr("127.0.0.1");
-        _addrs[i].sin_port = htons(_ports[i]);
-        if ((bind(_sockets[i], (struct sockaddr *)&_addrs[i], sizeof(_addrs[i]))) < 0)
+        memset(&_listening_addrs[i], 0, sizeof(_listening_addrs[i]));
+        _listening_addrs[i].sin_family = AF_INET;
+        _listening_addrs[i].sin_addr.s_addr = inet_addr("127.0.0.1");
+        _listening_addrs[i].sin_port = htons(_ports[i]);
+        if ((bind(_listening_sockets[i], (struct sockaddr *)&_listening_addrs[i], sizeof(_listening_addrs[i]))) < 0)
         {
             close_all();
             return -4;
         }
-        if ((listen(_sockets[i], BACKLOG) < 0))
+        if ((listen(_listening_sockets[i], BACKLOG) < 0))
         {
             close_all();
             return -5;
@@ -101,16 +101,16 @@ int     Webserv::set_server()
 
 void    Webserv::accept_clients()
 {
-    for (size_t i = 0; i < _sockets.size() && (int)i < _fd_max; i++)
+    for (size_t i = 0; i < _listening_sockets.size() && (int)i < _fd_max; i++)
     {
-        if (FD_ISSET(_sockets[i], &_read_set))
+        if (FD_ISSET(_listening_sockets[i], &_read_set))
         {
             socklen_t len = sizeof(sockaddr[i]); // what is that ?
-            int client_socket = accept(_sockets[i], (struct sockaddr*)&_addrs[i], &len);
+            int client_socket = accept(_listening_sockets[i], (struct sockaddr*)&_listening_addrs[i], &len);
             if (client_socket < 0)
                 close_all();
             FD_SET(client_socket, &_current_set);
-            _clients.push_back(client_socket);
+            _clients_sockets.push_back(client_socket);
             if (client_socket >= _fd_max)
                 _fd_max = client_socket;
             break ; // as soon as a client is pushed back, we break out of the for loop
@@ -147,7 +147,7 @@ void    Webserv::transmit_data()
     index.append(buffer, ifs.gcount());
     ok.append(index);
     /////////////////////////////////////////
-    for (std::vector<int>::iterator it = _clients.begin(); it != _clients.end(); it++) // Is it possible to have more than 1 inside of this vector ?
+    for (std::vector<int>::iterator it = _clients_sockets.begin(); it != _clients_sockets.end(); it++) // Is it possible to have more than 1 inside of this vector ?
     {
         bzero(&buffer, sizeof(buffer)); /* Clear the buffer */
         rd = recv(*it, buffer, sizeof(buffer), 0);
@@ -186,21 +186,20 @@ void    Webserv::transmit_data()
         FD_CLR(*it, &_current_set);
         //_clients.erase(it);
     }
-    _clients.clear();
+    _clients_sockets.clear();
 }
 
 int     Webserv::run_server()
 {
     struct timeval timeout;
     int rc;
-    
-    //end_server = false;
+
     rc = set_server();
     if (rc < 0)
         return -1;
     FD_ZERO(&_current_set);
-    _fd_max = _sockets.back(); // better to call std::max or something
-    for (std::vector<int>::iterator it = _sockets.begin(); it != _sockets.end(); it++)
+    _fd_max = _listening_sockets.back(); // better to call std::max or something
+    for (std::vector<int>::iterator it = _listening_sockets.begin(); it != _listening_sockets.end(); it++)
         FD_SET(*it, &_current_set);
     signal(SIGINT, signal_handler);
     while (keep_alive)///////////////////////
@@ -222,15 +221,58 @@ int     Webserv::run_server()
         timeout.tv_usec = 0;
         timeout.tv_sec = 3 * 60;
         _read_set = _current_set;
+        _write_set = _current_set;
 
-        rc = select(_fd_max + 1, &_read_set, NULL, NULL, &timeout);
+        rc = select(_fd_max + 1, &_read_set, &_write_set, NULL, &timeout);
         if (rc <= 0) // negative is select() error and 0 is select() timeout
             break;
-        transmit_data();
-        accept_clients();
+        looping_through_read_set();
+        looping_through_write_set();
+        //transmit_data();
+        //accept_clients();
     }
     close_all();
     return 0;
+}
+
+void    Webserv::looping_through_read_set()
+{
+    for (int i = 0; i < this->_fd_max; i++)
+    {
+        if (FD_ISSET(i, &(this->_read_set)))
+        { // here are only fd that are ready to read. If its a listening socket, we have to accept, if its a data socket, we have to read the actual data
+            if (this->is_listening_socket(i))
+            {
+                struct sockaddr_in  addr_of_client;
+                socklen_t   len_for_accept = sizeof(addr_of_client);
+                int client_socket = accept(i, (struct sockaddr *)&addr_of_client, &len_for_accept);
+                if (client_socket < 0)
+                {/*PROBLEM*/}
+                FD_SET(client_socket, &_current_set);
+                //push back the new pair formed by socket and address
+            }
+            else
+            {
+                
+            }
+        }
+    }
+    
+}
+
+void    Webserv::looping_through_write_set()
+{
+    
+}
+
+bool    Webserv::is_listening_socket(int socket) const
+{
+    for (int i = 0; i < this->_listening_sockets.size(); i++)
+    {
+        if (socket == this->_listening_sockets[i])
+            return (true);
+    }
+    return (false);
 }
 
 void signal_handler(int signum)

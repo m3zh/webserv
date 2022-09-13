@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/12 16:26:39 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/13 18:27:56 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,15 +51,20 @@ class Cgi;
 class Webserv//: public ServerInfo // Do we need to have it as inherited class ?
 {
 private:
-    int                             _fd_max; // biggest fd used so far
-    size_t                          _size; // number of servers
     std::vector<ServerInfo>         _servers;
-    std::vector<int>                _clients; // vector of active sockets that were opened by accept()
     std::vector<int>                _ports;
-    std::vector<int>                _sockets; // vector of sockets used with listen() // _ports, _sockets and _addrs should have the same size
-    std::vector<struct sockaddr_in> _addrs; // those are the addr structs associated with listening sockets
+    std::vector<int>                _listening_sockets; // vector of sockets used with listen() // _ports, _sockets and _addrs should have the same size
+    std::vector<struct sockaddr_in> _listening_addrs; // those are the addr structs associated with listening sockets
+
+
     fd_set                          _current_set;
     fd_set                          _read_set;
+    fd_set                          _write_set;
+    int                             _fd_max; // biggest fd used so far
+    std::vector<int>                _clients_sockets; // vector of active sockets that were opened by accept()
+    std::vector<struct sockaddr_in> _clients_addrs;
+
+    std::vector<std::pair<int, struct sockaddr_in> >    _clients_pair;
 
     Webserv();
     Webserv(Webserv const & x);
@@ -82,6 +87,10 @@ public:
     int run_server();
     void accept_clients();
     void transmit_data();
+    void looping_through_read_set();
+    void looping_through_write_set();
+
+    bool    is_listening_socket(int socket) const;
 };
 
 void signal_handler(int signum);
