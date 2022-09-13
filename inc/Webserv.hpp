@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/13 18:27:56 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/13 19:37:00 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ extern bool keep_alive;
 # include "../inc/Cgi.hpp"
 
 # include "Request.hpp"
+# include "Client.hpp"
 
 class Config;
 class Cgi;
@@ -65,6 +66,7 @@ private:
     std::vector<struct sockaddr_in> _clients_addrs;
 
     std::vector<std::pair<int, struct sockaddr_in> >    _clients_pair;
+    std::vector<Client> _clients_list;
 
     Webserv();
     Webserv(Webserv const & x);
