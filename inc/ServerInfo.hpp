@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 16:38:07 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/14 11:29:54 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 # include <iostream>
 # include <vector>
+# include <netinet/in.h>
 
 struct page 
 {
@@ -59,4 +60,7 @@ class ServerInfo
         int                         _client_max_body_size;
         std::vector<page>           _pages;
         page                        _error_page;
+
+        int                         _listening_socket;
+        struct sockaddr_in          _listening_addrs;
 };

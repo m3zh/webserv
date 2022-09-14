@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/13 18:58:11 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/14 11:17:10 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,6 +274,17 @@ bool    Webserv::is_listening_socket(int socket) const
     }
     return (false);
 }
+
+//Client &    Webserv::accept_new_client(int listening_socket)
+//{
+//    // the returner client is allocated in the heap. Do not forget to deallocate it
+//    struct sockaddr_in  addr_of_client;
+//    socklen_t   len_for_accept = sizeof(addr_of_client);
+//    int client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);
+//    if (client_socket < 0)
+//    {/*PROBLEM*/}
+//    return (new Client(client_socket, addr_of_client, listening_socket))
+//}
 
 void signal_handler(int signum)
 {

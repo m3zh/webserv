@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/13 19:37:00 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/14 11:12:08 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ private:
     std::vector<struct sockaddr_in> _clients_addrs;
 
     std::vector<std::pair<int, struct sockaddr_in> >    _clients_pair;
-    std::vector<Client> _clients_list;
+    std::vector<Client &> _clients_list;
 
     Webserv();
     Webserv(Webserv const & x);
@@ -93,6 +93,7 @@ public:
     void looping_through_write_set();
 
     bool    is_listening_socket(int socket) const;
+    Client &    accept_new_client(int listening_socket); // this calls accept() and store socket and addrs of newly created connection. The client is allocated, needs to be deallocated
 };
 
 void signal_handler(int signum);
