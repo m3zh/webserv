@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/14 10:57:13 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/15 17:47:53 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ private:
     Client(Client const & x);
     Client &    operator=(Client const & x);
 public:
-    Client(int client_socket, struct sockaddr_in client_addrs, int const & listening_socket, struct sockaddr_in const & listening_addrs)
+    Client(int client_socket, struct sockaddr_in client_addrs, int listening_socket, struct sockaddr_in const & listening_addrs)
     : client_socket(client_socket), client_addrs(client_addrs), listening_socket(listening_socket), listening_addrs(listening_addrs)
     {}
 
@@ -37,6 +37,6 @@ public:
 
     int                         client_socket;
     struct sockaddr_in          client_addrs;
-    int const &                 listening_socket;
+    int const                 listening_socket;
     struct sockaddr_in const &  listening_addrs;
 };

@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/14 11:29:54 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/15 18:25:13 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,24 @@ class ServerInfo
 
         std::vector<page>&          getPages();             
         void                        setPages(page p);            
+
+        int                         getListeningSocket() const
+        {
+            return (this->_listening_socket);
+        }
+        void                        setListeningSocket(int socket)
+        {
+            this->_listening_socket = socket;
+        }
+
+        struct sockaddr_in const &  getListeningAddrs() const
+        {
+            return (this->_listening_addrs);
+        }
+        void                        setListeningAddrs(struct sockaddr_in addrs)
+        {
+            this->_listening_addrs = addrs;
+        }
 
     private:
         std::string                 _server_name;
