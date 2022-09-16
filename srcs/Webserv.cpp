@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/15 18:32:27 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/16 18:55:35 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,6 +237,8 @@ int     Webserv::run_server()
         rc = select(_fd_max + 1, &_read_set, &_write_set, NULL, &timeout);
         if (rc <= 0) // negative is select() error and 0 is select() timeout
             break;
+        // what about accepting clients here ? looping through all listening socket
+        // then we can just loop through all clients after
         looping_through_read_set();
         looping_through_write_set();
         //transmit_data();
@@ -248,18 +250,14 @@ int     Webserv::run_server()
 
 void    Webserv::looping_through_read_set()
 {
-    for (int i = 0; i < this->_fd_max; i++)
+    for (int i = 0; i < 1 + this->_fd_max; i++)
     {
         if (FD_ISSET(i, &(this->_read_set)))
         { // here are only fd that are ready to read. If its a listening socket, we have to accept, if its a data socket, we have to read the actual data
             if (this->is_listening_socket(i))
-            {
                 this->_clients_list.push_back(this->accept_new_client(i));
-                FD_SET(this->_clients_list.back()->client_socket, &_current_set);
-            }
             else
             {
-                std::cout << "yoo\n";
                 char buffer[1024];
                 bzero(&buffer, sizeof(buffer));
                 recv(i, buffer, sizeof(buffer), 0);
@@ -315,6 +313,7 @@ Client     *Webserv::accept_new_client(int listening_socket)
     {/*PROBLEM*/}
     if (client_socket > this->_fd_max)
         this->_fd_max = client_socket;
+    FD_SET(client_socket, &_current_set);
     Client *ret = new Client(client_socket, addr_of_client, listening_socket, this->get_addrs_associated_with_listening_socket(listening_socket));
     return (ret);
 }
