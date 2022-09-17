@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/15 17:47:53 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/17 18:40:35 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <netinet/in.h>
+#include "Request.hpp"
 
 class Client
 {
@@ -37,6 +38,9 @@ public:
 
     int                         client_socket;
     struct sockaddr_in          client_addrs;
-    int const                 listening_socket;
+    int const                   listening_socket;
     struct sockaddr_in const &  listening_addrs;
+
+    std::string                 request_str; // std::string can contain \0
+    //Request                     request_class; // problem because Request default constructor is private
 };

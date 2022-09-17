@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/05 15:20:57 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/17 18:37:48 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ private:
     Request &   operator=(Request const & x);
 public:
 
-    Request(std::string raw_request)
+    Request(std::string raw_request) // let's get a reference instead. With the real data stored in the Client class
     {
         // First method, location and version of the request are extracted.
         // Then all header data are put in a std::map

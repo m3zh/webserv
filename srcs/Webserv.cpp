@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/16 18:55:35 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/17 18:54:30 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,11 +234,13 @@ int     Webserv::run_server()
         _read_set = _current_set;
         _write_set = _current_set;
 
-        rc = select(_fd_max + 1, &_read_set, &_write_set, NULL, &timeout);
+        //rc = select(_fd_max + 1, &_read_set, &_write_set, NULL, &timeout); // select will test listening fd, and clients
+        rc = select(1 + this->get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
         if (rc <= 0) // negative is select() error and 0 is select() timeout
             break;
         // what about accepting clients here ? looping through all listening socket
         // then we can just loop through all clients after
+        checking_for_new_clients();
         looping_through_read_set();
         looping_through_write_set();
         //transmit_data();
@@ -248,29 +250,51 @@ int     Webserv::run_server()
     return 0;
 }
 
+void    Webserv::checking_for_new_clients()
+{
+    // looping through all listening sockets to see if some have been picked by select()
+    for (std::vector<ServerInfo>::const_iterator it = this->_servers.begin(); it != this->_servers.end(); it++)
+    {
+        if (FD_ISSET((*it).getListeningSocket(), &_read_set))
+        { // there is a new client to accept, we instantiate a Client class and add it to the clients list
+            this->_clients_list.push_back(this->accept_new_client((*it).getListeningSocket()));
+        }
+    }
+}
+
 void    Webserv::looping_through_read_set()
 {
-    for (int i = 0; i < 1 + this->_fd_max; i++)
+    // looping through all clients to see if one has something for us to read
+    for (std::vector<Client*>::iterator it = this->_clients_list.begin(); it != this->_clients_list.end(); ++it)
     {
-        if (FD_ISSET(i, &(this->_read_set)))
-        { // here are only fd that are ready to read. If its a listening socket, we have to accept, if its a data socket, we have to read the actual data
-            if (this->is_listening_socket(i))
-                this->_clients_list.push_back(this->accept_new_client(i));
-            else
-            {
-                char buffer[1024];
+        if (FD_ISSET((*it)->client_socket, &(this->_read_set)))
+        {
+            // This client has something for us to read. We read a buffer full of data and append it to the std::string in the Client class
+            // If there is more to read, that will be for next loop pass.
+            // We only send the client a response when there is nothing more to read
+                char buffer[READ_BUFFER];
                 bzero(&buffer, sizeof(buffer));
-                recv(i, buffer, sizeof(buffer), 0);
-                std::cout << "Request from " << i << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
+                int return_of_recv;
+                if ((return_of_recv = recv((*it)->client_socket, buffer, sizeof(buffer), 0)) <= 0)
+                {
+                    // problem with recv
+                    // detect EOF
+                }
+                (*it)->request_str.append(buffer, return_of_recv); // append() method will include \0 if some are present in the buffer
+                // if reading is complete, call a member function in client class to instantiate the request class in it
+                // mark the client as ready to respond
+
+                // down here is garbage
+                std::cout << "Request from " << (*it)->client_socket << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
                 Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
         std::cout << "Data recovered from the request : \n";
         std::cout << "method : " << req.get_method() << std::endl;
         std::cout << "location : " << req.get_location() << std::endl;
         std::cout << "http version : " << req.get_http_version() << std::endl;
         std::cout << "\nDisplaying header map : \n";
-        for (std::map<std::string, std::string>::const_iterator it = req.get_header_map().begin(); it != req.get_header_map().end(); ++it)
+        for (std::map<std::string, std::string>::const_iterator itt = req.get_header_map().begin(); itt != req.get_header_map().end(); ++itt)
         {
-            std::cout << (*it).first << ": " << (*it).second << std::endl;
+            std::cout << (*itt).first << ": " << (*itt).second << std::endl;
         }
         if (req.get_index_beginning_body() != std::string::npos) // it means there is a body
         {
@@ -279,10 +303,9 @@ void    Webserv::looping_through_read_set()
         }
         std::cout << "\n\n";
 
-                send(i, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
-                close(i);
-                FD_CLR(i, &_current_set);
-            }
+                send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
+                close((*it)->client_socket);
+                FD_CLR((*it)->client_socket, &_current_set);
         }
     }
     
@@ -290,7 +313,26 @@ void    Webserv::looping_through_read_set()
 
 void    Webserv::looping_through_write_set()
 {
+    // looping to all clients to see which one is ready to receive data.
+    // condition to send to a client is that recv has returned 0 (nothing more to read) and that select() has put it in the write set
     
+}
+
+int     Webserv::get_fd_max() const
+{
+    // if there are clients, get the max fd from them. If no clients, get the max listening fd
+    if (this->_clients_list.size() != 0)
+    {
+        int fd_max = this->_clients_list[0]->client_socket;
+        for (size_t i = 0; i < this->_clients_list.size(); i++)
+        {
+            if (this->_clients_list[i]->client_socket > fd_max)
+                fd_max = this->_clients_list[i]->client_socket;
+        }
+        return (fd_max);
+    }
+    else
+        return (this->_servers.back().getListeningSocket()); // last added server has the biggest listening socket
 }
 
 bool    Webserv::is_listening_socket(int socket) const

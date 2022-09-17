@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/16 18:13:23 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/17 18:44:33 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ extern bool keep_alive;
 
 #define BACKLOG 255
 #define NBPORTS 3
+#define READ_BUFFER 1024
 #define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
 # include "../inc/Cgi.hpp"
 
@@ -89,9 +90,11 @@ public:
     int run_server();
     void accept_clients();
     void transmit_data();
+    void checking_for_new_clients();
     void looping_through_read_set();
     void looping_through_write_set();
 
+    int     get_fd_max() const;
     bool    is_listening_socket(int socket) const;
     sockaddr_in const & get_addrs_associated_with_listening_socket(int listening_socket) const;
     Client     *accept_new_client(int listening_socket); // this calls accept() and store socket and addrs of newly created connection. The client is allocated, needs to be deallocated
