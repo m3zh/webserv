@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/17 18:54:30 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/18 16:04:36 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,45 +267,52 @@ void    Webserv::looping_through_read_set()
     // looping through all clients to see if one has something for us to read
     for (std::vector<Client*>::iterator it = this->_clients_list.begin(); it != this->_clients_list.end(); ++it)
     {
+        std::cout << "inside for loop\n";
         if (FD_ISSET((*it)->client_socket, &(this->_read_set)))
         {
+            std::cout << "inside if\n";
             // This client has something for us to read. We read a buffer full of data and append it to the std::string in the Client class
             // If there is more to read, that will be for next loop pass.
             // We only send the client a response when there is nothing more to read
                 char buffer[READ_BUFFER];
                 bzero(&buffer, sizeof(buffer));
                 int return_of_recv;
-                if ((return_of_recv = recv((*it)->client_socket, buffer, sizeof(buffer), 0)) <= 0)
-                {
-                    // problem with recv
-                    // detect EOF
-                }
+                if ((return_of_recv = recv((*it)->client_socket, buffer, sizeof(buffer), 0)) == -1)
+                {/*ERROR*/}
                 (*it)->request_str.append(buffer, return_of_recv); // append() method will include \0 if some are present in the buffer
                 // if reading is complete, call a member function in client class to instantiate the request class in it
                 // mark the client as ready to respond
 
+
+        }
+        else if ((*it)->is_read_complete == false) // There is nothing left to read but it hasnt been marked as read complete yet. That means the request is ready to be parsed
+        {
+            std::cout << "inside else if\n";
+            (*it)->parse_request(); // parse request and generate response.
+
                 // down here is garbage
-                std::cout << "Request from " << (*it)->client_socket << " : \n---------------------------\n" << buffer << "-----------------------" << std::endl;
-                Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
+                std::cout << "Request from " << (*it)->client_socket << " : \n---------------------------\n" << (*it)->request_class.get_raw_request() << "-----------------------" << std::endl;
         std::cout << "Data recovered from the request : \n";
-        std::cout << "method : " << req.get_method() << std::endl;
-        std::cout << "location : " << req.get_location() << std::endl;
-        std::cout << "http version : " << req.get_http_version() << std::endl;
+        std::cout << "method : " << (*it)->request_class.get_method() << std::endl;
+        std::cout << "location : " << (*it)->request_class.get_location() << std::endl;
+        std::cout << "http version : " << (*it)->request_class.get_http_version() << std::endl;
         std::cout << "\nDisplaying header map : \n";
-        for (std::map<std::string, std::string>::const_iterator itt = req.get_header_map().begin(); itt != req.get_header_map().end(); ++itt)
+        for (std::map<std::string, std::string>::const_iterator itt = (*it)->request_class.get_header_map().begin(); itt != (*it)->request_class.get_header_map().end(); ++itt)
         {
             std::cout << (*itt).first << ": " << (*itt).second << std::endl;
         }
-        if (req.get_index_beginning_body() != std::string::npos) // it means there is a body
+        if ((*it)->request_class.get_index_beginning_body() != std::string::npos) // it means there is a body
         {
             std::cout << "\nDisplaying the request body :\n";
-            std::cout << req.get_body() << std::endl;
+            std::cout << (*it)->request_class.get_body() << std::endl;
         }
         std::cout << "\n\n";
 
                 send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
                 close((*it)->client_socket);
                 FD_CLR((*it)->client_socket, &_current_set);
+                this->_clients_list.erase(it);
+                break;
         }
     }
     
@@ -316,6 +323,7 @@ void    Webserv::looping_through_write_set()
     // looping to all clients to see which one is ready to receive data.
     // condition to send to a client is that recv has returned 0 (nothing more to read) and that select() has put it in the write set
     
+    // We send 
 }
 
 int     Webserv::get_fd_max() const
