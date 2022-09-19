@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/18 16:04:36 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/19 18:04:23 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,6 +257,7 @@ void    Webserv::checking_for_new_clients()
     {
         if (FD_ISSET((*it).getListeningSocket(), &_read_set))
         { // there is a new client to accept, we instantiate a Client class and add it to the clients list
+            std::cout << "new client ! about to call accept. size of client list now is : " << this->_clients_list.size() << std::endl;
             this->_clients_list.push_back(this->accept_new_client((*it).getListeningSocket()));
         }
     }
@@ -265,12 +266,32 @@ void    Webserv::checking_for_new_clients()
 void    Webserv::looping_through_read_set()
 {
     // looping through all clients to see if one has something for us to read
-    for (std::vector<Client*>::iterator it = this->_clients_list.begin(); it != this->_clients_list.end(); ++it)
+
+    // no need to check new or not, because we just interact with clients in the read set
+
+    // for each client(in the read set), check if header has been read yet.
+        // if header has been read already (there is a body), read a buffer, if content length match, mark read as completed
+        // if header has not been read yet, read a buffer, then find the first occurence of \r\n\r\n
+        // and compare its index with the request size to mark the read as completed or not (and mark the header as read)
+        // if \r\n\r\n cannot be found, we have a request error. can be header too long, can be something else
+
+
+
+
+
+
+    for (std::list<Client*>::iterator it = this->_clients_list.begin(); it != this->_clients_list.end(); ++it)
     {
-        std::cout << "inside for loop\n";
+        std::cout << "entering for loop\n";
+        if ((*it)->has_just_been_created == true)
+        {
+            std::cout << "saw a new client that hasnt been through select() yet\n";
+            (*it)->has_just_been_created = false;
+            continue;
+        }
         if (FD_ISSET((*it)->client_socket, &(this->_read_set)))
         {
-            std::cout << "inside if\n";
+            std::cout << "about to call recv() on a client\n";
             // This client has something for us to read. We read a buffer full of data and append it to the std::string in the Client class
             // If there is more to read, that will be for next loop pass.
             // We only send the client a response when there is nothing more to read
@@ -287,32 +308,45 @@ void    Webserv::looping_through_read_set()
         }
         else if ((*it)->is_read_complete == false) // There is nothing left to read but it hasnt been marked as read complete yet. That means the request is ready to be parsed
         {
-            std::cout << "inside else if\n";
+            std::cout << "Client has not been selected by select(), the request should have been fully read, launching the parsing\n";
+            std::cout << "just checking there is indeed nothing left to read...\n";
+            char    buffer[READ_BUFFER];
+                bzero(&buffer, sizeof(buffer));
+                int return_of_recv;
+                if ((return_of_recv = recv((*it)->client_socket, buffer, sizeof(buffer), 0)) == -1)
+                {/*ERROR*/}
+                
+                if (return_of_recv > 0)
+                {
+                    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!There was indeed something more to read ! Continuing the loop\n";
+                    (*it)->request_str.append(buffer, return_of_recv);
+                    continue;
+                }
             (*it)->parse_request(); // parse request and generate response.
 
                 // down here is garbage
-                std::cout << "Request from " << (*it)->client_socket << " : \n---------------------------\n" << (*it)->request_class.get_raw_request() << "-----------------------" << std::endl;
-        std::cout << "Data recovered from the request : \n";
-        std::cout << "method : " << (*it)->request_class.get_method() << std::endl;
-        std::cout << "location : " << (*it)->request_class.get_location() << std::endl;
-        std::cout << "http version : " << (*it)->request_class.get_http_version() << std::endl;
-        std::cout << "\nDisplaying header map : \n";
-        for (std::map<std::string, std::string>::const_iterator itt = (*it)->request_class.get_header_map().begin(); itt != (*it)->request_class.get_header_map().end(); ++itt)
-        {
-            std::cout << (*itt).first << ": " << (*itt).second << std::endl;
-        }
-        if ((*it)->request_class.get_index_beginning_body() != std::string::npos) // it means there is a body
-        {
-            std::cout << "\nDisplaying the request body :\n";
-            std::cout << (*it)->request_class.get_body() << std::endl;
-        }
-        std::cout << "\n\n";
+        //        std::cout << "Request from " << (*it)->client_socket << " : \n---------------------------\n" << (*it)->request_class.get_raw_request() << "-----------------------" << std::endl;
+        //std::cout << "Data recovered from the request : \n";
+        //std::cout << "method : " << (*it)->request_class.get_method() << std::endl;
+        //std::cout << "location : " << (*it)->request_class.get_location() << std::endl;
+        //std::cout << "http version : " << (*it)->request_class.get_http_version() << std::endl;
+        //std::cout << "\nDisplaying header map : \n";
+        //for (std::map<std::string, std::string>::const_iterator itt = (*it)->request_class.get_header_map().begin(); itt != (*it)->request_class.get_header_map().end(); ++itt)
+        //{
+        //    std::cout << (*itt).first << ": " << (*itt).second << std::endl;
+        //}
+        //if ((*it)->request_class.get_index_beginning_body() != std::string::npos) // it means there is a body
+        //{
+        //    std::cout << "\nDisplaying the request body :\n";
+        //    std::cout << (*it)->request_class.get_body() << std::endl;
+        //}
+        //std::cout << "\n\n";
 
-                send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
-                close((*it)->client_socket);
-                FD_CLR((*it)->client_socket, &_current_set);
-                this->_clients_list.erase(it);
-                break;
+        //        send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
+        //        close((*it)->client_socket);
+        //        FD_CLR((*it)->client_socket, &_current_set);
+        //        this->_clients_list.erase(it);
+        //        //break;
         }
     }
     
@@ -323,7 +357,22 @@ void    Webserv::looping_through_write_set()
     // looping to all clients to see which one is ready to receive data.
     // condition to send to a client is that recv has returned 0 (nothing more to read) and that select() has put it in the write set
     
-    // We send 
+    for (std::list<Client*>::iterator it = this->_clients_list.begin(); it != this->_clients_list.end(); /*++it*/)
+    {
+        if (FD_ISSET((*it)->client_socket, &(this->_write_set)) && (*it)->is_read_complete == true)
+        {
+            std::cout << "about to send a response\n";
+            if ((send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
+            {/*ERROR*/}
+            close ((*it)->client_socket);
+            FD_CLR((*it)->client_socket, &_current_set);
+            std::list<Client*>::iterator    to_delete = it;
+            ++it;
+            this->_clients_list.erase(to_delete);
+        }
+        else
+            ++it;
+    }
 }
 
 int     Webserv::get_fd_max() const
@@ -331,11 +380,11 @@ int     Webserv::get_fd_max() const
     // if there are clients, get the max fd from them. If no clients, get the max listening fd
     if (this->_clients_list.size() != 0)
     {
-        int fd_max = this->_clients_list[0]->client_socket;
-        for (size_t i = 0; i < this->_clients_list.size(); i++)
+        int fd_max = (*(this->_clients_list).begin())->client_socket;
+        for (std::list<Client*>::const_iterator it = this->_clients_list.begin(); it != this->_clients_list.end(); ++it)
         {
-            if (this->_clients_list[i]->client_socket > fd_max)
-                fd_max = this->_clients_list[i]->client_socket;
+            if ((*it)->client_socket > fd_max)
+                fd_max = (*it)->client_socket;
         }
         return (fd_max);
     }
@@ -343,7 +392,7 @@ int     Webserv::get_fd_max() const
         return (this->_servers.back().getListeningSocket()); // last added server has the biggest listening socket
 }
 
-bool    Webserv::is_listening_socket(int socket) const
+bool    Webserv::is_listening_socket(int socket) const // that function is not used anymore
 {
     for (std::vector<ServerInfo>::const_iterator it = this->_servers.begin(); it != this->_servers.end(); it++)
     {
@@ -355,13 +404,15 @@ bool    Webserv::is_listening_socket(int socket) const
 
 Client     *Webserv::accept_new_client(int listening_socket)
 {
-    // the returner client is allocated in the heap. Do not forget to deallocate it
+    // the returned client is allocated in the heap. Do not forget to deallocate it
     struct sockaddr_in  addr_of_client;
     socklen_t   len_for_accept = sizeof(addr_of_client);
     int client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);
+    std::cout << "new client accepted ! socket is " << client_socket << std::endl;
     if (client_socket < 0)
     {/*PROBLEM*/}
-    if (client_socket > this->_fd_max)
+    fcntl(client_socket, F_SETFL, O_NONBLOCK);/////////////////////
+    if (client_socket > this->_fd_max) // do we still need that ?
         this->_fd_max = client_socket;
     FD_SET(client_socket, &_current_set);
     Client *ret = new Client(client_socket, addr_of_client, listening_socket, this->get_addrs_associated_with_listening_socket(listening_socket));

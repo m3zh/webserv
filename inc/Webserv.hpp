@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/17 18:44:33 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/19 15:22:40 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ extern bool keep_alive;
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <list>
 
 # include <csignal>
 
@@ -67,7 +68,7 @@ private:
     //std::vector<struct sockaddr_in> _clients_addrs;
 
     //std::vector<std::pair<int, struct sockaddr_in> >    _clients_pair;
-    std::vector<Client *> _clients_list;
+    std::list<Client *> _clients_list;
 
     Webserv();
     Webserv(Webserv const & x);
