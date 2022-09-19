@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/19 14:39:06 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/19 16:44:46 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@
 
 bool keep_alive = true;
 
-std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;  };
-std::vector<int>&            Webserv::getWbsrvPorts()        {   return _ports;  };
+std::vector<ServerInfo>&     Webserv::getServers()              {   return _servers;  };
+std::vector<int>&            Webserv::getWbsrvPorts()           {   return _ports;  };
 
 Webserv::Webserv(std::vector<ServerInfo> &s) : _servers(s)
 {
@@ -161,6 +161,8 @@ void    Webserv::transmit_data()
 
         Request req(buffer); // instanciate a Request class with the raw request as a constructor parameter
 
+        std::cout << req.get_raw_request();
+
         std::cout << "Data recovered from the request : \n";
         std::cout << "method : " << req.get_method() << std::endl;
         std::cout << "location : " << req.get_location() << std::endl;
@@ -215,7 +217,7 @@ int     Webserv::run_server()
         timeout.tv_usec = 0;
         timeout.tv_sec = 3 * 60;
         _read_set = _current_set;
- //       accept_clients();
+        //       accept_clients();
         rc = select(_max + 1, &_read_set, NULL, NULL, &timeout);
         if (rc <= 0) // negative is select() error and 0 is select() timeout
             break;

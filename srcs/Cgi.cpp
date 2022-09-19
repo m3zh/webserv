@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/19 15:39:30 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/19 16:49:13 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ Cgi::Cgi(Request const &req)        {
 Cgi::~Cgi()                         {};
 
 // checks action, method, content-length in html message 
-// returns true if it's good for cgi and set CGI request if so
+// returns true if it's good for cgi
 bool        isCGI_request(Request const &req)
 {
     std::string pwd = getenv("PWD");
@@ -78,7 +78,7 @@ The GET method is:
 
 The POST method id:
 - more reliable
-- information is sends it as a separate message
+- information is sent as a separate message
 - this message comes into the CGI script as standard input
 
 Ex.:
@@ -170,25 +170,21 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 // more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
 void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> header)
 {
-    // size_t pos = 0;
-    (void)req;
+    std::string body = req.get_body();
     std::string pwd = getenv("PWD");
    
     _env["AUTH_TYPE"] = "";
     _env["DOCUMENT_ROOT"] = "~/webserv";                                                        // add a function get_pwd?                                  
 	_env["CONTENT_LENGTH"] = header["Content-Length"];                                          // because we need it as string, _request.content_length is an int XXXX
-    // if (get_CGIparam("Cookie", html_header, pos))                                            // need a request with html_header attribute
-	//     _env["HTTP_COOKIE"] = set_CGIparam(html_header, pos);
-    // if (get_CGIparam("Host", html_header, pos))
-	//     _env["HTTP_HOST"] = set_CGIparam(html_header, pos);
-    // if (get_CGIparam("Referer", html_header, pos))
-	//     _env["HTTP_REFERER"] = set_CGIparam(html_header, pos);
-    // if (get_CGIparam("User-Agent", html_header, pos))
-	//     _env["HTTP_USER_AGENT "] = set_CGIparam(html_header, pos);
+    if (header.find("Cookies") != header.end())                                                 // Cookies or cookie?
+	    _env["HTTP_COOKIE"] = header["Cookies"];
+    _env["HTTP_HOST"] = header["Host"];
+    _env["HTTP_REFERER"] = header["Referer"];
+    _env["HTTP_USER_AGENT "] = header["User-Agent"]; 
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["PATH_INFO"] = "/app";                                                             // the path as requested by the client, eg. www.xxx.com/app
-	_env["PATH_TRANSLATED"] = pwd + "/cgi-bin/" + _request.action;            // the actual path to the script
+	_env["PATH_TRANSLATED"] = pwd + "/cgi-bin/" + _request.action;                          // the actual path to the script
 	_env["QUERY_STRING"] = getFromQueryString("blabla.com/en?name=Undi&age=11");            // hard-coded here, to be fetched from request
 	// _env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
 	_env["REMOTE_ADDR"] = "127.0.0.1";                                                      // hard-coded here, to be fetched from request
