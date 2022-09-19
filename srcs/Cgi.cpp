@@ -6,60 +6,64 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/19 14:44:31 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/19 15:39:30 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/Cgi.hpp"
 
-Cgi::Cgi()                  {}
-Cgi::~Cgi()                 {}
+Cgi::Cgi(Request const &req)        {
+                                        std::string pwd = getenv("PWD");
+                                        std::string root = pwd + "/cgi-bin/";
+                                        std::map<std::string, std::string> header = req.get_header_map();
+                                        root += header["action"];
+                                        _request.path_to_script = root;
+                                        set_CGIrequest(header["action"], header["method"], std::stoi(header["Content-Length"]));
+                                        set_CGIenv(req, header);   
+                                    };
+Cgi::~Cgi()                         {};
 
 // checks action, method, content-length in html message 
 // returns true if it's good for cgi and set CGI request if so
 bool        isCGI_request(Request const &req)
 {
-    (void)req;
-    // std::string pwd = getenv("PWD");
-    // std::string root = pwd + "/cgi-bin/";                     // hardcoded here; this should be retrieved from ServerInfo > page > root
-    // size_t pos = 0;
-    // // ------
-    // // ACTION
-    // // ------
-    // if (get_CGIparam("action", html_content, pos) == false)                 // action="........", we want to start from the first \" after the =
-    //     return false;
-    // std::string action = set_CGIparam(html_content, pos);
-    // // std::cout << action << std::endl;
-    // size_t extension = action.size() - 3;
-    // if (action.compare(extension, action.size(), ".py")                     // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
-    //     && action.compare(extension, action.size(), ".pl"))
-    //     {   std::cout << "Invalid file extension for CGI\n"; return false;      };
-    // // ------
-    // // METHOD
-    // // ------
-    // if (get_CGIparam("method", html_content, pos) == false)
-    //     return false;                                
-    // std::string method = set_CGIparam(html_content, pos);
-    // if (method.compare("get") != 0                                              // only methods get and post are accepted for cgi
-    //     && method.compare("post") != 0)
-    //     {   std::cout << "Invalid method for CGI\n"; return false;              };
-    // // ------
-    // // CONTENT LENGTH
-    // // ------
-    // //if (method == "post" && get_CGIparam("Content-Length", html_content, pos) == false) // !!! Content-Length is in header, not in the body, cannot be parsed like this
-    //     //return false;                                                                   // hard-coded here for the moment to test post method                               
-    // size_t content_length = std::stoi("100");
-    // if (method == "post" && !content_length)
-    //     {   std::cout << "No content length for post method CGI\n"; return false;  };
-    // // ------
-    // // SCRIPT -> root + action
-    // // ------
-    // root += action;
-    // if (access(root.c_str(), X_OK) < 0)                                         // if executable exists and it's executable
-    //     {   std::cout << "Script not executable by CGI\n"; return false;  };
-    // _request.path_to_script = root;
-    // set_CGIrequest(action, method, 0);
-    // set_CGIenv(html_content);          
+    std::string pwd = getenv("PWD");
+    std::string root = pwd + "/cgi-bin/";                                       // hardcoded here; this should be retrieved from ServerInfo > page > root
+    std::map<std::string, std::string> header = req.get_header_map();
+    // ------
+    // ACTION
+    // ------
+    if (header.find("action") == header.end())
+        {   std::cout << "No action for CGI\n"; return false;                       };
+    std::string action = header["action"];
+    std::size_t last_dot = action.find_last_of(".");
+    std::string extension = action.substr(last_dot);
+    if (extension.compare(".py")                                               // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
+        && extension.compare(".pl"))
+        {   std::cout << "Invalid action for CGI\n"; return false;                  };    
+    // ------
+    // METHOD
+    // ------
+    if (header.find("method") == header.end())
+        {   std::cout << "No method for CGI\n"; return false;                       };
+    std::string method = header["method"];
+    if (method.compare("GET")                                                   // only methods get and post are accepted for cgi
+        && method.compare("POST"))
+        {   std::cout << "Invalid method for CGI\n"; return false;                  };
+    // ------
+    // CONTENT LENGTH
+    // ------
+    if (method == "POST" && header.find("Content-Length") == header.end()) // !!! Content-Length is in header, not in the body, cannot be parsed like this
+        {   std::cout << "No content length for post method CGI\n"; return false;  };                                                              
+    size_t content_length = std::stoi(header["Content-Length"]);
+    if (content_length <= 0)
+        {   std::cout << "No content length for post method CGI\n"; return false;  };
+    // ------
+    // SCRIPT -> root + action
+    // ------
+    root += action;
+    if (access(root.c_str(), X_OK) < 0)                                                 // if executable exists and it's executable
+        {   std::cout << "Script not executable by CGI\n"; return false;            };       
     return true;
 }
 
@@ -75,7 +79,7 @@ The GET method is:
 The POST method id:
 - more reliable
 - information is sends it as a separate message
-- this message comes into the CGI script in the form of the standard input
+- this message comes into the CGI script as standard input
 
 Ex.:
 if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
@@ -85,7 +89,7 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 }
 */
 
-void    Cgi::child_process(CGIrequest& req)
+void    Cgi::child_process(CGIrequest const& req)
 {
     char    *cmd[3]; 
     
@@ -117,7 +121,7 @@ void    Cgi::parent_process(int status)
     waitpid(_pid, &status, 0);                                                       // is re-written to the socket_fd to be sent to the server
 }
 
-void    Cgi::exec_CGI(CGIrequest& req)
+void    Cgi::exec_CGI(CGIrequest const& req)
 {
     int status = 0;
     
@@ -164,15 +168,16 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 // https://developer.mozilla.org/en-US/docs/Glossary/Request_header
 // NOTE on PATH_INFO/PATH_TRANSLATED vs SCRIPT_NAME/SCRIPT_FILENAME > here we treat them as equivalent
 // more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
-void    Cgi::set_CGIenv(std::string html_content)
+void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> header)
 {
-    size_t pos = 0;
+    // size_t pos = 0;
+    (void)req;
     std::string pwd = getenv("PWD");
    
     _env["AUTH_TYPE"] = "";
-    _env["DOCUMENT_ROOT"] = "~/webserv";                                                     // add a function get_pwd?                                  
-	_env["CONTENT_LENGTH"] = set_CGIparam(html_content, pos);                                // because we need it as string, _request.content_length is an int XXXX
-    // if (get_CGIparam("Cookie", html_header, pos))                                         // need a request with html_header attribute
+    _env["DOCUMENT_ROOT"] = "~/webserv";                                                        // add a function get_pwd?                                  
+	_env["CONTENT_LENGTH"] = header["Content-Length"];                                          // because we need it as string, _request.content_length is an int XXXX
+    // if (get_CGIparam("Cookie", html_header, pos))                                            // need a request with html_header attribute
 	//     _env["HTTP_COOKIE"] = set_CGIparam(html_header, pos);
     // if (get_CGIparam("Host", html_header, pos))
 	//     _env["HTTP_HOST"] = set_CGIparam(html_header, pos);
@@ -197,8 +202,6 @@ void    Cgi::set_CGIenv(std::string html_content)
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["SERVER_PORT"] = "80";                                                             // hard-coded here, to be fetched from request
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
-	                                                   // hard-coded here, to be fetched from config
-
 }
 
 void    Cgi::set_CGIrequest(std::string action, std::string method, size_t content_length)
