@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/05 15:21:33 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/19 14:39:06 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,10 +178,14 @@ void    Webserv::transmit_data()
         std::cout << "\n\n";
 
 //////////////////////////////////////////////////////////////////////////
-
-        rw = send(*it, ok.c_str(), ok.size(), 0);
-        if (rw <= 0)
+        if (isCGI_request(req))
+            std::cout << "CGI!!!!!!!!!!!!!!!!!!!!!!\n";
+        else
+        {
+            rw = send(*it, ok.c_str(), ok.size(), 0);
+            if (rw <= 0)
             break;
+        }
         close(*it);
         FD_CLR(*it, &_current_set);
         //_clients.erase(it);

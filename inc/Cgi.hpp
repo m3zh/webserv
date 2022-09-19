@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/10 09:01:18 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/19 14:44:00 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 # include <sys/wait.h>
 # include <map>
 
+# include "Request.hpp"
+
 # define READ 0
 # define WRITE 1
 # define MAX_SIZE 2000
@@ -31,6 +33,8 @@
 // GET requests receive args from QUERY_STRING
 // POST requests receive args from stdin
 // ****************************
+
+class Request;
 
 struct CGIrequest                               // would be cool if it could inherit from Request class
 {
@@ -81,11 +85,10 @@ class Cgi
         void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
         void            exec_CGI(CGIrequest& req);
 
-        bool            isCGI_request(std::string html_content);
         CGIrequest&     get_CGIrequest();
         
         void            http_header();
         void            redirect_http_header(std::string loc);
 };
 
-
+bool     isCGI_request(Request const &req);

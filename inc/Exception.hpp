@@ -38,7 +38,7 @@ class WebException : public std::exception
                                                                 std::string msg(message);
                                                                 std::stringstream ss;
                                                                 ss << var;
-                                                                _err = clr + msg + ": " + ss.str();
+                                                                _err = clr + msg + ": " + ss.str() + RESET;
                                                             };
         virtual ~WebException() _NOEXCEPT {};
 

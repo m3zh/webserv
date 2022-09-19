@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/10 17:15:47 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/19 14:44:31 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,48 +17,49 @@ Cgi::~Cgi()                 {}
 
 // checks action, method, content-length in html message 
 // returns true if it's good for cgi and set CGI request if so
-bool        Cgi::isCGI_request(std::string html_content)
+bool        isCGI_request(Request const &req)
 {
-    std::string pwd = getenv("PWD");
-    std::string root = pwd + "/cgi-bin/";                     // hardcoded here; this should be retrieved from ServerInfo > page > root
-    size_t pos = 0;
-    // ------
-    // ACTION
-    // ------
-    if (get_CGIparam("action", html_content, pos) == false)                 // action="........", we want to start from the first \" after the =
-        return false;
-    std::string action = set_CGIparam(html_content, pos);
-    // std::cout << action << std::endl;
-    size_t extension = action.size() - 3;
-    if (action.compare(extension, action.size(), ".py")                     // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
-        && action.compare(extension, action.size(), ".pl"))
-        {   std::cout << "Invalid file extension for CGI\n"; return false;      };
-    // ------
-    // METHOD
-    // ------
-    if (get_CGIparam("method", html_content, pos) == false)
-        return false;                                
-    std::string method = set_CGIparam(html_content, pos);
-    if (method.compare("get") != 0                                              // only methods get and post are accepted for cgi
-        && method.compare("post") != 0)
-        {   std::cout << "Invalid method for CGI\n"; return false;              };
-    // ------
-    // CONTENT LENGTH
-    // ------
-    //if (method == "post" && get_CGIparam("Content-Length", html_content, pos) == false) // !!! Content-Length is in header, not in the body, cannot be parsed like this
-        //return false;                                                                   // hard-coded here for the moment to test post method                               
-    size_t content_length = std::stoi("100");
-    if (method == "post" && !content_length)
-        {   std::cout << "No content length for post method CGI\n"; return false;  };
-    // ------
-    // SCRIPT -> root + action
-    // ------
-    root += action;
-    if (access(root.c_str(), X_OK) < 0)                                         // if executable exists and it's executable
-        {   std::cout << "Script not executable by CGI\n"; return false;  };
-    _request.path_to_script = root;
-    set_CGIrequest(action, method, 0);
-    set_CGIenv(html_content);          
+    (void)req;
+    // std::string pwd = getenv("PWD");
+    // std::string root = pwd + "/cgi-bin/";                     // hardcoded here; this should be retrieved from ServerInfo > page > root
+    // size_t pos = 0;
+    // // ------
+    // // ACTION
+    // // ------
+    // if (get_CGIparam("action", html_content, pos) == false)                 // action="........", we want to start from the first \" after the =
+    //     return false;
+    // std::string action = set_CGIparam(html_content, pos);
+    // // std::cout << action << std::endl;
+    // size_t extension = action.size() - 3;
+    // if (action.compare(extension, action.size(), ".py")                     // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
+    //     && action.compare(extension, action.size(), ".pl"))
+    //     {   std::cout << "Invalid file extension for CGI\n"; return false;      };
+    // // ------
+    // // METHOD
+    // // ------
+    // if (get_CGIparam("method", html_content, pos) == false)
+    //     return false;                                
+    // std::string method = set_CGIparam(html_content, pos);
+    // if (method.compare("get") != 0                                              // only methods get and post are accepted for cgi
+    //     && method.compare("post") != 0)
+    //     {   std::cout << "Invalid method for CGI\n"; return false;              };
+    // // ------
+    // // CONTENT LENGTH
+    // // ------
+    // //if (method == "post" && get_CGIparam("Content-Length", html_content, pos) == false) // !!! Content-Length is in header, not in the body, cannot be parsed like this
+    //     //return false;                                                                   // hard-coded here for the moment to test post method                               
+    // size_t content_length = std::stoi("100");
+    // if (method == "post" && !content_length)
+    //     {   std::cout << "No content length for post method CGI\n"; return false;  };
+    // // ------
+    // // SCRIPT -> root + action
+    // // ------
+    // root += action;
+    // if (access(root.c_str(), X_OK) < 0)                                         // if executable exists and it's executable
+    //     {   std::cout << "Script not executable by CGI\n"; return false;  };
+    // _request.path_to_script = root;
+    // set_CGIrequest(action, method, 0);
+    // set_CGIenv(html_content);          
     return true;
 }
 
