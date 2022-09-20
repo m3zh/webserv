@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/08/10 09:01:18 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/19 15:38:47 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 # include <sys/wait.h>
 # include <map>
 
+# include "Request.hpp"
+
 # define READ 0
 # define WRITE 1
 # define MAX_SIZE 2000
@@ -32,7 +34,9 @@
 // POST requests receive args from stdin
 // ****************************
 
-struct CGIrequest                               // would be cool if it could inherit from Request class
+class Request;
+
+struct CGIrequest
 {
     std::string     action;                         // action field in html 
     std::string     method;                         // method field in html 
@@ -51,10 +55,10 @@ class Cgi
         pid_t           _pid;
         int             _fds[2];
         
-        void            child_process(CGIrequest& req);
+        void            child_process(CGIrequest const& req);
         void            parent_process(int status);
 
-        void                        set_CGIenv(std::string html_content);                               // it should have two vars, http header and http body
+        void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header);                               // it should have two vars, http header and http body
         char**                      getEnv();                                                       // return env as a char** for execve
         std::string                 getEnvValue(std::string key);                                   
         std::string                 getFromQueryString(std::string uri);            
@@ -75,17 +79,16 @@ class Cgi
 
     public:
 
-        Cgi();
+        Cgi(Request const &req);
         ~Cgi();
 
         void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
-        void            exec_CGI(CGIrequest& req);
+        void            exec_CGI(CGIrequest const & req);
 
-        bool            isCGI_request(std::string html_content);
         CGIrequest&     get_CGIrequest();
         
         void            http_header();
         void            redirect_http_header(std::string loc);
 };
 
-
+bool     isCGI_request(Request const &req);

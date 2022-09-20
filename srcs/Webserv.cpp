@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/18 16:04:36 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/19 17:56:48 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -308,11 +308,13 @@ void    Webserv::looping_through_read_set()
         }
         std::cout << "\n\n";
 
-                send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
-                close((*it)->client_socket);
-                FD_CLR((*it)->client_socket, &_current_set);
-                this->_clients_list.erase(it);
-                break;
+        if (isCGI_request((*it)->request_class))
+            std::cout << "CGI!!!!!!!!!!!!!!!!!!!!!!\n";
+        send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
+        close((*it)->client_socket);
+        FD_CLR((*it)->client_socket, &_current_set);
+        this->_clients_list.erase(it);
+        break;
         }
     }
     
