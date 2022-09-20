@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/20 17:26:48 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 17:55:56 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 # include "../inc/Webserv.hpp"
 
-bool keep_alive = true; // should we put that as a public attribute of webserv class ?
+bool keep_alive = true;
 
 std::vector<ServerInfo>&     Webserv::getServers()       {   return _servers;  };
 //std::vector<int>&            Webserv::getWbsrvPorts()        {   return _ports;  };

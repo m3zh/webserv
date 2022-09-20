@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/20 17:25:30 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 17:54:40 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,8 +82,6 @@ public:
     std::vector<ServerInfo> &getServers();
     std::vector<int> &getWbsrvPorts();
 
-    //bool isCGI_request(std::string html_content); // check if action and method fit for cgi
-    // this function is part of class CGI
     void close_all();
     int set_server();
     void close_all(std::vector<int> &sockets);
