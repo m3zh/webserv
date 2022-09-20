@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/20 16:53:36 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 17:26:48 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,7 +207,7 @@ int     Webserv::run_server()
     if (rc < 0)
         return -1;
     FD_ZERO(&_current_set);
-    _fd_max = (this->_servers.rbegin())->getListeningSocket(); // the listening socket of the last server setup has the biggest fd so far
+    //_fd_max = (this->_servers.rbegin())->getListeningSocket(); // the listening socket of the last server setup has the biggest fd so far
     for (std::vector<ServerInfo>::iterator it = this->_servers.begin(); it != this->_servers.end(); it++)
         FD_SET((*it).getListeningSocket(), &_current_set);
     signal(SIGINT, signal_handler);
@@ -403,22 +403,20 @@ Client     *Webserv::accept_new_client(int listening_socket)
     std::cout << "new client accepted ! socket is " << client_socket << std::endl;
     if (client_socket < 0)
     {/*PROBLEM*/}
-    fcntl(client_socket, F_SETFL, O_NONBLOCK);/////////////////////
-    if (client_socket > this->_fd_max) // do we still need that ?
-        this->_fd_max = client_socket;
+    fcntl(client_socket, F_SETFL, O_NONBLOCK);///////////////////// Not sure if it is needed here
     FD_SET(client_socket, &_current_set);
-    Client *ret = new Client(client_socket, addr_of_client, listening_socket, this->get_addrs_associated_with_listening_socket(listening_socket));
+    Client *ret = new Client(client_socket, addr_of_client, this->get_server_associated_with_listening_socket(listening_socket));
     return (ret);
 }
 
-sockaddr_in const & Webserv::get_addrs_associated_with_listening_socket(int listening_socket) const
+ServerInfo const &  Webserv::get_server_associated_with_listening_socket(int listening_socket) const
 {
     for (std::vector<ServerInfo>::const_iterator it = this->_servers.begin(); it != this->_servers.end(); it++)
     {
         if ((*it).getListeningSocket() == listening_socket)
-            return ((*it).getListeningAddrs());
+            return (*it);
     }
-    return (this->_servers[0].getListeningAddrs()); // to make it compile, but should never get out of the for loop
+    return (this->_servers[0]); // to make it compile, but should never get out of the for loop
 }
 
 void signal_handler(int signum)

@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/20 16:36:17 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 17:25:30 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ private:
     fd_set                          _current_set;
     fd_set                          _read_set;
     fd_set                          _write_set;
-    int                             _fd_max; // biggest fd used so far
+    //int                             _fd_max; // biggest fd used so far
     //std::vector<int>                _clients_sockets; // vector of active sockets that were opened by accept()
     //std::vector<struct sockaddr_in> _clients_addrs;
 
@@ -98,7 +98,7 @@ public:
 
     int     get_fd_max() const;
     bool    is_listening_socket(int socket) const;
-    sockaddr_in const & get_addrs_associated_with_listening_socket(int listening_socket) const;
+    ServerInfo const &  get_server_associated_with_listening_socket(int listening_socket) const;
     Client     *accept_new_client(int listening_socket); // this calls accept() and store socket and addrs of newly created connection. The client is allocated, needs to be deallocated
 };
 
