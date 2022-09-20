@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 16:38:07 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/15 18:25:13 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 # include <iostream>
 # include <vector>
+# include <netinet/in.h>
 
 struct page 
 {
@@ -51,6 +52,24 @@ class ServerInfo
         std::vector<page>&          getPages();             
         void                        setPages(page p);            
 
+        int                         getListeningSocket() const
+        {
+            return (this->_listening_socket);
+        }
+        void                        setListeningSocket(int socket)
+        {
+            this->_listening_socket = socket;
+        }
+
+        struct sockaddr_in const &  getListeningAddrs() const
+        {
+            return (this->_listening_addrs);
+        }
+        void                        setListeningAddrs(struct sockaddr_in addrs)
+        {
+            this->_listening_addrs = addrs;
+        }
+
     private:
         std::string                 _server_name;
         std::string                 _server_root;
@@ -59,4 +78,7 @@ class ServerInfo
         int                         _client_max_body_size;
         std::vector<page>           _pages;
         page                        _error_page;
+
+        int                         _listening_socket;
+        struct sockaddr_in          _listening_addrs;
 };

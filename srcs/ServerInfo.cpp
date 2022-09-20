@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/05 15:06:03 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/15 18:23:45 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,3 +30,7 @@ int                 ServerInfo::getClientMaxBodySize()          {   return _clie
 void                ServerInfo::setClientMaxBodySize(int c)     {   _client_max_body_size = c;    };
 std::vector<page>&  ServerInfo::getPages()                      {   return _pages;                };
 void                ServerInfo::setPages(page p)                {   _pages.push_back(p);          };
+
+
+
+

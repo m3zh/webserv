@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/05 15:20:57 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 14:06:53 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,10 @@
 #include <cstring>
 #include <map>
 
-
-// Change the way request is parsed. Receive the full request in a string.
-// parse first line and header with small substr, and store the index of the beginning of body
-// in a separate attribute
-// No need to alter or copy the original raw request at all.
-
 class Request
 {
 private:
-    std::string                         _raw_request; // this contains the request untouched
+    std::string const &                 _raw_request; // this points to the request untouched
     std::string                         _method;
     std::string                         _location;
     std::string                         _http_version;
@@ -70,7 +64,7 @@ private:
             std::string key(temp_string, 0, index_of_colon);
             temp_string.erase(0, index_of_colon + 2); // value is all that's left in temp_string
 
-            if ((this->_header_map[key]).size() == 0)
+            if ((this->_header_map[key]).size() == 0) // That key could have been already present in the map, if that's the case, we must not delete previous data
                 this->_header_map[key] = temp_string;
             else
                 (this->_header_map[key] += ';') += temp_string;
@@ -82,20 +76,18 @@ private:
     Request &   operator=(Request const & x);
 public:
 
-    Request(std::string raw_request)
-    {
-        // First method, location and version of the request are extracted.
-        // Then all header data are put in a std::map
-        // Then the body of the request is saved separately
-
-        this->_get_method_location_version(raw_request.substr(0, raw_request.find('\n')));
-
-        this->_index_beginning_body = (4 + raw_request.find("\r\n\r\n") >= raw_request.size() ? std::string::npos : 4 + raw_request.find("\r\n\r\n"));
-
-        size_t  index_beginning_header = 1 + raw_request.find('\n');
-        this->_fill_header_map(raw_request.substr(index_beginning_header, this->_index_beginning_body - index_beginning_header));
-    }
+    Request(std::string const & raw_request) : _raw_request(raw_request) {}
     ~Request() {}
+
+    void    parse_raw_request() // That function is meant to be called once the header of the request has been read.
+    {
+        this->_get_method_location_version(this->_raw_request.substr(0, this->_raw_request.find('\n')));
+
+        this->_index_beginning_body = (4 + this->_raw_request.find("\r\n\r\n") >= this->_raw_request.size() ? std::string::npos : 4 + this->_raw_request.find("\r\n\r\n"));
+
+        size_t  index_beginning_header = 1 + this->_raw_request.find('\n');
+        this->_fill_header_map(this->_raw_request.substr(index_beginning_header, this->_index_beginning_body - index_beginning_header));
+    }
 
     std::string const & get_raw_request() const
     {
