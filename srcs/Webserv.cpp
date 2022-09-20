@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/20 15:01:33 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 16:53:36 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,7 +290,7 @@ void    Webserv::looping_through_read_set()
                 // now we have to check if there is actually something more to read.
                 // If we don't have a body, reading is done. If there is a body, we have to compare content_length with what we received
                 if ((*it)->request_class.get_index_beginning_body() == std::string::npos) // means we don't have a body
-                    (*it)->is_read_complete = true;
+                    (*it)->mark_read_as_complete();
                 else // there is a body.
                 {
                     std::cout << "there is a body and we have more to read\n";
@@ -301,7 +301,7 @@ void    Webserv::looping_through_read_set()
                     {
                         std::cout << "After the first reading of header, we see that there is a body, but we read everything already\n";
                         // that means we received at least content-length bytes of the body. Read should be complete. probably need to put ==
-                        (*it)->is_read_complete = true;
+                        (*it)->mark_read_as_complete();
                     }
                 }
             }
@@ -316,7 +316,7 @@ void    Webserv::looping_through_read_set()
                 if (((*it)->request_str.size() - (*it)->request_class.get_index_beginning_body()) >= (unsigned long)(atoi((content_length_it->second).c_str())) )
                 {
                     // that means we received at least content-length bytes of the body. Read should be complete. probably need to put ==
-                    (*it)->is_read_complete = true;
+                    (*it)->mark_read_as_complete();
                 }
             }
                 std::cout << "exiting if (FD_ISSET) and client is read complete ? " << (*it)->is_read_complete << std::endl;
@@ -333,9 +333,27 @@ void    Webserv::looping_through_write_set()
     {
         if (FD_ISSET((*it)->client_socket, &(this->_write_set)) && (*it)->is_read_complete == true)
         {
+
+            // down here is dummy response for developement purpose
+
+            std::string ok = "HTTP/1.1 200\r\n\r\n";
+            char temp_buffer[1024];
+            std::ifstream   temp_stream("./pages/website1/index.html", std::ios_base::in | std::ios_base::binary);
+
+            while (temp_stream.good()) // when EOF is reached, or in case of error, we break out of the loop
+            {
+                temp_stream.read(temp_buffer, sizeof(temp_buffer));
+                ok.append(temp_buffer, temp_stream.gcount());
+            }
+
+
+
+
+
             std::cout << "about to send a response\n";
             std::cout << "Full request has size " << (*it)->request_str.size() << " and str is :\n----------------\n" << (*it)->request_str << "\n-------------" << std::endl;
-            if ((send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
+            //if ((send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
+            if ((send((*it)->client_socket, ok.c_str(), ok.size(), 0)) < 0)
             {/*ERROR*/}
             close ((*it)->client_socket);
             FD_CLR((*it)->client_socket, &_current_set);

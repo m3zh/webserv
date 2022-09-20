@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/20 15:06:44 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 16:52:47 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,12 @@ public:
         this->request_class.parse_raw_request();
     }
 
+    void    mark_read_as_complete()
+    {
+        // performing some action here ! Now we have the full request and we should execute it and generate a response
+        this->is_read_complete = true;
+    }
+
     int                         client_socket;
     struct sockaddr_in          client_addrs;
     const int                   listening_socket;
@@ -52,4 +58,6 @@ public:
 
     bool                        has_header_been_read;
     bool                        is_read_complete;
+
+    //Response class
 };
