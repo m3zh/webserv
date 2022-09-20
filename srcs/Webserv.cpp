@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/19 18:04:23 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 15:01:33 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,7 +213,7 @@ int     Webserv::run_server()
     signal(SIGINT, signal_handler);
     while (keep_alive)///////////////////////
     {
-
+        std::cout << "main while loop (run server)\n";
 /*
         call select with read set and write set
         loop first over read set and check if its the listening fd
@@ -265,91 +265,63 @@ void    Webserv::checking_for_new_clients()
 
 void    Webserv::looping_through_read_set()
 {
-    // looping through all clients to see if one has something for us to read
-
-    // no need to check new or not, because we just interact with clients in the read set
-
     // for each client(in the read set), check if header has been read yet.
         // if header has been read already (there is a body), read a buffer, if content length match, mark read as completed
         // if header has not been read yet, read a buffer, then find the first occurence of \r\n\r\n
         // and compare its index with the request size to mark the read as completed or not (and mark the header as read)
         // if \r\n\r\n cannot be found, we have a request error. can be header too long, can be something else
 
-
-
-
-
-
     for (std::list<Client*>::iterator it = this->_clients_list.begin(); it != this->_clients_list.end(); ++it)
     {
-        std::cout << "entering for loop\n";
-        if ((*it)->has_just_been_created == true)
+        if (FD_ISSET((*it)->client_socket, &_read_set))
         {
-            std::cout << "saw a new client that hasnt been through select() yet\n";
-            (*it)->has_just_been_created = false;
-            continue;
-        }
-        if (FD_ISSET((*it)->client_socket, &(this->_read_set)))
-        {
-            std::cout << "about to call recv() on a client\n";
-            // This client has something for us to read. We read a buffer full of data and append it to the std::string in the Client class
-            // If there is more to read, that will be for next loop pass.
-            // We only send the client a response when there is nothing more to read
-                char buffer[READ_BUFFER];
-                bzero(&buffer, sizeof(buffer));
-                int return_of_recv;
+            std::cout << "just entered if (FD_ISSET) and client is read complete ? " << (*it)->is_read_complete << std::endl;
+            char buffer[READ_BUFFER];
+            bzero(&buffer, sizeof(buffer));
+            int return_of_recv;
+            if ((*it)->has_header_been_read == false) // we can call parse_request as soon as the header is read. The beginning of the body will be there at the first call to recv()
+            {
                 if ((return_of_recv = recv((*it)->client_socket, buffer, sizeof(buffer), 0)) == -1)
                 {/*ERROR*/}
                 (*it)->request_str.append(buffer, return_of_recv); // append() method will include \0 if some are present in the buffer
-                // if reading is complete, call a member function in client class to instantiate the request class in it
-                // mark the client as ready to respond
-
-
-        }
-        else if ((*it)->is_read_complete == false) // There is nothing left to read but it hasnt been marked as read complete yet. That means the request is ready to be parsed
-        {
-            std::cout << "Client has not been selected by select(), the request should have been fully read, launching the parsing\n";
-            std::cout << "just checking there is indeed nothing left to read...\n";
-            char    buffer[READ_BUFFER];
-                bzero(&buffer, sizeof(buffer));
-                int return_of_recv;
-                if ((return_of_recv = recv((*it)->client_socket, buffer, sizeof(buffer), 0)) == -1)
-                {/*ERROR*/}
-                
-                if (return_of_recv > 0)
+                (*it)->parse_request();
+                (*it)->has_header_been_read = true;
+                std::cout << return_of_recv << " bytes of the header have been read. We have an index for beginning of body of : " << (*it)->request_class.get_index_beginning_body() << std::endl;
+                // now we have to check if there is actually something more to read.
+                // If we don't have a body, reading is done. If there is a body, we have to compare content_length with what we received
+                if ((*it)->request_class.get_index_beginning_body() == std::string::npos) // means we don't have a body
+                    (*it)->is_read_complete = true;
+                else // there is a body.
                 {
-                    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!There was indeed something more to read ! Continuing the loop\n";
-                    (*it)->request_str.append(buffer, return_of_recv);
-                    continue;
+                    std::cout << "there is a body and we have more to read\n";
+                    std::map<std::string, std::string>::const_iterator    content_length_it = (*it)->request_class.get_header_map().find("Content-Length");
+                    if (content_length_it == (*it)->request_class.get_header_map().end())
+                    {/*ERROR : Content length not present in the map*/}
+                    if (((*it)->request_str.size() - (*it)->request_class.get_index_beginning_body()) == (unsigned long)(atoi((content_length_it->second).c_str())) )
+                    {
+                        std::cout << "After the first reading of header, we see that there is a body, but we read everything already\n";
+                        // that means we received at least content-length bytes of the body. Read should be complete. probably need to put ==
+                        (*it)->is_read_complete = true;
+                    }
                 }
-            (*it)->parse_request(); // parse request and generate response.
-
-                // down here is garbage
-        //        std::cout << "Request from " << (*it)->client_socket << " : \n---------------------------\n" << (*it)->request_class.get_raw_request() << "-----------------------" << std::endl;
-        //std::cout << "Data recovered from the request : \n";
-        //std::cout << "method : " << (*it)->request_class.get_method() << std::endl;
-        //std::cout << "location : " << (*it)->request_class.get_location() << std::endl;
-        //std::cout << "http version : " << (*it)->request_class.get_http_version() << std::endl;
-        //std::cout << "\nDisplaying header map : \n";
-        //for (std::map<std::string, std::string>::const_iterator itt = (*it)->request_class.get_header_map().begin(); itt != (*it)->request_class.get_header_map().end(); ++itt)
-        //{
-        //    std::cout << (*itt).first << ": " << (*itt).second << std::endl;
-        //}
-        //if ((*it)->request_class.get_index_beginning_body() != std::string::npos) // it means there is a body
-        //{
-        //    std::cout << "\nDisplaying the request body :\n";
-        //    std::cout << (*it)->request_class.get_body() << std::endl;
-        //}
-        //std::cout << "\n\n";
-
-        //        send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0);
-        //        close((*it)->client_socket);
-        //        FD_CLR((*it)->client_socket, &_current_set);
-        //        this->_clients_list.erase(it);
-        //        //break;
+            }
+            else // header has been read and parsed and there is more data to read (we have to check content-length)
+            {
+                std::map<std::string, std::string>::const_iterator    content_length_it = (*it)->request_class.get_header_map().find("Content-Length");
+                if (content_length_it == (*it)->request_class.get_header_map().end())
+                {/*ERROR : Content length not present in the map*/}
+                if ((return_of_recv = recv((*it)->client_socket, buffer, sizeof(buffer), 0)) == -1)
+                {/*ERROR with reading*/}
+                (*it)->request_str.append(buffer, return_of_recv); // append() method will include \0 if some are present in the buffer
+                if (((*it)->request_str.size() - (*it)->request_class.get_index_beginning_body()) >= (unsigned long)(atoi((content_length_it->second).c_str())) )
+                {
+                    // that means we received at least content-length bytes of the body. Read should be complete. probably need to put ==
+                    (*it)->is_read_complete = true;
+                }
+            }
+                std::cout << "exiting if (FD_ISSET) and client is read complete ? " << (*it)->is_read_complete << std::endl;
         }
     }
-    
 }
 
 void    Webserv::looping_through_write_set()
@@ -362,12 +334,14 @@ void    Webserv::looping_through_write_set()
         if (FD_ISSET((*it)->client_socket, &(this->_write_set)) && (*it)->is_read_complete == true)
         {
             std::cout << "about to send a response\n";
+            std::cout << "Full request has size " << (*it)->request_str.size() << " and str is :\n----------------\n" << (*it)->request_str << "\n-------------" << std::endl;
             if ((send((*it)->client_socket, "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
             {/*ERROR*/}
             close ((*it)->client_socket);
             FD_CLR((*it)->client_socket, &_current_set);
             std::list<Client*>::iterator    to_delete = it;
             ++it;
+            delete (*to_delete); // Client is allocated
             this->_clients_list.erase(to_delete);
         }
         else

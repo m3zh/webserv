@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/18 12:07:47 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 14:06:53 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ public:
     Request(std::string const & raw_request) : _raw_request(raw_request) {}
     ~Request() {}
 
-    void    parse_raw_request() // That function is meant to be called once the request has been read in full. 
+    void    parse_raw_request() // That function is meant to be called once the header of the request has been read.
     {
         this->_get_method_location_version(this->_raw_request.substr(0, this->_raw_request.find('\n')));
 

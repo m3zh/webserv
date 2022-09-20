@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/19 15:22:40 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/20 15:06:23 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,8 @@ extern bool keep_alive;
 
 #define BACKLOG 255
 #define NBPORTS 3
-#define READ_BUFFER 1024
+#define READ_BUFFER 16384 // 2^14
+//#define READ_BUFFER 280 // to delete. It is there for testing reading loop
 #define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
 # include "../inc/Cgi.hpp"
 
