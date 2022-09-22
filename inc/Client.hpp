@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/18 12:16:45 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/22 15:15:34 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include "Request.hpp"
+#include "ServerInfo.hpp"
 
 class Client
 {
@@ -30,9 +31,9 @@ private:
     Client(Client const & x);
     Client &    operator=(Client const & x);
 public:
-    Client(int client_socket, struct sockaddr_in client_addrs, int listening_socket, struct sockaddr_in const & listening_addrs)
-        : client_socket(client_socket), client_addrs(client_addrs), listening_socket(listening_socket),
-        listening_addrs(listening_addrs), request_class(request_str), is_read_complete(false)
+    Client(int client_socket, struct sockaddr_in client_addrs, ServerInfo *associated_server)
+        : client_socket(client_socket), client_addrs(client_addrs), associated_server(associated_server),
+        request_class(request_str), has_header_been_read(false), is_read_complete(false)
     {}
 
     ~Client() {}
@@ -40,16 +41,24 @@ public:
     void    parse_request()
     {
         this->request_class.parse_raw_request();
+    }
+
+    void    mark_read_as_complete()
+    {
+        // performing some action here ! Now we have the full request and we should execute it and generate a response
         this->is_read_complete = true;
     }
 
     int                         client_socket;
     struct sockaddr_in          client_addrs;
-    const int                   listening_socket;
-    struct sockaddr_in const &  listening_addrs;
+
+    ServerInfo *                 associated_server;
 
     std::string                 request_str; // std::string can contain \0
     Request                     request_class;
 
+    bool                        has_header_been_read;
     bool                        is_read_complete;
+
+    //Response class
 };
