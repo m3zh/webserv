@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/22 16:39:27 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/23 09:55:57 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 bool keep_alive = true;
 
-std::vector<ServerInfo>         Webserv::getServers()       {   return _servers;  };
+std::vector<ServerInfo>         Webserv::getServers()           {   return _servers;  };
 //std::vector<int>&             Webserv::getWbsrvPorts()        {   return _ports;  };
 
 Webserv::Webserv(std::vector<ServerInfo> const &s) : _servers(s)
@@ -35,7 +35,7 @@ Webserv::Webserv(std::vector<ServerInfo> const &s) : _servers(s)
     return ;
 }
 
-Webserv::~Webserv()                     {    return ;   };
+Webserv::~Webserv()                     {};
 
 void    Webserv::close_all()
 {
@@ -121,7 +121,8 @@ int     Webserv::run_server()
 void    Webserv::checking_for_new_clients()
 {
     // looping through all listening sockets to see if some have been picked by select()
-    for (std::vector<ServerInfo>::iterator it = this->_servers.begin(); it != this->_servers.end(); it++)
+    for (std::vector<ServerInfo>::iterator it = this->_servers.begin();
+        it != this->_servers.end(); it++)
     {
         if (FD_ISSET((*it).getListeningSocket(), &_read_set))
         { // there is a new client to accept, we instantiate a Client class and add it to the clients list
@@ -255,7 +256,7 @@ Client     *Webserv::accept_new_client(int listening_socket)
     int client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);
     std::cout << "new client accepted ! socket is " << client_socket << std::endl;
     if (client_socket < 0)
-    {/*PROBLEM*/}
+        throw WebException<std::string>(RED, "WebServ error: Client not accepted on listening socket ", listening_socket);
     fcntl(client_socket, F_SETFL, O_NONBLOCK);///////////////////// Not sure if it is needed here
     FD_SET(client_socket, &_current_set);
     Client *ret = new Client(client_socket, addr_of_client, this->get_server_associated_with_listening_socket(listening_socket));

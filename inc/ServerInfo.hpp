@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerInfo.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/15 18:25:13 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/23 09:45:33 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,10 +52,7 @@ class ServerInfo
         std::vector<page>&          getPages();             
         void                        setPages(page p);            
 
-        int                         getListeningSocket() const
-        {
-            return (this->_listening_socket);
-        }
+        int                         getListeningSocket() const;
         void                        setListeningSocket(int socket)
         {
             this->_listening_socket = socket;

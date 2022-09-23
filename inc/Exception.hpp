@@ -40,10 +40,6 @@ class WebException : public std::exception
                                                                 ss << var;
                                                                 _err = clr + msg + ": " + ss.str() + RESET;
                                                             };
-        virtual ~WebException() _NOEXCEPT {};
-
-    virtual const char* what() const _NOEXCEPT
-    {
-        return _err.c_str();
-    };
+        virtual ~WebException() _NOEXCEPT                   {};
+        virtual const char* what() const _NOEXCEPT          {   return _err.c_str();    };
 };
