@@ -23,7 +23,7 @@ Client::Client( int client_socket,
                                                                                                 };
 Client::~Client()                                                                               {};
 
-void    Client::parseHeader() const             {   getRequest().parse_raw_request();  };
+void    Client::parseHeader()                   {   getRequest().parse_raw_request();  };
 void    Client::handleRequest()                 {   // performing some action here ! Now we have the full request and we should execute it and generate a response
                                                 is_read_complete = true;
                                                 };

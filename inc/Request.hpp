@@ -29,24 +29,24 @@ class Request
         size_t                              _index_beginning_body; // = std::string::npos in case there is no body
 
         void    _remove_char_from_string(std::string & str, char c);
-        void    _get_method_location_version(std::string raw_request) const;
-        void    _fill_header_map(std::string raw_request) const;
+        void    _get_method_location_version(std::string raw_request);
+        void    _fill_header_map(std::string raw_request);
 
         Request();
         Request(Request const & x);
         Request &   operator=(Request const & x);
 
     public:
-        Request(std::string & raw_request) : _raw_request(raw_request) {}
-        ~Request() {}
+        Request(std::string & raw_request);
+        ~Request();
 
-        void    parse_raw_request() const;
+        void    parse_raw_request();
 
-        std::string const & get_raw_request() const;
-        std::string const &   get_method() const;
-        std::string const &   get_location() const;
-        std::string const &   get_http_version() const;
-        std::map<std::string, std::string> const &    get_header_map() const;
-        size_t  get_index_beginning_body() const;
-        const char    *get_body() const;
+        std::string                             get_raw_request() const;
+        std::string                             get_method() const;
+        std::string                             get_location() const;
+        std::string                             get_http_version() const;
+        std::map<std::string, std::string>      get_header_map() const;
+        size_t                                  get_index_beginning_body() const;
+        std::string                             get_body() const;
 };
