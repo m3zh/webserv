@@ -24,6 +24,7 @@
 
 # define GREEN  "\e[92m"
 # define RED	"\033[31m"
+# define BLUE	"\033[34m"
 # define RESET  "\033[0m"
 
 template< typename T >
