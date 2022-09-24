@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/24 12:51:53 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/24 18:25:55 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ class Client
         Client( int client_socket, struct sockaddr_in client_addrs, ServerInfo *associated_server );
         ~Client();
 
-        void    parseHeader();
-        void    handleRequest();
+        void                    parseHeader();
+        void                    handleRequest();
 
         // GETTERS
         int                     getClientSocket()   const;
@@ -55,6 +55,10 @@ class Client
         ServerInfo *            getServerInfo()     const;
         std::string             getRequestString()  const;
         Request&                getRequest()        ;
+
+        // SETTERS
+        void                    setRequest(std::string const &s);
+        void                    setRequestString(std::string s);
 
         // BOOLS
         bool                    isReadComplete();

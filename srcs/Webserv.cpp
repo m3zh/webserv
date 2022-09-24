@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/24 16:48:26 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/24 18:23:32 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,24 +15,8 @@
 bool keep_alive = true;
 
 std::vector<ServerInfo>         Webserv::getServers()           {   return _servers;  };
-//std::vector<int>&             Webserv::getWbsrvPorts()        {   return _ports;  };
 
-Webserv::Webserv(std::vector<ServerInfo> const &s) : _servers(s)
-{
-    //std::vector<int> tmp(s.size());
-    //_listening_sockets = tmp;
-    // for (std::vector<ServerInfo *>::iterator it = _servers.begin(); it != _servers.end(); it++)
-    // {
-    //     log(GREEN, "SERVER NAME = ", it->getServerName());
-    //     log(GREEN, "SERVER PORT = ", it->getPort());
-    //     log(GREEN, "MAX CLIENT BODY = ", it->getClientMaxBodySize());
-    //     log(GREEN, "ROOT = ", it->getServerRoot());
-    //     log(GREEN, "INDEX = ", it->getServerIndex());
-    //     //std::vector<page> current_pages = it->getPages();
-    //     //_ports.push_back(it->getPort());
-    //     log(RED, "----------------------------------------------------------", 0);
-    // }
-}
+Webserv::Webserv(std::vector<ServerInfo> const &s) : _servers(s)    {};
 
 Webserv::~Webserv()                     {};
 
@@ -68,7 +52,8 @@ int     Webserv::set_server()
 int     Webserv::run_server()
 {
     struct timeval timeout;
-
+    int select_fd;
+    
     if (set_server() < 0)
         return -1;
     FD_ZERO(&_current_set);
@@ -100,9 +85,9 @@ int     Webserv::run_server()
         _write_set = _current_set;
 
         // select will test listening fd, and clients
-        int select_fd = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
-        if (select_fd <= 0) // negative is select() error and 0 is select() timeout
-            throw WebException<int>(BLUE, "WebServ error: select failed on fd", select_fd);
+        try {   select_fd = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);              }
+        catch (...) {  throw WebException<int>(BLUE, "WebServ error: select failed on fd", select_fd);      }
+            
         // looping through all listening socket
         checking_for_new_clients();
         looping_through_read_set();
@@ -139,34 +124,34 @@ void    Webserv::looping_through_read_set()
         int client_socket = (*it)->getClientSocket();
         if (FD_ISSET(client_socket, &_read_set))
         {
-            std::cout << "just entered if (FD_ISSET) and client is read complete ? " << (*it)->isReadComplete() << std::endl;
+            std::cout << "Reading...\n" << std::endl;
             char buffer[READ_BUFFER];
             bzero(&buffer, sizeof(buffer));
-            int return_of_recv;
-            if ((*it)->headerIsReadComplete() == false) // we can call parse_request as soon as the header is read. The beginning of the body will be there at the first call to recv()
+            int bytes_recv;
+            // we can call parse_request as soon as the header is read. 
+            // The beginning of the body will be there at the first call to recv()
+            if ((*it)->headerIsReadComplete() == false) 
             {
-                if ((return_of_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
+                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
                     throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);
-                (*it)->getRequestString().append(buffer, return_of_recv); // append() method will include \0 if some are present in the buffer
+                buffer[bytes_recv] = 0;
+                std::string buf(buffer);
+                (*it)->setRequestString(buf);
                 (*it)->parseHeader();
-                (*it)->setHeaderReadAsComplete(true);
-                std::cout << return_of_recv << " bytes of the header have been read. We have an index for beginning of body of : " << (*it)->getRequest().get_index_beginning_body() << std::endl;
+                std::cout << bytes_recv << " bytes of the header have been read.\n";
+                
                 // now we have to check if there is actually something more to read.
-                // If we don't have a body, reading is done. If there is a body, we have to compare content_length with what we received
                 if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) // means we don't have a body
                     (*it)->setReadAsComplete(true);
-                else // there is a body.
+                else // there is a body. We have to compare content_length with what we received
                 {
-                    std::cout << "there is a body and we have more to read\n";
+                    std::cout << "Reading the body.\n";
                     std::map<std::string, std::string>::iterator    content_length_it = (*it)->getRequest().get_header_map().find("Content-Length");
                     if (content_length_it == (*it)->getRequest().get_header_map().end())
                         throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
-                    if (((*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) == (unsigned long)(atoi((content_length_it->second).c_str())) )
-                    {
-                        std::cout << "After the first reading of header, we see that there is a body, but we read everything already\n";
-                        // that means we received at least content-length bytes of the body. Read should be complete. probably need to put ==
+                    if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
+                        == (unsigned long)(atoi((content_length_it->second).c_str())) )
                         (*it)->setReadAsComplete(true);
-                    }
                 }
             }
             else // header has been read and parsed and there is more data to read (we have to check content-length)
@@ -174,16 +159,15 @@ void    Webserv::looping_through_read_set()
                 std::map<std::string, std::string>::const_iterator    content_length_it = (*it)->getRequest().get_header_map().find("Content-Length");
                 if (content_length_it == (*it)->getRequest().get_header_map().end())
                     throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
-                if ((return_of_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
+                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
                     throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);
-                (*it)->getRequestString().append(buffer, return_of_recv); // append() method will include \0 if some are present in the buffer
+                (*it)->getRequestString().append(buffer, bytes_recv); // append() method will include \0 if some are present in the buffer
                 if (((*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body())
                         == (unsigned long)(atoi((content_length_it->second).c_str())) ) // that means we received at least content-length bytes of the body. Read should be complete. probably need to put ==
                     (*it)->setReadAsComplete(true);
             }
-            std::cout << "exiting if (FD_ISSET) and client is read complete ? " << (*it)->isReadComplete() << std::endl;
             if ((*it)->isReadComplete())
-                std::cout << "Reading complete.\nMethod requested is\n" << (*it)->getRequestString();
+                std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
         }
         
     }
@@ -247,10 +231,10 @@ Client     *Webserv::accept_new_client(int listening_socket)
     // the returned client is allocated in the heap. Do not forget to deallocate it
     struct sockaddr_in  addr_of_client;
     socklen_t   len_for_accept = sizeof(addr_of_client);
-    int client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);
-    std::cout << "new client accepted ! socket is " << client_socket << std::endl;
-    if (client_socket < 0)
-        throw WebException<int>(RED, "WebServ error: Client not accepted on listening socket ", listening_socket);
+    int client_socket;
+    try {   client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);              } // if (client_socket < 0)
+    catch (...) {  throw WebException<int>(RED, "WebServ error: Client not accepted on listening socket ", listening_socket); return nullptr;      }
+    std::cout << "new client accepted ! socket is " << client_socket << std::endl;      
     FD_SET(client_socket, &_current_set);
     Client *ret = new Client(client_socket, addr_of_client, get_server_associated_with_listening_socket(listening_socket));
     return (ret);

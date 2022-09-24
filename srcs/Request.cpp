@@ -6,13 +6,31 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/24 12:51:43 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/24 18:58:38 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Request.hpp"
 
-Request::Request(std::string const& raw_request)     :   _raw_request(raw_request) {};
+Request::Request()                                  {};
+Request::Request(std::string const& raw_request)    :   _raw_request(raw_request) {};
+Request &Request::operator=(Request const & r)      {
+                                                        _raw_request = r._raw_request; // this points to the request untouched
+                                                        _method = r._method;
+                                                        _location = r._location;
+                                                        _http_version = r._http_version;
+                                                        _header_map.insert(r._header_map.begin(), r._header_map.end());
+                                                        _index_beginning_body = r._index_beginning_body;
+                                                        return *this;
+                                                    };
+Request::Request(Request const & r)                 {
+                                                        _raw_request = r._raw_request; // this points to the request untouched
+                                                        _method = r._method;
+                                                        _location = r._location;
+                                                        _http_version = r._http_version;
+                                                        _header_map.insert(r._header_map.begin(), r._header_map.end());
+                                                        _index_beginning_body = r._index_beginning_body;
+                                                    };
 Request::~Request()                                 {};
 
 void    Request::_remove_char_from_string(std::string & str, char c)
@@ -39,7 +57,7 @@ void    Request::_fill_header_map(std::string raw_request)
     std::stringstream   temp_stream;
     temp_stream.str(raw_request);
 
-    while (temp_stream.good()) // gonna be false if error or when EOF is reached
+    while (temp_stream.good())
     { // each line has format KEY: VALUE | Same Key can be encountered more than once
         std::string temp_string;
         std::getline(temp_stream, temp_string);
@@ -60,7 +78,9 @@ void    Request::parse_raw_request() // That function is meant to be called once
 {
     _get_method_location_version(_raw_request.substr(0, _raw_request.find('\n')));
 
-    _index_beginning_body = (4 + _raw_request.find("\r\n\r\n") >= _raw_request.size() ? std::string::npos : 4 + _raw_request.find("\r\n\r\n"));
+    _index_beginning_body = std::string::npos;
+    if (4 + _raw_request.find("\r\n\r\n") >= _raw_request.size())
+        _index_beginning_body =  4 + _raw_request.find("\r\n\r\n");
 
     size_t  index_beginning_header = 1 + _raw_request.find('\n');
     _fill_header_map(_raw_request.substr(index_beginning_header, _index_beginning_body - index_beginning_header));
