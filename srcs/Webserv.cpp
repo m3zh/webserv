@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/23 09:55:57 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/24 15:16:12 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,9 +187,10 @@ void    Webserv::looping_through_read_set()
                     (*it)->setReadAsComplete(true);
             }
             std::cout << "exiting if (FD_ISSET) and client is read complete ? " << (*it)->isReadComplete() << std::endl;
+            if ((*it)->isReadComplete())
+                std::cout << "Reading complete.\nMethod requested is\n" << (*it)->getRequestString();
         }
-        std::cout << "Request has been read\n";
-        std::cout << "Method requested is\n";
+        
     }
 }
 
@@ -218,7 +219,7 @@ void    Webserv::looping_through_write_set()
             std::cout << "Full request has size " << (*it)->getRequestString().size() << " and str is :\n----------------\n" << (*it)->getRequestString() << "\n-------------" << std::endl;
             //if ((send((*it)->getClientSocket(), "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
             if ((send((*it)->getClientSocket(), ok.c_str(), ok.size(), 0)) < 0)
-            {/*ERROR*/}
+                throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
             close ((*it)->getClientSocket());
             FD_CLR((*it)->getClientSocket(), &_current_set);
             std::list<Client*>::iterator    to_delete = it;
@@ -238,11 +239,9 @@ int     Webserv::get_fd_max() const
     {
         int fd_max = (*(_clients_list).begin())->getClientSocket();
         for (std::list<Client*>::const_iterator it = _clients_list.begin(); it != _clients_list.end(); ++it)
-        {
             if ((*it)->getClientSocket() > fd_max)
                 fd_max = (*it)->getClientSocket();
-        }
-        return (fd_max);
+        return fd_max;
     }
     else
         return (_servers.back().getListeningSocket()); // last added server has the biggest listening socket
