@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/22 15:15:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/24 12:51:53 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,9 +52,9 @@ class Client
         // GETTERS
         int                     getClientSocket()   const;
         struct sockaddr_in      getClientAddress()  const;
-        ServerInfo *            getServerInfo() const;
+        ServerInfo *            getServerInfo()     const;
         std::string             getRequestString()  const;
-        Request const&          getRequest()    const;
+        Request&                getRequest()        ;
 
         // BOOLS
         bool                    isReadComplete();

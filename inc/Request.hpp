@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/20 14:06:53 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/24 12:43:16 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ class Request
         Request &   operator=(Request const & x);
 
     public:
-        Request(std::string & raw_request);
+        Request(std::string const &raw_request);
         ~Request();
 
         void    parse_raw_request();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/13 19:30:58 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/24 12:50:05 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int                     Client::getClientSocket()       const   {   return  clie
 struct sockaddr_in      Client::getClientAddress()      const   {   return  client_addrs;       };
 ServerInfo *            Client::getServerInfo()         const   {   return  associated_server;  };
 std::string             Client::getRequestString()      const   {   return  request_str;        };
-Request const&          Client::getRequest()            const   {   return  request;            };
+Request&                Client::getRequest()                    {   return  request;            };
 
 // BOOLS
 bool                    Client::isReadComplete()                        {   return  is_read_complete;            };

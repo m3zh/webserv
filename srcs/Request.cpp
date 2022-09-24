@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/13 19:30:55 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/24 12:51:43 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Request.hpp"
 
-Request::Request(std::string & raw_request)     :   _raw_request(raw_request) {};
+Request::Request(std::string const& raw_request)     :   _raw_request(raw_request) {};
 Request::~Request()                                 {};
 
 void    Request::_remove_char_from_string(std::string & str, char c)
