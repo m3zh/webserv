@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/24 15:16:12 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/24 16:48:26 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,8 @@ int     Webserv::set_server()
 int     Webserv::run_server()
 {
     struct timeval timeout;
-    int rc;
 
-    rc = set_server();
-    if (rc < 0)
+    if (set_server() < 0)
         return -1;
     FD_ZERO(&_current_set);
     //_fd_max = (_servers.rbegin())->getListeningSocket(); // the listening socket of the last server setup has the biggest fd so far
@@ -80,7 +78,7 @@ int     Webserv::run_server()
     signal(SIGINT, signal_handler);
     while (keep_alive)///////////////////////
     {
-        std::cout << "main while loop (run server)\n";
+        std::cout << "Connecting ...\n";
 /*
         call select with read set and write set
         loop first over read set and check if its the listening fd
@@ -101,17 +99,14 @@ int     Webserv::run_server()
         _read_set = _current_set;
         _write_set = _current_set;
 
-        //rc = select(_fd_max + 1, &_read_set, &_write_set, NULL, &timeout); // select will test listening fd, and clients
-        rc = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
-        if (rc <= 0) // negative is select() error and 0 is select() timeout
-            break;
-        // what about accepting clients here ? looping through all listening socket
-        // then we can just loop through all clients after
+        // select will test listening fd, and clients
+        int select_fd = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
+        if (select_fd <= 0) // negative is select() error and 0 is select() timeout
+            throw WebException<int>(BLUE, "WebServ error: select failed on fd", select_fd);
+        // looping through all listening socket
         checking_for_new_clients();
         looping_through_read_set();
         looping_through_write_set();
-        //transmit_data();
-        //accept_clients();
     }
     close_all();
     return 0;
@@ -219,7 +214,7 @@ void    Webserv::looping_through_write_set()
             std::cout << "Full request has size " << (*it)->getRequestString().size() << " and str is :\n----------------\n" << (*it)->getRequestString() << "\n-------------" << std::endl;
             //if ((send((*it)->getClientSocket(), "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
             if ((send((*it)->getClientSocket(), ok.c_str(), ok.size(), 0)) < 0)
-                throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                return ;
             close ((*it)->getClientSocket());
             FD_CLR((*it)->getClientSocket(), &_current_set);
             std::list<Client*>::iterator    to_delete = it;
