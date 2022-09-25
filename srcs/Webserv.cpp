@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/24 18:23:32 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/25 21:12:37 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,9 @@ void    Webserv::looping_through_read_set()
                 else // there is a body. We have to compare content_length with what we received
                 {
                     std::cout << "Reading the body.\n";
+                    std::cout << "Body index " << (*it)->getRequest().get_index_beginning_body() << "\n";
                     std::map<std::string, std::string>::iterator    content_length_it = (*it)->getRequest().get_header_map().find("Content-Length");
+                    std::cout << "ConLen " << (*content_length_it).first << "\n";
                     if (content_length_it == (*it)->getRequest().get_header_map().end())
                         throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
                     if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 

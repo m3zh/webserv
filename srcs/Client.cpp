@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/24 18:47:13 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/25 21:27:58 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,13 @@ Client::Client( int client_socket,
                                                                                                 };
 Client::~Client()                                                                               {};
 
-void    Client::parseHeader()                   {   
-                                                        getRequest().parse_raw_request();  
+void    Client::parseHeader()                   {
+                                                        setRequest(getRequestString());
+                                                        getRequest().parse_raw_request();
+                                                        std::cout << getRequestString() << "\n++++++++++++\n";  
+                                                        std::map<std::string, std::string>::iterator it = getRequest().get_header_map().begin();
+                                                        for (; it != getRequest().get_header_map().end(); it++ )
+                                                                std::cout << it->first << ": " << it->second << std::endl;
                                                         setHeaderReadAsComplete(true);
                                                 };
 void    Client::handleRequest()                 {   // performing some action here ! Now we have the full request and we should execute it and generate a response

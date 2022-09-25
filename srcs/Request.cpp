@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/24 18:58:38 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/25 21:32:55 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,11 +79,11 @@ void    Request::parse_raw_request() // That function is meant to be called once
     _get_method_location_version(_raw_request.substr(0, _raw_request.find('\n')));
 
     _index_beginning_body = std::string::npos;
-    if (4 + _raw_request.find("\r\n\r\n") >= _raw_request.size())
+    if (4 + _raw_request.find("\r\n\r\n") < _raw_request.size())
         _index_beginning_body =  4 + _raw_request.find("\r\n\r\n");
 
     size_t  index_beginning_header = 1 + _raw_request.find('\n');
-    _fill_header_map(_raw_request.substr(index_beginning_header, _index_beginning_body - index_beginning_header));
+    _fill_header_map(_raw_request.substr(index_beginning_header, _index_beginning_body));
 }
 
 std::string     Request::get_raw_request() const                            {    return _raw_request;           };
