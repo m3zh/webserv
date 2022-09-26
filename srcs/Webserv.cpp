@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 17:35:38 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 18:43:33 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -256,7 +256,7 @@ void    Webserv::parseHeader(Client *c)         {
                                                 };
 
 // EXECUTING REQUEST AND CREATE RESPONSE
-void    Webserv::handleRequest(Client *c)   const            {
+void    Webserv::handleRequest(Client *c)   const   {
                                                         std::string method = c->getRequest().get_method();
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
@@ -266,13 +266,27 @@ void    Webserv::handleRequest(Client *c)   const            {
                                                             Response(REQUEST_URI_TOO_LONG, "");
                                                         if ( version != "HTTP/1.1" )
                                                             Response(HTTP_VERSION_NOT_SUPPORTED, ""); 
-                                                        if (method == "GET")
-                                                        // else if (method == "POST")
-                                                        // else if (method == "DELETE")
-                                                        Response(METHOD_NOT_SUPPORTED,"");
-                                                };
+                                                        if (method == "GET")            GETmethod(c);
+                                                        else if (method == "POST")      POSTmethod(c);
+                                                        else if (method == "DELETE")    DELETEmethod(c);
+                                                        else
+                                                            Response(METHOD_NOT_SUPPORTED,"");
+                                                    };
 
+void Webserv::GETmethod(Client *c)  const
+{
+    (void)c;
+};
+void Webserv::POSTmethod(Client *c) const
+{
+(void)c;
+};
+void Webserv::DELETEmethod(Client *c) const
+{
+(void)c;
+};
 
+// SIGNALS
 void signal_handler(int signum)
 {
     if (signum == SIGINT)

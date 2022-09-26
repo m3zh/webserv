@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 17:35:00 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 18:43:55 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,9 +92,10 @@ class Webserv
 
         // REQUEST HANDLERS
         void        parseHeader(Client *c);
-        void        handleRequest(Client *c) const;
-
-
+        void        handleRequest(Client *c)    const;
+        void        GETmethod(Client *c)        const;
+        void        POSTmethod(Client *c)       const;
+        void        DELETEmethod(Client *c)     const;
 };
         
 void signal_handler(int signum);

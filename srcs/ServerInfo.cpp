@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/23 09:46:31 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 18:40:34 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,9 @@ void                ServerInfo::setClientMaxBodySize(int c)     {   _client_max_
 std::vector<page>&  ServerInfo::getPages()                      {   return _pages;                };
 void                ServerInfo::setPages(page p)                {   _pages.push_back(p);          };
 int                 ServerInfo::getListeningSocket() const      {   return _listening_socket;     };
+void                ServerInfo::setListeningSocket(int socket)  {   _listening_socket = socket;   };
+struct sockaddr_in const &  ServerInfo::getListeningAddrs() const                   {   return _listening_addrs;        };
+void                        ServerInfo::setListeningAddrs(struct sockaddr_in addrs) {   _listening_addrs = addrs;       };
 
 
 

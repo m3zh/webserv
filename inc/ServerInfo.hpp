@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/23 09:45:33 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 18:41:19 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,19 +53,10 @@ class ServerInfo
         void                        setPages(page p);            
 
         int                         getListeningSocket() const;
-        void                        setListeningSocket(int socket)
-        {
-            this->_listening_socket = socket;
-        }
+        void                        setListeningSocket(int socket);
 
-        struct sockaddr_in const &  getListeningAddrs() const
-        {
-            return (this->_listening_addrs);
-        }
-        void                        setListeningAddrs(struct sockaddr_in addrs)
-        {
-            this->_listening_addrs = addrs;
-        }
+        struct sockaddr_in const &  getListeningAddrs() const;
+        void                        setListeningAddrs(struct sockaddr_in addrs);
 
     private:
         std::string                 _server_name;
