@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 17:02:41 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 17:35:00 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,21 +56,13 @@ class Response;
 class Webserv
 {
     private:
-        std::vector<ServerInfo>           _servers; // each one of them will contains port, listening socket and listening addrs
-        //std::vector<int>                _ports;
-        //std::vector<int>                _listening_sockets; // vector of sockets used with listen() // _ports, _sockets and _addrs should have the same size
-        //std::vector<struct sockaddr_in> _listening_addrs; // those are the addr structs associated with listening sockets
+        std::vector<ServerInfo>     _servers; // each one of them will contains port, listening socket and listening addrs
 
+        fd_set                      _current_set;
+        fd_set                      _read_set;
+        fd_set                      _write_set;
 
-        fd_set                          _current_set;
-        fd_set                          _read_set;
-        fd_set                          _write_set;
-        //int                             _fd_max; // biggest fd used so far
-        //std::vector<int>                _clients_sockets; // vector of active sockets that were opened by accept()
-        //std::vector<struct sockaddr_in> _clients_addrs;
-
-        //std::vector<std::pair<int, struct sockaddr_in> >    _clients_pair;
-        std::list<Client *> _clients_list;
+        std::list<Client *>         _clients_list;
 
         Webserv();
         Webserv(Webserv const & x);
@@ -80,28 +72,28 @@ class Webserv
         Webserv(std::vector<ServerInfo> const &s);
         ~Webserv();
 
+
+        // GETTERS
         std::vector<ServerInfo>     getServers();
-        std::vector<int>            &getWbsrvPorts();
+        ServerInfo                  *get_server_associated_with_listening_socket(int listening_socket);
+        int                         get_fd_max() const;
 
-        void    close_all();
-        int     set_server();
-        void    close_all(std::vector<int> &sockets);
-        int     set_server(std::vector<struct sockaddr_in> &addrs);
-        void    parse_request(std::string &request);
-        int     run_server();
-        void    accept_clients();
-        void    transmit_data();
-        void    checking_for_new_clients();
-        void    looping_through_read_set();
-        void    looping_through_write_set();
+        // SETTERS
+        int         set_server();
+        void        setResponse(int code, std::string msg);
 
-        int     get_fd_max() const;
-        ServerInfo *get_server_associated_with_listening_socket(int listening_socket);
-        // this calls accept() and store socket and addrs of newly created connection. 
-        // The client is allocated, needs to be deallocated
-        Client     *accept_new_client(int listening_socket);
+        // SERVER FUNCTION
+        int         run_server();
+        void        checking_for_new_clients();
+        Client      *accept_new_client(int listening_socket);       // this calls accept() and store socket and addrs of newly created connection.
+        void        looping_through_read_set();
+        void        looping_through_write_set();
+        void        close_all();
+
+        // REQUEST HANDLERS
         void        parseHeader(Client *c);
-        Response    handleRequest(Client *c) const;
+        void        handleRequest(Client *c) const;
+
 
 };
         

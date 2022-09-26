@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 17:23:41 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 17:35:38 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -256,20 +256,20 @@ void    Webserv::parseHeader(Client *c)         {
                                                 };
 
 // EXECUTING REQUEST AND CREATE RESPONSE
-Response    Webserv::handleRequest(Client *c)   const            {
+void    Webserv::handleRequest(Client *c)   const            {
                                                         std::string method = c->getRequest().get_method();
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
                                                         if ( !method.size() || !uri.size() || !version.size() )
-                                                            return Response(BAD_REQUEST, "");
+                                                            Response(BAD_REQUEST, "");
                                                         if ( uri.size() > MAX_URI )
-                                                            return Response(REQUEST_URI_TOO_LONG, "");
+                                                            Response(REQUEST_URI_TOO_LONG, "");
                                                         if ( version != "HTTP/1.1" )
-                                                            return Response(HTTP_VERSION_NOT_SUPPORTED, ""); 
-                                                        // if (method == "GET")
+                                                            Response(HTTP_VERSION_NOT_SUPPORTED, ""); 
+                                                        if (method == "GET")
                                                         // else if (method == "POST")
                                                         // else if (method == "DELETE")
-                                                        return Response(METHOD_NOT_SUPPORTED,"");
+                                                        Response(METHOD_NOT_SUPPORTED,"");
                                                 };
 
 
