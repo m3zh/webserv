@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 12:18:16 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 15:13:03 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,13 +86,13 @@ void    Request::parse_raw_request() // That function is meant to be called once
 }
 
 // GETTERS
-std::string     Request::get_raw_request() const                            {    return _raw_request;           };
-std::string     Request::get_method() const                                 {    return _method;                };
-std::string     Request::get_location() const                               {    return _location;              };
-std::string     Request::get_http_version() const                           {    return _http_version;          };
-std::map<std::string, std::string>     Request::get_header_map() const      {    return _header_map;            };
-size_t          Request::get_index_beginning_body() const                   {    return _index_beginning_body;  };
-std::string     Request::get_body() const
+std::string     Request::get_raw_request()                          const   {    return _raw_request;           };
+std::string     Request::get_method()                               const   {    return _method;                };
+std::string     Request::get_location()                             const   {    return _location;              };
+std::string     Request::get_http_version()                         const   {    return _http_version;          };
+std::map<std::string, std::string>     Request::get_header_map()    const   {    return _header_map;            };
+size_t          Request::get_index_beginning_body()                 const   {    return _index_beginning_body;  };
+std::string     Request::get_body()                                 const
 {    
     if (_index_beginning_body != std::string::npos) // it means there is a body
     {   std::string char2string(&_raw_request.c_str()[_index_beginning_body]); return char2string;   }

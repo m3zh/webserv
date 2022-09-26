@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 12:26:29 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 15:14:56 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ int                     Client::getClientSocket()                       const   
 struct sockaddr_in      Client::getClientAddress()                      const   {   return  client_addrs;       };
 ServerInfo *            Client::getServerInfo()                         const   {   return  associated_server;  };
 std::string             Client::getRequestString()                      const   {   return  request_str;        };
-Request&                Client::getRequest()                                    {   return  request;            };
+Request const&          Client::getRequest()                            const   {   return  request;            };
 
 // SETTERS
 void                    Client::setRequest(std::string const &s)                {   request = Request(s);       };

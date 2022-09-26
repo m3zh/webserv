@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 12:47:44 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 15:11:39 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,11 @@ void    Webserv::close_all()
     for ( std::vector<ServerInfo>::iterator it = _servers.begin();
             it != _servers.end(); it++ )
         close((*it).getListeningSocket());
+    for ( std::list<Client*>::iterator it = _clients_list.begin();
+            it != _clients_list.end(); it++ )
+            delete *it;
+     _clients_list.clear();
+
 }
 
 int     Webserv::set_server()
@@ -257,7 +262,7 @@ void    Webserv::parseHeader(Client *c)         {
                                                 };
 
 // EXECUTING REQUEST AND CREATE RESPONSE
-Response    Webserv::handleRequest(Client *c)                 {
+Response    Webserv::handleRequest(Client const &c)     const            {
     // if (!_http_request._method.size()	||
 	// 	!_http_request._uri.size()		||
 	// 	!_http_request._version.size())
@@ -285,9 +290,9 @@ Response    Webserv::handleRequest(Client *c)                 {
 	// 	_response_code = NOT_IMPLEMENTED;
 	// 	send_response(fd, server._configs[_config_index].error_pages[NOT_IMPLEMENTED], true);
 	// }
-                                                        std::string method = c->getRequest().get_method();
-                                                        std::string uri = c->getRequest().get_location();
-                                                        std::string version = c->getRequest().get_http_version();
+                                                        std::string method = c.getRequest().get_method();
+                                                        std::string uri = c.getRequest().get_location();
+                                                        std::string version = c.getRequest().get_http_version();
                                                         // if (!( method.size() && uri.size() && version.size() ))
                                                         //     {}
                                                             
