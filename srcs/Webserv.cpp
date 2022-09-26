@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 15:11:39 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 16:26:33 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,49 +257,24 @@ ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_s
 // READING REQUEST
 void    Webserv::parseHeader(Client *c)         {
                                                     c->setRequest(c->getRequestString());
-                                                    c->getRequest().parse_raw_request();
                                                     c->setHeaderReadAsComplete(true);
                                                 };
 
 // EXECUTING REQUEST AND CREATE RESPONSE
 Response    Webserv::handleRequest(Client const &c)     const            {
-    // if (!_http_request._method.size()	||
-	// 	!_http_request._uri.size()		||
-	// 	!_http_request._version.size())
-	// {
-	// 	_response_code = BAD_REQUEST;
-	// 	send_response(fd, "", false);
-	// }
-	// else if (_http_request._uri.size() > URI_MAX)
-	// {
-	// 	_response_code = REQUEST_URI_TOO_LONG;
-	// 	send_response(fd, "", false);
-	// }
-	// else if (_http_request._version != "HTTP/1.1")
-	// {
-	// 	_response_code = HTTP_VERSION_NOT_SUPPORTED;
-	// 	send_response(fd, "", false);
-	// }
-	// else if (_http_request._method	== "GET")
-	// 	handle_GET(fd, server);
-	// else if (_http_request._method	== "POST")
-	// 	handle_POST(fd, server);
-	// else if (_http_request._method	== "DELETE")
-	// 	handle_DELETE(fd, server);
-	// else {
-	// 	_response_code = NOT_IMPLEMENTED;
-	// 	send_response(fd, server._configs[_config_index].error_pages[NOT_IMPLEMENTED], true);
-	// }
                                                         std::string method = c.getRequest().get_method();
                                                         std::string uri = c.getRequest().get_location();
                                                         std::string version = c.getRequest().get_http_version();
-                                                        // if (!( method.size() && uri.size() && version.size() ))
-                                                        //     {}
-                                                            
+                                                        if ( !method.size() || !uri.size() || !version.size() )
+                                                            return Response(BAD_REQUEST, "");
+                                                        if ( uri.size() > MAX_URI )
+                                                            return Response(REQUEST_URI_TOO_LONG, "");
+                                                        if ( version != "HTTP/1.1" )
+                                                            return Response(HTTP_VERSION_NOT_SUPPORTED, ""); 
                                                         // if (method == "GET")
                                                         // else if (method == "POST")
                                                         // else if (method == "DELETE")
-                                                        return Response(0,"body");
+                                                        return Response(METHOD_NOT_SUPPORTED,"");
                                                 };
 
 

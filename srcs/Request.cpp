@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 15:13:03 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 16:22:31 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 Request::Request()                                  {};
 Request::Request(std::string const& raw_request)    :   _raw_request(raw_request) {};
 Request &Request::operator=(Request const & r)      {
-                                                        _raw_request = r._raw_request; // this points to the request untouched
+                                                        _raw_request = r.get_raw_request(); // this points to the request untouched
                                                         _method = r._method;
                                                         _location = r._location;
                                                         _http_version = r._http_version;
@@ -24,7 +24,7 @@ Request &Request::operator=(Request const & r)      {
                                                         return *this;
                                                     };
 Request::Request(Request const & r)                 {
-                                                        _raw_request = r._raw_request; // this points to the request untouched
+                                                        _raw_request = r.get_raw_request(); // this points to the request untouched
                                                         _method = r._method;
                                                         _location = r._location;
                                                         _http_version = r._http_version;
@@ -73,7 +73,8 @@ void    Request::_fill_header_map(std::string raw_request)
     }
 }
 
-void    Request::parse_raw_request() // That function is meant to be called once the header of the request has been read.
+// That function is meant to be called once the header of the request has been read.
+void    Request::parse_raw_request()
 {
     _get_method_location_version(_raw_request.substr(0, _raw_request.find('\n')));
 

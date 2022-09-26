@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 15:14:33 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 16:18:18 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class Client
         struct sockaddr_in      getClientAddress()  const;
         ServerInfo *            getServerInfo()     const;
         std::string             getRequestString()  const;
-        Request const&          getRequest()        const;
+        Request                 getRequest()        const;
 
         // SETTERS
         void                    setRequest(std::string const &s);

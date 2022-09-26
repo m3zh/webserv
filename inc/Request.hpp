@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 12:06:08 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 16:06:48 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ class Request
         std::map<std::string, std::string>  _header_map;
         size_t                              _index_beginning_body; // = std::string::npos in case there is no body
 
-        void    _remove_char_from_string(std::string & str, char c);
-        void    _get_method_location_version(std::string raw_request);
-        void    _fill_header_map(std::string raw_request);  
+        void    _remove_char_from_string(std::string & str, char c)     ;
+        void    _get_method_location_version(std::string raw_request)   ;
+        void    _fill_header_map(std::string raw_request)               ;  
 
     public:
         Request();
