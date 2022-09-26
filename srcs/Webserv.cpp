@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/25 21:12:37 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 11:00:29 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,7 +197,6 @@ void    Webserv::looping_through_write_set()
                 ok.append(temp_buffer, temp_stream.gcount());
             }
             std::cout << "about to send a response\n";
-            std::cout << "Full request has size " << (*it)->getRequestString().size() << " and str is :\n----------------\n" << (*it)->getRequestString() << "\n-------------" << std::endl;
             //if ((send((*it)->getClientSocket(), "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
             if ((send((*it)->getClientSocket(), ok.c_str(), ok.size(), 0)) < 0)
                 return ;

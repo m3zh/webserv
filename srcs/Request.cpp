@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/25 21:32:55 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 11:41:59 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,13 +64,10 @@ void    Request::_fill_header_map(std::string raw_request)
         size_t  index_of_colon = temp_string.find(':');
         if (index_of_colon == std::string::npos) // means there is no : in the line retrieved. Typically it is an empty line
             continue;
+        
         std::string key(temp_string, 0, index_of_colon);
-        temp_string.erase(0, index_of_colon + 2); // value is all that's left in temp_string
-
-        if ((_header_map[key]).size() == 0) // That key could have been already present in the map, if that's the case, we must not delete previous data
-            _header_map[key] = temp_string;
-        else
-            (_header_map[key] += ';') += temp_string;
+        std::string val(temp_string, index_of_colon + 2);
+        _header_map.insert(std::make_pair(key, val));
     }
 }
 
