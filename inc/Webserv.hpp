@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 15:11:25 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 17:02:41 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ class Webserv
         // The client is allocated, needs to be deallocated
         Client     *accept_new_client(int listening_socket);
         void        parseHeader(Client *c);
-        Response    handleRequest(Client const &c) const;
+        Response    handleRequest(Client *c) const;
 
 };
         

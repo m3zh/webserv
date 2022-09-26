@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 16:26:33 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 17:23:41 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,7 @@ void    Webserv::looping_through_read_set()
             }
             if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
-                //(*it)->getRequest().handleRequest();
+                handleRequest(*it); // we handle the request and create a response to send
             }
         }
     }
@@ -185,13 +185,11 @@ void    Webserv::looping_through_write_set()
     // looping to all clients to see which one is ready to receive data.
     // condition to send to a client is that recv has returned 0 (nothing more to read) and that select() has put it in the write set
     
-    for (std::list<Client*>::iterator it = _clients_list.begin(); it != _clients_list.end(); /*++it*/)
+    for ( std::list<Client*>::iterator it = _clients_list.begin(); it != _clients_list.end(); it++ )
     {
-        if ( FD_ISSET((*it)->getClientSocket(), &(_write_set)) && (*it)->isReadComplete() )
+        int client_socket = (*it)->getClientSocket();
+        if ( FD_ISSET(client_socket, &(_write_set)) && (*it)->isReadComplete() )
         {
-
-            // down here is dummy response for developement purpose
-
             std::string ok = "HTTP/1.1 200\r\n\r\n";
             char temp_buffer[1024];
             std::ifstream   temp_stream("./pages/website1/index.html", std::ios_base::in | std::ios_base::binary);
@@ -201,19 +199,16 @@ void    Webserv::looping_through_write_set()
                 temp_stream.read(temp_buffer, sizeof(temp_buffer));
                 ok.append(temp_buffer, temp_stream.gcount());
             }
-            std::cout << "about to send a response\n";
-            //if ((send((*it)->getClientSocket(), "HTTP/1.1 200 OK\r\n\r\nYOPPP", 24, 0)) < 0)
-            if ((send((*it)->getClientSocket(), ok.c_str(), ok.size(), 0)) < 0)
-                return ;
-            close ((*it)->getClientSocket());
-            FD_CLR((*it)->getClientSocket(), &_current_set);
+            std::cout << "Responding....\n";
+            if ((send(client_socket, ok.c_str(), ok.size(), 0)) < 0)
+                throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+            close (client_socket);
+            FD_CLR(client_socket, &_current_set);
             std::list<Client*>::iterator    to_delete = it;
-            ++it;
+            --it;
             delete (*to_delete); // Client is allocated
             _clients_list.erase(to_delete);
         }
-        else
-            ++it;
     }
 }
 
@@ -261,10 +256,10 @@ void    Webserv::parseHeader(Client *c)         {
                                                 };
 
 // EXECUTING REQUEST AND CREATE RESPONSE
-Response    Webserv::handleRequest(Client const &c)     const            {
-                                                        std::string method = c.getRequest().get_method();
-                                                        std::string uri = c.getRequest().get_location();
-                                                        std::string version = c.getRequest().get_http_version();
+Response    Webserv::handleRequest(Client *c)   const            {
+                                                        std::string method = c->getRequest().get_method();
+                                                        std::string uri = c->getRequest().get_location();
+                                                        std::string version = c->getRequest().get_http_version();
                                                         if ( !method.size() || !uri.size() || !version.size() )
                                                             return Response(BAD_REQUEST, "");
                                                         if ( uri.size() > MAX_URI )
