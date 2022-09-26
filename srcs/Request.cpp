@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 11:41:59 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 12:18:16 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ Request::Request(Request const & r)                 {
                                                     };
 Request::~Request()                                 {};
 
+
+// PARSING
 void    Request::_remove_char_from_string(std::string & str, char c)
 {
     size_t  return_of_rfind = std::string::npos;
@@ -83,6 +85,7 @@ void    Request::parse_raw_request() // That function is meant to be called once
     _fill_header_map(_raw_request.substr(index_beginning_header, _index_beginning_body));
 }
 
+// GETTERS
 std::string     Request::get_raw_request() const                            {    return _raw_request;           };
 std::string     Request::get_method() const                                 {    return _method;                };
 std::string     Request::get_location() const                               {    return _location;              };

@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 11:00:29 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 12:47:44 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 bool keep_alive = true;
 
-std::vector<ServerInfo>         Webserv::getServers()           {   return _servers;  };
+std::vector<ServerInfo>                         Webserv::getServers()           {   return _servers;  };
 
 Webserv::Webserv(std::vector<ServerInfo> const &s) : _servers(s)    {};
 
@@ -137,22 +137,21 @@ void    Webserv::looping_through_read_set()
                 buffer[bytes_recv] = 0;
                 std::string buf(buffer);
                 (*it)->setRequestString(buf);
-                (*it)->parseHeader();
+                parseHeader(*it);
                 std::cout << bytes_recv << " bytes of the header have been read.\n";
                 
-                // now we have to check if there is actually something more to read.
-                if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) // means we don't have a body
+                // // means we don't have a body
+                if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) 
                     (*it)->setReadAsComplete(true);
                 else // there is a body. We have to compare content_length with what we received
                 {
                     std::cout << "Reading the body.\n";
                     std::cout << "Body index " << (*it)->getRequest().get_index_beginning_body() << "\n";
                     std::map<std::string, std::string>::iterator    content_length_it = (*it)->getRequest().get_header_map().find("Content-Length");
-                    std::cout << "ConLen " << (*content_length_it).first << "\n";
                     if (content_length_it == (*it)->getRequest().get_header_map().end())
                         throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
                     if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
-                        == (unsigned long)(atoi((content_length_it->second).c_str())) )
+                        >= (unsigned long)(atoi((content_length_it->second).c_str())) )
                         (*it)->setReadAsComplete(true);
                 }
             }
@@ -165,13 +164,14 @@ void    Webserv::looping_through_read_set()
                     throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);
                 (*it)->getRequestString().append(buffer, bytes_recv); // append() method will include \0 if some are present in the buffer
                 if (((*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body())
-                        == (unsigned long)(atoi((content_length_it->second).c_str())) ) // that means we received at least content-length bytes of the body. Read should be complete. probably need to put ==
+                        >= (unsigned long)(atoi((content_length_it->second).c_str())) ) // bytes received match content-length bytes of the body
                     (*it)->setReadAsComplete(true);
             }
-            if ((*it)->isReadComplete())
+            if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
+                //(*it)->getRequest().handleRequest();
+            }
         }
-        
     }
 }
 
@@ -248,6 +248,55 @@ ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_s
             return &(*it);
     return nullptr;
 }
+
+// READING REQUEST
+void    Webserv::parseHeader(Client *c)         {
+                                                    c->setRequest(c->getRequestString());
+                                                    c->getRequest().parse_raw_request();
+                                                    c->setHeaderReadAsComplete(true);
+                                                };
+
+// EXECUTING REQUEST AND CREATE RESPONSE
+Response    Webserv::handleRequest(Client *c)                 {
+    // if (!_http_request._method.size()	||
+	// 	!_http_request._uri.size()		||
+	// 	!_http_request._version.size())
+	// {
+	// 	_response_code = BAD_REQUEST;
+	// 	send_response(fd, "", false);
+	// }
+	// else if (_http_request._uri.size() > URI_MAX)
+	// {
+	// 	_response_code = REQUEST_URI_TOO_LONG;
+	// 	send_response(fd, "", false);
+	// }
+	// else if (_http_request._version != "HTTP/1.1")
+	// {
+	// 	_response_code = HTTP_VERSION_NOT_SUPPORTED;
+	// 	send_response(fd, "", false);
+	// }
+	// else if (_http_request._method	== "GET")
+	// 	handle_GET(fd, server);
+	// else if (_http_request._method	== "POST")
+	// 	handle_POST(fd, server);
+	// else if (_http_request._method	== "DELETE")
+	// 	handle_DELETE(fd, server);
+	// else {
+	// 	_response_code = NOT_IMPLEMENTED;
+	// 	send_response(fd, server._configs[_config_index].error_pages[NOT_IMPLEMENTED], true);
+	// }
+                                                        std::string method = c->getRequest().get_method();
+                                                        std::string uri = c->getRequest().get_location();
+                                                        std::string version = c->getRequest().get_http_version();
+                                                        // if (!( method.size() && uri.size() && version.size() ))
+                                                        //     {}
+                                                            
+                                                        // if (method == "GET")
+                                                        // else if (method == "POST")
+                                                        // else if (method == "DELETE")
+                                                        return Response(0,"body");
+                                                };
+
 
 void signal_handler(int signum)
 {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/20 16:13:54 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/20 16:18:30 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/26 12:49:05 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,16 @@
 
 class Response
 {
-private:
-    /* data */
-public:
-    Response() {}
-    Response(Response const & x) {}
-    ~Response() {}
+    private:
+        int         _code;
+        std::string _response;
+        
+        Response &  operator=(Response const & r);
+    public:
+        Response(int code, std::string response);
+        Response(Response const & r);
+        ~Response();
 
-    Response &  operator=(Response const & x) {return *this;}
+        int             getCode() const;
+        std::string     getResponse() const;
 };

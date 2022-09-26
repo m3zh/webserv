@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/24 18:25:55 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 12:30:38 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ class Client
         ~Client();
 
         void                    parseHeader();
-        void                    handleRequest();
 
         // GETTERS
         int                     getClientSocket()   const;

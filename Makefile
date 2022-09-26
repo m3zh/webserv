@@ -10,7 +10,8 @@ SRCS	=	srcs/main.cpp		\
 			srcs/Webserv.cpp	\
 			srcs/Cgi.cpp	\
 			srcs/Client.cpp \
-			srcs/Request.cpp
+			srcs/Request.cpp \
+			srcs/Response.cpp
 
 INC		=	inc/
 

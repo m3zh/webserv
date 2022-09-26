@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/24 18:57:21 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 12:06:08 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ class Request
         ~Request();
 
         void    parse_raw_request();
+        void    handleRequest();
 
         std::string                             get_raw_request() const;
         std::string                             get_method() const;

@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 11:42:39 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 12:26:29 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,6 @@ Client::Client( int client_socket,
                                                                                                         setHeaderReadAsComplete(false); 
                                                                                                 };
 Client::~Client()                                                                               {};
-
-void    Client::parseHeader()                   {
-                                                        setRequest(getRequestString());
-                                                        getRequest().parse_raw_request();
-                                                        setHeaderReadAsComplete(true);
-                                                };
-void    Client::handleRequest()                 {   // performing some action here ! Now we have the full request and we should execute it and generate a response
-                                                        is_read_complete = true;
-                                                };
 
 // GETTERS
 int                     Client::getClientSocket()                       const   {   return  client_socket;      };

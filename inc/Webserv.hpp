@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/22 16:18:11 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 12:47:04 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,13 @@ extern bool keep_alive;
 # define GREEN "\e[92m"
 # define RED	"\033[31m"
 # define RESET "\033[0m"
+
+# define BACKLOG 255
+# define NBPORTS 3
+# define READ_BUFFER 16384 // 2^14
+# define MAX_URI 1024 // 2^14
+# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
+
 # include <stdio.h>
 # include <stdlib.h>
 # include <sys/ioctl.h>
@@ -36,21 +43,17 @@ extern bool keep_alive;
 # include <list>
 # include <csignal>
 
-# define BACKLOG 255
-# define NBPORTS 3
-# define READ_BUFFER 16384 // 2^14
-//# define READ_BUFFER 280 // to delete. It is there for testing reading loop
-# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
-
 # include "Config.hpp"
 # include "Exception.hpp"
 # include "Request.hpp"
 # include "Client.hpp"
+# include "Response.hpp"
 
 class Config;
 class Cgi;
+class Response;
 
-class Webserv//: public ServerInfo // Do we need to have it as inherited class ?
+class Webserv
 {
     private:
         std::vector<ServerInfo>           _servers; // each one of them will contains port, listening socket and listening addrs
@@ -93,9 +96,13 @@ class Webserv//: public ServerInfo // Do we need to have it as inherited class ?
         void    looping_through_write_set();
 
         int     get_fd_max() const;
-        // bool    is_listening_socket(int socket) const;
         ServerInfo *get_server_associated_with_listening_socket(int listening_socket);
-        Client     *accept_new_client(int listening_socket); // this calls accept() and store socket and addrs of newly created connection. The client is allocated, needs to be deallocated
-};
+        // this calls accept() and store socket and addrs of newly created connection. 
+        // The client is allocated, needs to be deallocated
+        Client     *accept_new_client(int listening_socket);
+        void        parseHeader(Client *c);
+        Response    handleRequest(Client *c);
 
+};
+        
 void signal_handler(int signum);
