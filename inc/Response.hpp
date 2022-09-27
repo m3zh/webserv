@@ -6,27 +6,28 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/20 16:13:54 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/27 16:46:48 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 18:02:35 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <iostream>
+#include <stdio.h>
 
-# define OK	                200	
-# define CREATED	        201	
-# define ACCEPTED           202	 
-# define MOVED_PERMANENTLY	301			
-# define BAD_REQUEST		400
-# define UNAUTHORIZED		401	
-# define FORBIDDEN			403
-# define NOT_FOUND			404
-# define METHOD_NOT_ALLOWED	405
-# define REQUEST_URI_TOO_LONG   414
-# define NOT_IMPLEMENTED		501
-# define GATEWAY_TIMEOUT		504	
-# define HTTP_VERSION_NOT_SUPPORTED 505
+# define OK	                    "200"
+# define MOVED_PERMANENTLY	    "301"			
+# define BAD_REQUEST		    "400"
+# define UNAUTHORIZED		    "401"	
+# define FORBIDDEN			    "403"
+# define NOT_FOUND			    "404"
+# define METHOD_NOT_ALLOWED	    "405"
+# define REQUEST_URI_TOO_LONG   "414"
+# define NOT_IMPLEMENTED		"501"
+# define GATEWAY_TIMEOUT		"504"	
+# define HTTP_VERSION_NOT_SUPPORTED "505"
+
+# define ERROR_FILE_PATH "/pages/error-pages"
 
 
 // Should be an attribute of the Client class
@@ -39,13 +40,13 @@
 class Response
 {
     private:
-        int         _code;
-        std::string _response;
-        std::string _response_file;
+        std::string     _code;
+        std::string     _response;
+        std::string     _response_file;
         
         Response &  operator=(Response const & r);
     public:
-        Response(int code, std::string response_file);
+        Response(std::string code, std::string response_file);
         Response(Response const & r);
         ~Response();
 
@@ -55,7 +56,7 @@ class Response
         std::string     getResponseFile() const;
 
         // SETTERS
-        void            setCode();
-        void            setResponse();
-        void            setResponseFile();
+        void            setCode(std::string code);
+        void            setResponse(std::string code);
+        void            setResponseFile(std::string files);
 };

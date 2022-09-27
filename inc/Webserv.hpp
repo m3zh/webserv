@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/27 16:01:40 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 17:21:54 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ extern bool keep_alive;
 # define BACKLOG 255
 # define NBPORTS 3
 # define READ_BUFFER 16384 // 2^14
-# define MAX_URI 1024 // 2^14
+# define MAX_URI 1024
 # define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
 
 # include <stdio.h>

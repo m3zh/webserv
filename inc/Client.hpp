@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/27 16:19:56 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 18:19:27 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include "Request.hpp"
+#include "Response.hpp"
 #include "ServerInfo.hpp"
 
 class Client
@@ -58,11 +59,14 @@ class Client
         ServerInfo *            getServerInfo()     const;
         std::string             getRequestString()  const;
         Request                 getRequest()        const;
+        std::string             getResponseString() const;
+        std::string             getResponseFile()   const;
 
         // SETTERS
         void                    setRequest(std::string const &s);
         void                    setRequestString(std::string s);
-        void                    setResponse(int code, std::string msg)  const;
+        void                    setResponseString(std::string code, std::string msg);
+        void                    setResponseFile(std::string file);
 
         // BOOLS
         bool                    isReadComplete();

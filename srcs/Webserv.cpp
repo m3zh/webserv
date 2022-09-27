@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/27 16:10:17 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 18:15:05 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,10 +190,9 @@ void    Webserv::looping_through_write_set()
         int client_socket = (*it)->getClientSocket();
         if ( FD_ISSET(client_socket, &(_write_set)) && (*it)->isReadComplete() )
         {
-            // std::string ok = "HTTP/1.1 200\r\n\r\n";
             std::string _response = (*it)->getResponse();
             char buffer[1024];
-            std::ifstream   tmp_stream(_response_file, std::ios_base::in | std::ios_base::binary);
+            std::ifstream   tmp_stream((*it)->getResponseFile(), std::ios_base::in | std::ios_base::binary);
 
             while (tmp_stream.good()) // when EOF is reached, or in case of error, we break out of the loop
             {
@@ -271,7 +270,7 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                         else if (method == "POST")      POSTmethod(c);
                                                         else if (method == "DELETE")    DELETEmethod(c);
                                                         else
-                                                            Response(METHOD_NOT_SUPPORTED,"");
+                                                            Response(METHOD_NOT_ALLOWED,"");
                                                     };
 
 
@@ -291,9 +290,10 @@ void Webserv::GETmethod(Client *c)  const
         // std::cout << "-------------\n";
         if (req.get_location() == (*page_requested).location_path)
         {
-            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(), (*page_requested).methods.end(), "GET");
+            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(), 
+                                                            (*page_requested).methods.end(), "GET");
             if ( method_it == (*page_requested).methods.end() )
-            {    c->setResponse(METHOD_NOT_SUPPORTED, ""); return  ;   }
+            {    c->setResponse(METHOD_NOT_ALLOWED, ""); return  ;   }
         }
     }
     std::ifstream   file(page_requested->location_path.c_str());
@@ -322,11 +322,11 @@ void Webserv::DELETEmethod(Client *c) const
 (void)c;
 };
 
-void Webserv::setResponse(int code, std::string msg)  const
-{
-    (void)code;
-    (void)msg;
-};
+// void Webserv::setResponse(int code, std::string msg)
+// {
+//     (void)code;
+//     (void)msg;
+// };
 
 // SIGNALS
 void signal_handler(int signum)
