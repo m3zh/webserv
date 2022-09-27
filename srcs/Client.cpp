@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 16:26:21 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 16:18:34 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,15 @@ struct sockaddr_in      Client::getClientAddress()                      const   
 ServerInfo *            Client::getServerInfo()                         const   {   return  associated_server;  };
 std::string             Client::getRequestString()                      const   {   return  request_str;        };
 Request                 Client::getRequest()                            const   {   return  request;            };
+std::string             Client::getResponse()                            const   {   return  request;            };
 
 // SETTERS
 void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
 void                    Client::setRequestString(std::string s)                 {   request_str.append(s);      };
+void                    Client::setResponse(int code, std::string msg)  const
+{
+        
+};
 
 // BOOLS
 bool                    Client::isReadComplete()                        {   return  is_read_complete;            };

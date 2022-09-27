@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/27 14:03:23 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 16:01:40 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,6 @@ class Webserv
 
         // SETTERS
         int         set_server();
-        void        setResponse(int code, std::string msg)  const;
 
         // SERVER FUNCTION
         int         run_server();

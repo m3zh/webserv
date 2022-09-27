@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 16:18:18 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 16:19:56 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,15 @@ class Client
 
         ServerInfo *                associated_server;
 
-        std::string                 request_str; // std::string can contain \0
+        std::string                 request_str;
         Request                     request;
 
+        std::string                 response_str;
+        std::string                 response_file;
+        // Response                    response;
+
         bool                        header_is_read_complete;
-        bool                        is_read_complete;
+        bool                        is_read_complete;       
 
         Client();
         Client(Client const & x);
@@ -58,6 +62,7 @@ class Client
         // SETTERS
         void                    setRequest(std::string const &s);
         void                    setRequestString(std::string s);
+        void                    setResponse(int code, std::string msg)  const;
 
         // BOOLS
         bool                    isReadComplete();

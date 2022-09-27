@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/27 14:14:44 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 16:10:17 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,17 +190,18 @@ void    Webserv::looping_through_write_set()
         int client_socket = (*it)->getClientSocket();
         if ( FD_ISSET(client_socket, &(_write_set)) && (*it)->isReadComplete() )
         {
-            std::string ok = "HTTP/1.1 200\r\n\r\n";
-            char temp_buffer[1024];
-            std::ifstream   temp_stream("./pages/website1/index.html", std::ios_base::in | std::ios_base::binary);
+            // std::string ok = "HTTP/1.1 200\r\n\r\n";
+            std::string _response = (*it)->getResponse();
+            char buffer[1024];
+            std::ifstream   tmp_stream(_response_file, std::ios_base::in | std::ios_base::binary);
 
-            while (temp_stream.good()) // when EOF is reached, or in case of error, we break out of the loop
+            while (tmp_stream.good()) // when EOF is reached, or in case of error, we break out of the loop
             {
-                temp_stream.read(temp_buffer, sizeof(temp_buffer));
-                ok.append(temp_buffer, temp_stream.gcount());
+                tmp_stream.read(buffer, sizeof(buffer));
+                _response.append(buffer, tmp_stream.gcount());
             }
             std::cout << "Responding....\n";
-            if ((send(client_socket, ok.c_str(), ok.size(), 0)) < 0)
+            if ((send(client_socket, _response.c_str(), _response.size(), 0)) < 0)
                 throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
             close (client_socket);
             FD_CLR(client_socket, &_current_set);
@@ -292,23 +293,23 @@ void Webserv::GETmethod(Client *c)  const
         {
             std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(), (*page_requested).methods.end(), "GET");
             if ( method_it == (*page_requested).methods.end() )
-            {    setResponse(METHOD_NOT_SUPPORTED, ""); return  ;   }
+            {    c->setResponse(METHOD_NOT_SUPPORTED, ""); return  ;   }
         }
     }
     std::ifstream   file(page_requested->location_path.c_str());
     if ( page_requested == pages.end() ||  !file.good() )
-    {    setResponse(NOT_FOUND, "");    return ;        }
+    {    c->setResponse(NOT_FOUND, "");    return ;        }
     // TO CHECK: CGI
     if ( page_requested->autoindex == "on"
         && !stat(req.get_location().c_str(), &check_file)   // if path exists
         && (check_file.st_mode & S_IFDIR) )                 // if it is a directory                 
     {
         std::cout << "Autoindex is on for " << page_requested->location_path;
-		setResponse(OK, _server->getServerIndex()); return ;
+		c->setResponse(OK, _server->getServerIndex()); return ;
     }
 	if (page_requested->redirect != "")
-	{	setResponse(MOVED_PERMANENTLY, page_requested->redirect);    return  ;   }
-	setResponse(OK, page_requested->location_path);
+	{	c->setResponse(MOVED_PERMANENTLY, page_requested->redirect);    return  ;   }
+	c->setResponse(OK, page_requested->location_path);
 };
 
 void Webserv::POSTmethod(Client *c) const
@@ -335,3 +336,4 @@ void signal_handler(int signum)
     std::cout << "Received SIGINT signal\n";
     std::cout << "Shutting down gracefully ...\n";
 }
+
