@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 18:43:33 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 14:14:44 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -273,17 +273,58 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                             Response(METHOD_NOT_SUPPORTED,"");
                                                     };
 
+
+
 void Webserv::GETmethod(Client *c)  const
 {
-    (void)c;
+    struct stat         check_file;
+    ServerInfo*         _server = c->getServerInfo();
+    std::vector<page>   pages = _server->getPages();
+    Request             req = c->getRequest();
+    std::vector<page>::iterator page_requested = pages.begin();
+
+    for ( ; page_requested != pages.end(); page_requested++ )
+    {
+        // std::cout << req.get_location() << "\n";
+        // std::cout << (*page_requested).location_path  << "\n";
+        // std::cout << "-------------\n";
+        if (req.get_location() == (*page_requested).location_path)
+        {
+            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(), (*page_requested).methods.end(), "GET");
+            if ( method_it == (*page_requested).methods.end() )
+            {    setResponse(METHOD_NOT_SUPPORTED, ""); return  ;   }
+        }
+    }
+    std::ifstream   file(page_requested->location_path.c_str());
+    if ( page_requested == pages.end() ||  !file.good() )
+    {    setResponse(NOT_FOUND, "");    return ;        }
+    // TO CHECK: CGI
+    if ( page_requested->autoindex == "on"
+        && !stat(req.get_location().c_str(), &check_file)   // if path exists
+        && (check_file.st_mode & S_IFDIR) )                 // if it is a directory                 
+    {
+        std::cout << "Autoindex is on for " << page_requested->location_path;
+		setResponse(OK, _server->getServerIndex()); return ;
+    }
+	if (page_requested->redirect != "")
+	{	setResponse(MOVED_PERMANENTLY, page_requested->redirect);    return  ;   }
+	setResponse(OK, page_requested->location_path);
 };
+
 void Webserv::POSTmethod(Client *c) const
 {
 (void)c;
 };
+
 void Webserv::DELETEmethod(Client *c) const
 {
 (void)c;
+};
+
+void Webserv::setResponse(int code, std::string msg)  const
+{
+    (void)code;
+    (void)msg;
 };
 
 // SIGNALS

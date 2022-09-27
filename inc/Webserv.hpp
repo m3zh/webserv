@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 18:43:55 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 14:03:23 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ extern bool keep_alive;
 # include <sys/ioctl.h>
 # include <sys/socket.h>
 # include <sys/time.h>
+# include <sys/stat.h>
 # include <netinet/in.h>
 # include <errno.h>
 # include <unistd.h>
@@ -80,7 +81,7 @@ class Webserv
 
         // SETTERS
         int         set_server();
-        void        setResponse(int code, std::string msg);
+        void        setResponse(int code, std::string msg)  const;
 
         // SERVER FUNCTION
         int         run_server();

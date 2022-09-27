@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 18:41:19 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 19:11:12 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,17 @@ struct page
 
 class ServerInfo 
 {
+    private:
+        std::string                 _server_name;
+        std::string                 _server_root;
+        std::string                 _server_index;
+        int                         _port;
+        int                         _client_max_body_size;
+        std::vector<page>           _pages;
+        page                        _error_page;
+        int                         _listening_socket;
+        struct sockaddr_in          _listening_addrs;
+        
     public:
         ServerInfo();
         ~ServerInfo();
@@ -57,16 +68,4 @@ class ServerInfo
 
         struct sockaddr_in const &  getListeningAddrs() const;
         void                        setListeningAddrs(struct sockaddr_in addrs);
-
-    private:
-        std::string                 _server_name;
-        std::string                 _server_root;
-        std::string                 _server_index;
-        int                         _port;
-        int                         _client_max_body_size;
-        std::vector<page>           _pages;
-        page                        _error_page;
-
-        int                         _listening_socket;
-        struct sockaddr_in          _listening_addrs;
 };

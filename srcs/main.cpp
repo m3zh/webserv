@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/12 20:39:03 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/23 09:54:28 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/26 19:39:09 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,10 @@ int main(int argc, char **args, char **envp)
             Webserv webserv(config.getServers());
 
             webserv.run_server();
-            throw WebException<std::string>(RED, "WebServ error: shutting down...", "555");   // templated class, works as well with
-                                                                                    // WebException<std::string>(RED, "something ain't right", "555");
+            throw WebException<std::string>(RED, "WebServ error: shutting down...", "555");     // templated class, works as well with
+                                                                                                // WebException<std::string>(RED, "something ain't right", "555");
         }
-        catch (WebException<std::string>& e){    std::cout << e.what() << std::endl;      };      
-        // return EXIT_SUCCESS;
+        catch (WebException<std::string>& e){    std::cout << e.what() << std::endl;   return EXIT_FAILURE;   };      
     }
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
