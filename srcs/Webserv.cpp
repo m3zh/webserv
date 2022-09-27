@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/27 18:15:05 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 18:23:38 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,7 +190,7 @@ void    Webserv::looping_through_write_set()
         int client_socket = (*it)->getClientSocket();
         if ( FD_ISSET(client_socket, &(_write_set)) && (*it)->isReadComplete() )
         {
-            std::string _response = (*it)->getResponse();
+            std::string _response = (*it)->getResponseString();
             char buffer[1024];
             std::ifstream   tmp_stream((*it)->getResponseFile(), std::ios_base::in | std::ios_base::binary);
 
@@ -293,23 +293,23 @@ void Webserv::GETmethod(Client *c)  const
             std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(), 
                                                             (*page_requested).methods.end(), "GET");
             if ( method_it == (*page_requested).methods.end() )
-            {    c->setResponse(METHOD_NOT_ALLOWED, ""); return  ;   }
+            {    c->setResponseString(METHOD_NOT_ALLOWED, ""); return  ;   }
         }
     }
     std::ifstream   file(page_requested->location_path.c_str());
     if ( page_requested == pages.end() ||  !file.good() )
-    {    c->setResponse(NOT_FOUND, "");    return ;        }
+    {    c->setResponseString(NOT_FOUND, "");    return ;        }
     // TO CHECK: CGI
     if ( page_requested->autoindex == "on"
         && !stat(req.get_location().c_str(), &check_file)   // if path exists
         && (check_file.st_mode & S_IFDIR) )                 // if it is a directory                 
     {
         std::cout << "Autoindex is on for " << page_requested->location_path;
-		c->setResponse(OK, _server->getServerIndex()); return ;
+		c->setResponseString(OK, _server->getServerIndex()); return ;
     }
 	if (page_requested->redirect != "")
-	{	c->setResponse(MOVED_PERMANENTLY, page_requested->redirect);    return  ;   }
-	c->setResponse(OK, page_requested->location_path);
+	{	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect);    return  ;   }
+	c->setResponseString(OK, page_requested->location_path);
 };
 
 void Webserv::POSTmethod(Client *c) const

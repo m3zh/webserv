@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/20 16:13:54 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/27 18:02:35 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/27 18:25:11 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <map>
 
 # define OK	                    "200"
 # define MOVED_PERMANENTLY	    "301"			
@@ -51,7 +52,7 @@ class Response
         ~Response();
 
         // GETTERS
-        int             getCode() const;
+        std::string     getCode() const;
         std::string     getResponse() const;
         std::string     getResponseFile() const;
 
