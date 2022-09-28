@@ -47,6 +47,7 @@ void                    Client::setResponseString(std::string code, std::string 
     status["403"] = "Forbidden";
     status["404"] = "Not Found";
     status["405"] = "Method Not Allowed";
+    status["411"] = "Length Required";
     status["414"] = "Request URI Too Long";
     status["501"] = "Not Implemented";
     status["504"] = "Gateway Timeout";

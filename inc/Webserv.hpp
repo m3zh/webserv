@@ -22,6 +22,7 @@ extern bool keep_alive;
 # define NBPORTS 3
 # define READ_BUFFER 16384 // 2^14
 # define MAX_URI 1024
+# define MAX_UPLOAD_FILE 2048
 //# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
 
 # include <stdio.h>
@@ -49,10 +50,7 @@ extern bool keep_alive;
 # include "Request.hpp"
 # include "Client.hpp"
 # include "Response.hpp"
-
-class Config;
-class Cgi;
-class Response;
+# include "Cgi.hpp"
 
 class Webserv
 {

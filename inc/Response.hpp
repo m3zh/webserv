@@ -23,6 +23,7 @@
 # define FORBIDDEN			    "403"
 # define NOT_FOUND			    "404"
 # define METHOD_NOT_ALLOWED	    "405"
+# define LENGTH_REQUIRED	    "411"
 # define REQUEST_URI_TOO_LONG   "414"
 # define NOT_IMPLEMENTED		"501"
 # define GATEWAY_TIMEOUT		"504"	

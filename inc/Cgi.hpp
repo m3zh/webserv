@@ -85,10 +85,11 @@ class Cgi
         void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
         void            exec_CGI(CGIrequest const & req);
 
+        bool            isCGI_request(Request const &req);
         CGIrequest&     get_CGIrequest();
         
         void            http_header();
         void            redirect_http_header(std::string loc);
 };
 
-bool     isCGI_request(Request const &req);
+

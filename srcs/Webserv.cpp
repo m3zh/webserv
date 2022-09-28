@@ -14,25 +14,11 @@
 
 bool keep_alive = true;
 
-std::vector<ServerInfo>                         Webserv::getServers()           {   return _servers;  };
-
 Webserv::Webserv(std::vector<ServerInfo> const &s) : _servers(s)    {};
-
 Webserv::~Webserv()                     {};
 
-void    Webserv::close_all()
-{
-    for ( std::vector<ServerInfo>::iterator it = _servers.begin();
-            it != _servers.end(); it++ )
-        close((*it).getListeningSocket());
-    for ( std::list<Client*>::iterator it = _clients_list.begin();
-            it != _clients_list.end(); it++ )
-            delete *it;
-     _clients_list.clear();
-
-}
-
-int     Webserv::set_server()
+std::vector<ServerInfo>         Webserv::getServers()           {   return _servers;  };
+int                             Webserv::set_server()
 {
     int on = 1;
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
@@ -102,6 +88,7 @@ int     Webserv::run_server()
     return 0;
 }
 
+// CLIENTS
 void    Webserv::checking_for_new_clients()
 {
     // looping through all listening sockets to see if some have been picked by select()
@@ -116,6 +103,22 @@ void    Webserv::checking_for_new_clients()
     }
 }
 
+Client     *Webserv::accept_new_client(int listening_socket)
+{
+    // the returned client is allocated in the heap. Do not forget to deallocate it
+    struct sockaddr_in  addr_of_client;
+    socklen_t   len_for_accept = sizeof(addr_of_client);
+    int client_socket;
+    try {   client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);              } // if (client_socket < 0)
+    catch (...) {  throw WebException<int>(RED, "WebServ error: Client not accepted on listening socket ", listening_socket); return nullptr;      }
+    std::cout << "new client accepted ! socket is " << client_socket << std::endl;      
+    FD_SET(client_socket, &_current_set);
+    Client *ret = new Client(client_socket, addr_of_client, get_server_associated_with_listening_socket(listening_socket));
+    return (ret);
+}
+
+
+// READING AND WRITING
 void    Webserv::looping_through_read_set()
 {
     // for each client(in the read set), check if header has been read yet.
@@ -214,6 +217,19 @@ void    Webserv::looping_through_write_set()
     }
 }
 
+void    Webserv::close_all()
+{
+    for ( std::vector<ServerInfo>::iterator it = _servers.begin();
+            it != _servers.end(); it++ )
+        close((*it).getListeningSocket());
+    for ( std::list<Client*>::iterator it = _clients_list.begin();
+            it != _clients_list.end(); it++ )
+            delete *it;
+     _clients_list.clear();
+
+}
+
+// GETTERS
 int     Webserv::get_fd_max() const
 {
     // if there are clients, get the max fd from them. If no clients, get the max listening fd
@@ -229,20 +245,6 @@ int     Webserv::get_fd_max() const
         return (_servers.back().getListeningSocket()); // last added server has the biggest listening socket
 }
 
-Client     *Webserv::accept_new_client(int listening_socket)
-{
-    // the returned client is allocated in the heap. Do not forget to deallocate it
-    struct sockaddr_in  addr_of_client;
-    socklen_t   len_for_accept = sizeof(addr_of_client);
-    int client_socket;
-    try {   client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);              } // if (client_socket < 0)
-    catch (...) {  throw WebException<int>(RED, "WebServ error: Client not accepted on listening socket ", listening_socket); return nullptr;      }
-    std::cout << "new client accepted ! socket is " << client_socket << std::endl;      
-    FD_SET(client_socket, &_current_set);
-    Client *ret = new Client(client_socket, addr_of_client, get_server_associated_with_listening_socket(listening_socket));
-    return (ret);
-}
-
 ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_socket)
 {
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
@@ -251,13 +253,12 @@ ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_s
     return nullptr;
 }
 
-// READING REQUEST
+// EXECUTING REQUEST AND CREATE RESPONSE
 void    Webserv::parseHeader(Client *c)         {
                                                     c->setRequest(c->getRequestString());
                                                     c->setHeaderReadAsComplete(true);
                                                 };
 
-// EXECUTING REQUEST AND CREATE RESPONSE
 void    Webserv::handleRequest(Client *c)   const   {
                                                         std::string method = c->getRequest().get_method();
                                                         std::string uri = c->getRequest().get_location();
@@ -275,16 +276,74 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                             c->setResponseString(METHOD_NOT_ALLOWED,"", "");
                                                     };
 
-
-
 void Webserv::GETmethod(Client *c)  const
 {
     struct stat         check_file;
+    std::string         pwd(getenv("PWD"));
+    std::string         file_path;
+    ServerInfo*         _server = c->getServerInfo();
+    Request             req = c->getRequest();
+    std::vector<page>   pages = _server->getPages();
+    std::vector<page>::iterator page_requested = pages.begin();
+    int                 redirect = 0;
+    int                 fileInRootFolder = 0;
+
+    for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
+    {
+        if ((*page_requested).location_path.back() == '/')
+            file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
+        // std::cout << file_path << std::endl;
+        if ( req.get_location().compare((*page_requested).location_path) == 0 )                                 // if the location is exactly as in config,
+        {                                                                                                       
+            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
+                                                            (*page_requested).methods.end(), "GET");
+            if ( method_it == (*page_requested).methods.end() )
+            {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
+            if ((*page_requested).redirect.size())                                                              // check for redirection
+                redirect = 1;
+            break ;
+        }
+        else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                                                                                 // else if a file in the root folder matches the one required
+        {   
+            fileInRootFolder = 1;                                                                                                  
+            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
+                                                            (*page_requested).methods.end(), "GET");
+            if ( method_it == (*page_requested).methods.end() )
+            {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
+            break ;
+        }
+    }
+    // std::cout << "FileInFolder " << fileInRootFolder << std::endl;
+    if ( !fileInRootFolder && page_requested == pages.end() )
+    {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
+    if (!fileInRootFolder)  {
+        std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
+        // std::cout << path2file << "********\n";
+        std::ifstream   file(path2file.c_str());
+        if ( !file.good() )
+        {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
+        if ( redirect )
+	    {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;   }
+        // TO CHECK: CGI
+        if ( page_requested->autoindex == "on"
+            && !stat(path2file.c_str(), &check_file)   // if path exists
+            && (check_file.st_mode & S_IFDIR) )        // if it is a directory                 
+        {
+            std::cout << "Autoindex is on for " << page_requested->location_path << std::endl;
+            c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot()); return ;
+        }
+        c->setResponseString(OK, page_requested->location_path, _server->getServerRoot());
+    }
+	c->setResponseString(OK, file_path, _server->getServerRoot());
+};
+
+void Webserv::POSTmethod(Client *c) const
+{
     ServerInfo*         _server = c->getServerInfo();
     std::vector<page>   pages = _server->getPages();
     Request             req = c->getRequest();
+    Cgi                 cgi(req);
     std::vector<page>::iterator page_requested = pages.begin();
-    int                 redirect = 0;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
     {
@@ -294,47 +353,20 @@ void Webserv::GETmethod(Client *c)  const
                                                             (*page_requested).methods.end(), "GET");
             if ( method_it == (*page_requested).methods.end() )
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
-            if ((*page_requested).redirect.size())                                                                 // check for redirection
-                redirect = 1;
             break ;
         }
     }
     if ( page_requested == pages.end() )
-    {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
-    if (redirect)
-	{	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;   }
-    std::string     pwd(getenv("PWD"));
-    std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
-    std::cout << path2file << "++++\n";
-    std::ifstream   file(path2file.c_str());
-    if ( !file.good() )
-    {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
-    // TO CHECK: CGI
-    if ( page_requested->autoindex == "on"
-        && !stat(path2file.c_str(), &check_file)   // if path exists
-        && (check_file.st_mode & S_IFDIR) )        // if it is a directory                 
-    {
-        std::cout << "Autoindex is on" << page_requested->location_path << std::endl;
-		c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot()); return ;
-    }
-	c->setResponseString(OK, page_requested->location_path, _server->getServerRoot());
-};
-
-void Webserv::POSTmethod(Client *c) const
-{
-(void)c;
+    {   c->setResponseString(NOT_FOUND, "", "");    return ;        }
+    if (cgi.isCGI_request(req))
+	{   std::cout << "CGI!" << std::endl;           return ;        }
+    c->setResponseString(LENGTH_REQUIRED, "", "");
 };
 
 void Webserv::DELETEmethod(Client *c) const
 {
 (void)c;
 };
-
-// void Webserv::setResponse(int code, std::string msg)
-// {
-//     (void)code;
-//     (void)msg;
-// };
 
 // SIGNALS
 void signal_handler(int signum)

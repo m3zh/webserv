@@ -25,7 +25,7 @@ Cgi::~Cgi()                         {};
 
 // checks action, method, content-length in html message 
 // returns true if it's good for cgi
-bool        isCGI_request(Request const &req)
+bool        Cgi::isCGI_request(Request const &req)
 {
     std::string pwd = getenv("PWD");
     std::string root = pwd + "/cgi-bin/";                                       // hardcoded here; this should be retrieved from ServerInfo > page > root
