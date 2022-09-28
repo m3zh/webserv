@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/28 08:07:57 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 11:57:39 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,16 +261,16 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
                                                         if ( !method.size() || !uri.size() || !version.size() )
-                                                            Response(BAD_REQUEST, "");
+                                                            c->setResponseString(BAD_REQUEST, "");
                                                         if ( uri.size() > MAX_URI )
-                                                            Response(REQUEST_URI_TOO_LONG, "");
+                                                            c->setResponseString(REQUEST_URI_TOO_LONG, "");
                                                         if ( version != "HTTP/1.1" )
-                                                            Response(HTTP_VERSION_NOT_SUPPORTED, ""); 
+                                                            c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, ""); 
                                                         if (method == "GET")            GETmethod(c);
                                                         else if (method == "POST")      POSTmethod(c);
                                                         else if (method == "DELETE")    DELETEmethod(c);
                                                         else
-                                                            Response(METHOD_NOT_ALLOWED,"");
+                                                            c->setResponseString(METHOD_NOT_ALLOWED,"");
                                                     };
 
 
@@ -285,9 +285,9 @@ void Webserv::GETmethod(Client *c)  const
 
     for ( ; page_requested != pages.end(); page_requested++ )
     {
-        // std::cout << req.get_location() << "\n";
-        // std::cout << (*page_requested).location_path  << "\n";
-        // std::cout << "-------------\n";
+        std::cout << req.get_location() << "+++\n";
+        std::cout << (*page_requested).location_path  << "+++\n";
+        std::cout << "-------------\n";
         if (req.get_location() == (*page_requested).location_path)
         {
             std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(), 
@@ -296,8 +296,13 @@ void Webserv::GETmethod(Client *c)  const
             {    c->setResponseString(METHOD_NOT_ALLOWED, ""); return  ;   }
         }
     }
-    std::ifstream   file(page_requested->location_path.c_str());
-    if ( page_requested == pages.end() ||  !file.good() )
+    if ( page_requested == pages.end() )
+    {    c->setResponseString(NOT_FOUND, "");    return ;        }
+    std::string     path2file(getenv("PWD"));
+    path2file += "/" + page_requested->location_path;
+    std::cout << path2file << "++++\n";
+    std::ifstream   file(path2file.c_str());
+    if ( !file.good() )
     {    c->setResponseString(NOT_FOUND, "");    return ;        }
     // TO CHECK: CGI
     if ( page_requested->autoindex == "on"
