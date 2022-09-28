@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/28 12:17:18 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 12:51:25 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,13 +287,16 @@ void Webserv::GETmethod(Client *c)  const
     {
         std::cout << req.get_location() << "+++\n";
         std::cout << (*page_requested).location_path  << "+++\n";
+        int res = req.get_location().compare((*page_requested).location_path);
+        std::cout << "RES: "<< res << "+++\n";
         std::cout << "-------------\n";
-        if (req.get_location() == (*page_requested).location_path)
+        if ( req.get_location().compare((*page_requested).location_path) == 0 )
         {
             std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(), 
                                                             (*page_requested).methods.end(), "GET");
             if ( method_it == (*page_requested).methods.end() )
             {    c->setResponseString(METHOD_NOT_ALLOWED, ""); return  ;   }
+            break ;
         }
     }
     if ( page_requested == pages.end() )
