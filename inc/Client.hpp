@@ -68,7 +68,7 @@ class Client
         // code is response code
         // msg is page URI as requested, or redirection, or "" if code is error code
         // root is path to website root folder ( as in config )
-        void                    setResponseString(std::string code, std::string msg, std::string root);
+        void                    setResponseString(std::string code, std::string location, std::string root);
         void                    setResponseFile(std::string file);
 
         // BOOLS

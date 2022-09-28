@@ -36,7 +36,7 @@ std::string             Client::getResponseFile()                       const   
 void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
 void                    Client::setRequestString(std::string s)                 {   request_str.append(s);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
-void                    Client::setResponseString(std::string code, std::string msg, std::string root)
+void                    Client::setResponseString(std::string code, std::string location, std::string root)
 {
     std::string file = getenv("PWD");
     std::map<std::string, std::string> status;
@@ -55,11 +55,11 @@ void                    Client::setResponseString(std::string code, std::string 
     std::string error_file(ERROR_FILE_PATH);
     response_str = "HTTP/1.1 " + code + " " + status[code];
     if ( code == "301" )
-        response_str += "\nLocation: " + msg;
+        response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
     else if ( code == "200" )
-        file += root + msg;
+        file += root + "/" + location;
     response_str += "\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);    

@@ -303,8 +303,8 @@ void Webserv::GETmethod(Client *c)  const
     {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
     if (redirect)
 	{	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;   }
-    std::string     path2file(getenv("PWD"));
-    path2file += _server->getServerRoot() + page_requested->location_path;
+    std::string     pwd(getenv("PWD"));
+    std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
     std::cout << path2file << "++++\n";
     std::ifstream   file(path2file.c_str());
     if ( !file.good() )
@@ -314,8 +314,8 @@ void Webserv::GETmethod(Client *c)  const
         && !stat(path2file.c_str(), &check_file)   // if path exists
         && (check_file.st_mode & S_IFDIR) )        // if it is a directory                 
     {
-        std::cout << "Autoindex is on for " << page_requested->location_path;
-		c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot()); return ; // TO DO
+        std::cout << "Autoindex is on" << page_requested->location_path << std::endl;
+		c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot()); return ;
     }
 	c->setResponseString(OK, page_requested->location_path, _server->getServerRoot());
 };
