@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/28 13:59:38 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 20:53:39 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,6 +195,30 @@ void    Webserv::looping_through_write_set()
         int client_socket = (*it)->getClientSocket();
         if ( FD_ISSET(client_socket, &(_write_set)) && (*it)->isReadComplete() )
         {
+
+
+            // if ((*it)->headerHasBeenSent() == false)
+            // {
+            //     if ((send(client_socket, (*it)->getResponseString().c_str(), (*it)->getResponseString().size(), 0)) < 0)
+            //         throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+            //     (*it)->setHeaderBeenSent();
+            //     if ((*it)->thereIsAFileToSend() == false)
+            //     {
+            //         // close the socket
+            //     }
+            // }
+            // else // there is a file to send
+            // {
+            //     // put the buffer here but put a std::string in client for remaining to send
+            //     if ((*it)->getResponseFileStream().good())
+            //     {
+            //         (*it)->getResponseFileStream().read((*it)->response_file_buffer, sizeof((*it)->response_file_buffer));
+            //     }
+            // }
+
+
+
+
             std::string _response = (*it)->getResponseString();
             char buffer[1024];
             std::ifstream   tmp_stream((*it)->getResponseFile(), std::ios_base::in | std::ios_base::binary);
@@ -383,6 +407,8 @@ void Webserv::DELETEmethod(Client *c) const
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 redirect = 0;
+    (void)redirect;
+    //error: variable ‘redirect’ set but not used [-Werror=unused-but-set-variable]
     int                 fileInRootFolder = 0;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config

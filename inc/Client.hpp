@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/28 13:25:04 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 20:41:32 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <netinet/in.h>
+#include <fstream>
 #include "Request.hpp"
 #include "Response.hpp"
 #include "ServerInfo.hpp"
@@ -37,7 +38,10 @@ class Client
         Request                     request;
 
         std::string                 response_str;
+        std::ifstream               response_file_stream;
         std::string                 response_file;
+        bool                        there_is_a_file_to_send;
+        bool                        header_has_been_sent;
         // Response                    response;
 
         bool                        header_is_read_complete;
@@ -61,6 +65,7 @@ class Client
         Request                 getRequest()        const;
         std::string             getResponseString() const;
         std::string             getResponseFile()   const;
+        std::ifstream &         getResponseFileStream(); // probably not const as reading will affect the state of the stream
 
         // SETTERS
         void                    setRequest(std::string const &s);
@@ -76,6 +81,12 @@ class Client
         void                    setReadAsComplete(bool state);
         bool                    headerIsReadComplete();
         void                    setHeaderReadAsComplete(bool state);
+        bool                    headerHasBeenSent();
+        void                    setHeaderBeenSent();
+        bool                    thereIsAFileToSend();
+        void                    setThereIsAFileToSend();
+
+        char                    response_file_buffer[1024];
 
         //Response class
 };

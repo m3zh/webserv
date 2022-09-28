@@ -56,6 +56,10 @@ Should we check that already in handleRequest() ?
 		Check if it is a folder or a file ? To check for autoindex or not
 		After looping through page vector, what about just trying to open the URI and see if it opens or not ?
 
+--> Client will have 2 strings for response
+	One is the response header. The other one is a stream to the file that needs to be sent.
+	There should also have a bool that says if there is a file to send or not ?
+
 
 --> write_loop
 		response stream associated with a client remains open. At each loop we send up to a buffer.
