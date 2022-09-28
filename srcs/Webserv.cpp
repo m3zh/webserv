@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/28 11:57:39 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 12:17:18 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -310,7 +310,7 @@ void Webserv::GETmethod(Client *c)  const
         && (check_file.st_mode & S_IFDIR) )                 // if it is a directory                 
     {
         std::cout << "Autoindex is on for " << page_requested->location_path;
-		c->setResponseString(OK, _server->getServerIndex()); return ;
+		c->setResponseString(OK, _server->getServerIndex()); return ; // TO DO
     }
 	if (page_requested->redirect != "")
 	{	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect);    return  ;   }

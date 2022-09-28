@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/28 08:06:02 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 12:16:44 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void                    Client::setResponseString(std::string code, std::string 
     else if ( code == "200" )
         file += msg;
     response_str += "\r\n\r\n";
-    std::cout << "FILE:@@@ " << file << std::endl;
+    std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);    
         
 };
