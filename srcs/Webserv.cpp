@@ -152,7 +152,8 @@ void    Webserv::looping_through_read_set()
                 {
                     std::cout << "Reading the body.\n";
                     std::cout << "Body index " << (*it)->getRequest().get_index_beginning_body() << "\n";
-                    std::map<std::string, std::string>::iterator    content_length_it = (*it)->getRequest().get_header_map().find("Content-Length");
+                    std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
+                    std::map<std::string, std::string>::iterator    content_length_it = header_map.find("Content-Length");
                     if (content_length_it == (*it)->getRequest().get_header_map().end())
                         throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
                     if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
@@ -162,7 +163,8 @@ void    Webserv::looping_through_read_set()
             }
             else // header has been read and parsed and there is more data to read (we have to check content-length)
             {
-                std::map<std::string, std::string>::const_iterator    content_length_it = (*it)->getRequest().get_header_map().find("Content-Length");
+                std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
+                std::map<std::string, std::string>::const_iterator    content_length_it = header_map.find("Content-Length");
                 if (content_length_it == (*it)->getRequest().get_header_map().end())
                     throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)

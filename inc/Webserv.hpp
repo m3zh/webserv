@@ -22,7 +22,7 @@ extern bool keep_alive;
 # define NBPORTS 3
 # define READ_BUFFER 16384 // 2^14
 # define MAX_URI 1024
-# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
+//# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
 
 # include <stdio.h>
 # include <stdlib.h>
