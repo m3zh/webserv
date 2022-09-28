@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/27 18:19:27 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 13:25:04 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,10 @@ class Client
         // SETTERS
         void                    setRequest(std::string const &s);
         void                    setRequestString(std::string s);
-        void                    setResponseString(std::string code, std::string msg);
+        // code is response code
+        // msg is page URI as requested, or redirection, or "" if code is error code
+        // root is path to website root folder ( as in config )
+        void                    setResponseString(std::string code, std::string msg, std::string root);
         void                    setResponseFile(std::string file);
 
         // BOOLS

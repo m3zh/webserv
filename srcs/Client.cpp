@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/28 12:16:44 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 13:40:24 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ std::string             Client::getResponseFile()                       const   
 void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
 void                    Client::setRequestString(std::string s)                 {   request_str.append(s);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
-void                    Client::setResponseString(std::string code, std::string msg)
+void                    Client::setResponseString(std::string code, std::string msg, std::string root)
 {
     std::string file = getenv("PWD");
     std::map<std::string, std::string> status;
@@ -59,7 +59,7 @@ void                    Client::setResponseString(std::string code, std::string 
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
     else if ( code == "200" )
-        file += msg;
+        file += root + msg;
     response_str += "\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);    
