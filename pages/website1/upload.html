@@ -1,6 +1,3 @@
-Content-Length="100"
-
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -8,9 +5,11 @@ Content-Length="100"
         <title>Upload</title>
     </head>
         <body>
-            <form enctype="multipart/form-data" action="upload_file.py" method="get">
+            <div>
+            <form enctype="multipart/form-data" action="upload_file.py" method="post">
                 <p>File: <input type="file" name="file"></p>
                 <p><input type="submit" value="Upload"></p>
             </form>
+            </div>
         </body>
 </html>

@@ -292,8 +292,7 @@ void Webserv::GETmethod(Client *c)  const
     {
         if ((*page_requested).location_path.back() == '/')
             file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
-        // std::cout << file_path << std::endl;
-        if ( req.get_location().compare((*page_requested).location_path) == 0 )                                 // if the location is exactly as in config,
+        if ( req.get_location().compare((*page_requested).location_path) == 0 )                                 // if the page required is exactly as in config
         {                                                                                                       
             std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
                                                             (*page_requested).methods.end(), "GET");
@@ -303,7 +302,7 @@ void Webserv::GETmethod(Client *c)  const
                 redirect = 1;
             break ;
         }
-        else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                                                                                 // else if a file in the root folder matches the one required
+        else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                    // else if a file in the root folder matches the one required
         {   
             fileInRootFolder = 1;                                                                                                  
             std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
@@ -313,12 +312,10 @@ void Webserv::GETmethod(Client *c)  const
             break ;
         }
     }
-    // std::cout << "FileInFolder " << fileInRootFolder << std::endl;
     if ( !fileInRootFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
     if (!fileInRootFolder)  {
         std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
-        // std::cout << path2file << "********\n";
         std::ifstream   file(path2file.c_str());
         if ( !file.good() )
         {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
@@ -339,25 +336,39 @@ void Webserv::GETmethod(Client *c)  const
 
 void Webserv::POSTmethod(Client *c) const
 {
-    ServerInfo*         _server = c->getServerInfo();
-    std::vector<page>   pages = _server->getPages();
+    // std::string         pwd(getenv("PWD"));
+    // std::string         file_path;
+    // ServerInfo*         _server = c->getServerInfo();
     Request             req = c->getRequest();
     Cgi                 cgi(req);
-    std::vector<page>::iterator page_requested = pages.begin();
+    // std::vector<page>   pages = _server->getPages();
+    // std::vector<page>::iterator page_requested = pages.begin();
+    // int                 fileInRootFolder = 0;
 
-    for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
-    {
-        if ( req.get_location().compare((*page_requested).location_path) == 0 )
-        {
-            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
-                                                            (*page_requested).methods.end(), "GET");
-            if ( method_it == (*page_requested).methods.end() )
-            {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
-            break ;
-        }
-    }
-    if ( page_requested == pages.end() )
-    {   c->setResponseString(NOT_FOUND, "", "");    return ;        }
+    // for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
+    // {
+    //     if ((*page_requested).location_path.back() == '/')
+    //         file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
+    //     if ( req.get_location().compare((*page_requested).location_path) == 0 )                                 // if the location is exactly as in config,
+    //     {                                                                                                       
+    //         std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
+    //                                                         (*page_requested).methods.end(), "POST");
+    //         if ( method_it == (*page_requested).methods.end() )
+    //         {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
+    //         break ;
+    //     }
+    //     else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                   // else if a file in the root folder matches the one required
+    //     {   
+    //         fileInRootFolder = 1;                                                                                                  
+    //         std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
+    //                                                         (*page_requested).methods.end(), "POST");
+    //         if ( method_it == (*page_requested).methods.end() )
+    //         {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
+    //         break ;
+    //     }
+    // }
+    // if ( !fileInRootFolder && page_requested == pages.end() )
+    // {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
     if (cgi.isCGI_request(req))
 	{   std::cout << "CGI!" << std::endl;           return ;        }
     c->setResponseString(LENGTH_REQUIRED, "", "");
@@ -365,7 +376,42 @@ void Webserv::POSTmethod(Client *c) const
 
 void Webserv::DELETEmethod(Client *c) const
 {
-(void)c;
+    std::string         pwd(getenv("PWD"));
+    std::string         file_path;
+    ServerInfo*         _server = c->getServerInfo();
+    Request             req = c->getRequest();
+    std::vector<page>   pages = _server->getPages();
+    std::vector<page>::iterator page_requested = pages.begin();
+    int                 redirect = 0;
+    int                 fileInRootFolder = 0;
+
+    for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
+    {
+        if ((*page_requested).location_path.back() == '/')
+            file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
+        if ( req.get_location().compare((*page_requested).location_path) == 0 )                                 // if the location is exactly as in config,
+        {                                                                                                       
+            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
+                                                            (*page_requested).methods.end(), "DELETE");
+            if ( method_it == (*page_requested).methods.end() )
+            {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
+            if ((*page_requested).redirect.size())                                                              // check for redirection
+                redirect = 1;
+            break ;
+        }
+        else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                   // else if a file in the root folder matches the one required
+        {   
+            fileInRootFolder = 1;                                                                                                  
+            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
+                                                            (*page_requested).methods.end(), "DELETE");
+            if ( method_it == (*page_requested).methods.end() )
+            {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
+            break ;
+        }
+    }
+    if ( !fileInRootFolder && page_requested == pages.end() )
+    {    c->setResponseString(NOT_FOUND, "", "");    return ;           }
+    // from here on the code is specific to DELETE
 };
 
 // SIGNALS

@@ -27,33 +27,36 @@ Cgi::~Cgi()                         {};
 // returns true if it's good for cgi
 bool        Cgi::isCGI_request(Request const &req)
 {
+    size_t pos = 0;
     std::string pwd = getenv("PWD");
     std::string root = pwd + "/cgi-bin/";                                       // hardcoded here; this should be retrieved from ServerInfo > page > root
+    std::string body = req.get_body();
+    std::cout << "BODY: " << body << std::endl;                                       
     std::map<std::string, std::string> header = req.get_header_map();
     // ------
     // ACTION
     // ------
-    if (header.find("action") == header.end())
-        {   std::cout << "No action for CGI\n"; return false;                       };
-    std::string action = header["action"];
-    std::size_t last_dot = action.find_last_of(".");
-    std::string extension = action.substr(last_dot);
-    if (extension.compare(".py")                                               // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
-        && extension.compare(".pl"))
-        {   std::cout << "Invalid action for CGI\n"; return false;                  };    
+    if (get_CGIparam("action", body, pos) == false)                 // action="........", we want to start from the first \" after the =
+        return false;
+    std::string action = set_CGIparam(body, pos);
+    // std::cout << action << std::endl;
+    size_t extension = action.size() - 3;
+    if (action.compare(extension, action.size(), ".py")                         // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
+        && action.compare(extension, action.size(), ".pl"))
+        {   std::cout << "Invalid file extension for CGI\n"; return false;      };
     // ------
     // METHOD
     // ------
-    if (header.find("method") == header.end())
-        {   std::cout << "No method for CGI\n"; return false;                       };
-    std::string method = header["method"];
-    if (method.compare("GET")                                                   // only methods get and post are accepted for cgi
-        && method.compare("POST"))
-        {   std::cout << "Invalid method for CGI\n"; return false;                  };
+    if (get_CGIparam("method", body, pos) == false)
+        return false;                                
+    std::string method = set_CGIparam(body, pos);
+    if (method.compare("get") != 0                                              // only methods get and post are accepted for cgi
+        && method.compare("post") != 0)
+        {   std::cout << "Invalid method for CGI\n"; return false;              };
     // ------
     // CONTENT LENGTH
     // ------
-    if (method == "POST" && header.find("Content-Length") == header.end()) // !!! Content-Length is in header, not in the body, cannot be parsed like this
+    if (method == "POST" && header.find("Content-Length") == header.end())
         {   std::cout << "No content length for post method CGI\n"; return false;  };                                                              
     size_t content_length = std::stoi(header["Content-Length"]);
     if (content_length <= 0)
@@ -63,7 +66,8 @@ bool        Cgi::isCGI_request(Request const &req)
     // ------
     root += action;
     if (access(root.c_str(), X_OK) < 0)                                                 // if executable exists and it's executable
-        {   std::cout << "Script not executable by CGI\n"; return false;            };       
+        {   std::cout << "Script not executable by CGI\n"; return false;            };
+    set_CGIrequest(action, method, content_length);      
     return true;
 }
 
