@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/27 18:22:29 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 08:06:02 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void                    Client::setResponseString(std::string code, std::string 
     if ( code == "301" )
         response_str += "\nLocation: " + msg;
     else if ( code > "301" )
-        file += error_file + "HTTP" + code + ".html";
+        file += error_file + "/HTTP" + code + ".html";
     else if ( code == "200" )
         file += msg;
     response_str += "\r\n\r\n";

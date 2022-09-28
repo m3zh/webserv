@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/27 18:23:38 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/28 08:07:57 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void    Webserv::checking_for_new_clients()
     for (std::vector<ServerInfo>::iterator it = _servers.begin();
         it != _servers.end(); it++)
     {
-        if (FD_ISSET((*it).getListeningSocket(), &_read_set))
+        if (FD_ISSET((*it).getListeningSocket(), &_read_set) && keep_alive)
         { // there is a new client to accept, we instantiate a Client class and add it to the clients list
             std::cout << "new client ! about to call accept. size of client list now is : " << _clients_list.size() << std::endl;
             _clients_list.push_back(accept_new_client((*it).getListeningSocket()));
