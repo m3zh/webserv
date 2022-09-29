@@ -63,16 +63,16 @@ class Cgi
 
         void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo *server);                                  // it should have two vars, http header and http body
         char**                      getEnv()                                            const;                                                                      // return env as a char** for execve
-        std::string                 getEnvValue(std::string key)                        const;                                   
+        std::string                 getEnvValue(std::string key)                        ;                                   
         std::string                 getFromQueryString(std::string uri)                 const;            
 
         void            set_CGIrequest(Request req, std::map<std::string, std::string> header,
                                         std::string path_to_script, std::string upload_store, ServerInfo *server); // size_t -> content length is never negative
         void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
         
-        std::string     get_CGIaction()                         const;
-        std::string     get_CGImethod()                         const;
-        size_t          get_CGIcontent_length()                 const;
+        std::string     get_CGIaction()                         ;
+        std::string     get_CGImethod()                         ;
+        size_t          get_CGIcontent_length()                 ;
         std::string     get_CGIscript(std::string action)       const;
 
         bool            get_CGIparam(std::string param, std::string html_content, size_t &pos);
@@ -90,7 +90,7 @@ class Cgi
         void            exec_CGI(Request const & req, Client *c)    ;
 
         bool            isCGI_request(Client *c);
-        CGIrequest&     get_CGIrequest()                            const;
+        CGIrequest&     get_CGIrequest();
         
         void            http_header();
         void            redirect_http_header(std::string loc);

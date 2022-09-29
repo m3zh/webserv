@@ -231,14 +231,14 @@ std::string     Cgi::set_CGIparam(std::string html_content, size_t &pos)
 // GETTERS functions
 // ************
 
-std::string     Cgi::getEnvValue(std::string key)   const       {       return _env[key];       };
+std::string     Cgi::getEnvValue(std::string key)              {       return _env[key];       };
 
 // return _env as char**
 char**          Cgi::getEnv() const                                          
 {
     char**  env_arr;
     size_t  i = -1;
-    std::map<std::string, std::string>::iterator it = _env.begin();
+    std::map<std::string, std::string>::const_iterator it = _env.begin();
 
     env_arr = new char* [ _env.size() + 1 ];
     while ( it != _env.end() )
@@ -266,10 +266,10 @@ std::string     Cgi::getFromQueryString(std::string uri)    const
     return uri.substr(pos, uri.size() - pos);
 }
 
-CGIrequest&     Cgi::get_CGIrequest()                    const  {   return _request;                   }           
-std::string     Cgi::get_CGIaction()                     const  {   return get_CGIrequest().action;    }           
-std::string     Cgi::get_CGImethod()                     const  {   return get_CGIrequest().method;    }           
-size_t          Cgi::get_CGIcontent_length()             const  {   return get_CGIrequest().content_length;    }   
+CGIrequest&     Cgi::get_CGIrequest()                           {   return _request;                   }           
+std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;    }           
+std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;    }           
+size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;    }   
 std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  } 
 
 // ************
