@@ -26,7 +26,7 @@ bool        Cgi::isCGI_request(Client *c)
     Request             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator cgi_page = pages.begin();
-
+        
     for ( ; cgi_page != pages.end(); cgi_page++ )
     {                                                                     // check for cgi location in config
         if ( (*cgi_page).location_path == CGI_PATH )                                                
@@ -38,6 +38,9 @@ bool        Cgi::isCGI_request(Client *c)
     // ACTION
     // ------
     std::string action = req.get_location();
+    size_t check4querystring = req.get_location().find("?");
+    if ( check4querystring != std::string::npos)
+        action = action.substr(0, req.get_location().find("?"));
     std::cout << action << std::endl;
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py")                         // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
@@ -53,11 +56,14 @@ bool        Cgi::isCGI_request(Client *c)
     // ------
     // CONTENT LENGTH
     // ------
-    if (method == "POST" && header.find("Content-Length") == header.end())
-        {   std::cout << "No content length for post method CGI\n"; return false;  };                                                              
-    size_t content_length = std::stoi(header["Content-Length"]);
-    if (content_length <= 0)
+    if (method == "POST")
+    {
+        if (header.find("Content-Length") == header.end())
         {   std::cout << "No content length for post method CGI\n"; return false;  };
+        size_t content_length = std::stoi(header["Content-Length"]);
+        if (content_length <= 0)
+        {   std::cout << "No content length for post method CGI\n"; return false;  };
+    }
     // ------
     // SCRIPT -> root + action
     // ------

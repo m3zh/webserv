@@ -305,6 +305,7 @@ void Webserv::GETmethod(Client *c)  const
     struct stat         check_file;
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
+    Cgi                 cgi;
     ServerInfo*         _server = c->getServerInfo();
     Request             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
@@ -336,6 +337,8 @@ void Webserv::GETmethod(Client *c)  const
             break ;
         }
     }
+    if (cgi.isCGI_request(c))
+	{   std::cout << "GET request for CGI!" << std::endl;            return ;        }
     if ( !fileInRootFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
     if (!fileInRootFolder)  {
@@ -345,7 +348,6 @@ void Webserv::GETmethod(Client *c)  const
         {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
         if ( redirect )
 	    {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;   }
-        // TO CHECK: CGI
         if ( page_requested->autoindex == "on"
             && !stat(path2file.c_str(), &check_file)   // if path exists
             && (check_file.st_mode & S_IFDIR) )        // if it is a directory                 
@@ -386,7 +388,7 @@ void Webserv::POSTmethod(Client *c) const
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "CGI!" << std::endl;            return ;        }
+	{   std::cout << "POST request for CGI!" << std::endl;            return ;        }
     c->setResponseString(BAD_GATEWAY, "", "");
 };
 
