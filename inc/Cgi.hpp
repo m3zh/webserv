@@ -58,7 +58,7 @@ class Cgi
         pid_t           _pid;
         int             _fds[2];
         
-        void            child_process(Request const& req)       const;
+        void            child_process(Request const& req, Client *c)       const;
         void            parent_process(int status, Client *c)   const;
 
         void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo *server);                                  // it should have two vars, http header and http body

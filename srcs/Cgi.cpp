@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 # include "../inc/Cgi.hpp"
+# include <string.h>
 
 Cgi::Cgi()                  {};
 Cgi::~Cgi()                 {};
@@ -104,7 +105,7 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 }
 */
 
-void    Cgi::child_process(Request const& req) const
+void    Cgi::child_process(Request const& req, Client *c) const
 {
     char    *cmd[3]; 
     
@@ -119,11 +120,16 @@ void    Cgi::child_process(Request const& req) const
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
     string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                    // cmd[0] -> /usr/bin/python                
-    string2charstar(&cmd[1], _request.path_to_script.c_str());                           // cmd[1] -> cgi-script.py
+    string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());                           // cmd[1] -> cgi-script.py
     cmd[2] = 0;
     close(_fds[WRITE]);
+    write(2, "***\n", 4);
+    write(2, cmd[0], strlen(cmd[0]));
+    write(2, "***\n", 4);
+    write(2, cmd[1], strlen(cmd[1]));
+    write(2, "***\n", 4);
     if (execve(cmd[0], cmd, getEnv()) < 0)
-    {    perror("cgi execve"); exit(EXIT_FAILURE);   }
+    {    perror("cgi execve"); c->setResponseString(BAD_GATEWAY, "", ""); exit(1);  }
 }
 
 void    Cgi::parent_process(int status, Client *c) const
@@ -151,7 +157,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     if (_pid < 0)
     {    perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
-        child_process(req);
+        child_process(req, c);
     else
         parent_process(status, c);
 }
@@ -214,7 +220,8 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 	_env["SCRIPT_FILENAME"] = _request.path_to_script + _request.action;
 	_env["SERVER_NAME"] = server->getServerName();                                                  // getEnvValue("HTTP_HOST");
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	_env["SERVER_PORT"] = server->getPort();;                                                             
+    std::string port = std::to_string(server->getPort());
+	_env["SERVER_PORT"] = port;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
 }
 
@@ -289,7 +296,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;    }           
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;    }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;    }   
-std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  } 
+std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "python";   return "/usr/bin/perl";  } 
 
 // ************
 // HTTP HEADERS functions
@@ -317,6 +324,8 @@ void    Cgi::redirect_http_header(std::string loc)
 
 void   Cgi::string2charstar(char** charstar, std::string str)   const
 {
+    // write(2, "****", 4);
     *charstar = new char[ str.size() + 1 ];
     strcpy(*charstar, str.c_str());
+    // write(2, *charstar, strlen(*charstar));
 }
