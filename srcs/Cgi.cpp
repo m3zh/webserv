@@ -30,7 +30,7 @@ bool        Cgi::isCGI_request(Client *c)
     for ( ; cgi_page != pages.end(); cgi_page++ )
     {                                                                     // check for cgi location in config
         if ( (*cgi_page).location_path == CGI_PATH )                                                
-        {   path_to_script = pwd + _server->getServerRoot() + (*cgi_page).location_path;              // set path to script                                                      
+        {   path_to_script = pwd + (*cgi_page).root;                        // set path to script                                                      
             upload_store = (*cgi_page).upload_store;  break ;     }                                 // set path to upload_store
     }                                                      
     std::map<std::string, std::string> header = req.get_header_map();
