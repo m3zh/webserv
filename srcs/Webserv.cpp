@@ -386,8 +386,8 @@ void Webserv::POSTmethod(Client *c) const
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "CGI!" << std::endl;           return ;        }
-    c->setResponseString(LENGTH_REQUIRED, "", "");
+	{   std::cout << "CGI!" << std::endl;            return ;        }
+    c->setResponseString(BAD_GATEWAY, "", "");
 };
 
 void Webserv::DELETEmethod(Client *c) const

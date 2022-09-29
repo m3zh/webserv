@@ -64,7 +64,8 @@ bool        Cgi::isCGI_request(Client *c)
     std::string script = path_to_script + action;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
         {   std::cout << "Script " << script << " not executable by CGI\n"; return false;            };
-    set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);      
+    set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
+    exec_CGI(req, c);      
     return true;
 }
 
@@ -90,39 +91,38 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 }
 */
 
-void    Cgi::child_process(CGIrequest const& req)
+void    Cgi::child_process(Request const& req) const
 {
     char    *cmd[3]; 
     
-    // if (req.method == "post")                                                       // if post method, we write content to stdin
-    // {
-    //     size_t pos = html_content.find("\r\n\r\n") + 4;
-    //     std::string content = html_content.substr(pos, req.content_length - pos);
-    //     write(_fds[READ], content.c_str(), content_length);
-    // }
+    if (req.get_method() == "POST")                                                       // if post method, we write content to stdin
+    {
+        std::string content = req.get_body();
+        write(_fds[READ], content.c_str(), _request.content_length);
+    }
     if (dup2(_fds[READ], STDIN_FILENO) < 0)                                         // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    // if (req.socket_fd)                                                           // we write the output to socket fd to send to the server
-    //     _fds[WRITE] = req.socket_fd;
-    // if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
-    //     {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    // we populate cmd[3] for execve                                   
-    string2charstar(&cmd[0], get_CGIscript(req.action).c_str());                    // cmd[0] -> /usr/bin/python                
-    string2charstar(&cmd[1], req.path_to_script.c_str());                           // cmd[1] -> cgi-script.py
+    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
+        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+    // we populate cmd[3] for execve                                 
+    string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                    // cmd[0] -> /usr/bin/python                
+    string2charstar(&cmd[1], _request.path_to_script.c_str());                           // cmd[1] -> cgi-script.py
     cmd[2] = 0;
     close(_fds[WRITE]);
     if (execve(cmd[0], cmd, getEnv()) < 0)
     {    perror("cgi execve"); exit(EXIT_FAILURE);   }
 }
 
-void    Cgi::parent_process(int status)
+void    Cgi::parent_process(int status, Client *c) const
 {    
     close(_fds[READ]);
-    close(_fds[WRITE]);                                                              // in the parent the output written to the end of the pipe
-    waitpid(_pid, &status, 0);                                                       // is re-written to the socket_fd to be sent to the server
+    close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
+    waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
+    c->setResponseString(OK,"","");
+    
 }
 
-void    Cgi::exec_CGI(CGIrequest const& req)
+void    Cgi::exec_CGI(Request const& req, Client *c)
 {
     int status = 0;
     
@@ -134,7 +134,7 @@ void    Cgi::exec_CGI(CGIrequest const& req)
     if (_pid == 0)
         child_process(req);
     else
-        parent_process(status);
+        parent_process(status, c);
 }
 
 // ************
@@ -231,10 +231,10 @@ std::string     Cgi::set_CGIparam(std::string html_content, size_t &pos)
 // GETTERS functions
 // ************
 
-std::string     Cgi::getEnvValue(std::string key)       {       return _env[key];       };
+std::string     Cgi::getEnvValue(std::string key)   const       {       return _env[key];       };
 
 // return _env as char**
-char**          Cgi::getEnv()                                           
+char**          Cgi::getEnv() const                                          
 {
     char**  env_arr;
     size_t  i = -1;
@@ -260,17 +260,17 @@ bool            Cgi::get_CGIparam(std::string param, std::string html_content, s
     return true; 
 }
 
-std::string     Cgi::getFromQueryString(std::string uri)
+std::string     Cgi::getFromQueryString(std::string uri)    const
 {
     size_t pos = uri.find("?") + 1;   
     return uri.substr(pos, uri.size() - pos);
 }
 
-CGIrequest&     Cgi::get_CGIrequest()                    {   return _request;    }
-std::string     Cgi::get_CGIaction()                     {   return get_CGIrequest().action;    }
-std::string     Cgi::get_CGImethod()                     {   return get_CGIrequest().method;    }
-size_t          Cgi::get_CGIcontent_length()             {   return get_CGIrequest().content_length;    }
-std::string     Cgi::get_CGIscript(std::string action)   {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  }
+CGIrequest&     Cgi::get_CGIrequest()                    const  {   return _request;                   }           
+std::string     Cgi::get_CGIaction()                     const  {   return get_CGIrequest().action;    }           
+std::string     Cgi::get_CGImethod()                     const  {   return get_CGIrequest().method;    }           
+size_t          Cgi::get_CGIcontent_length()             const  {   return get_CGIrequest().content_length;    }   
+std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  } 
 
 // ************
 // HTTP HEADERS functions
@@ -296,7 +296,7 @@ void    Cgi::redirect_http_header(std::string loc)
 // UTILS functions
 // ************
 
-void   Cgi::string2charstar(char** charstar, std::string str)
+void   Cgi::string2charstar(char** charstar, std::string str)   const
 {
     *charstar = new char[ str.size() + 1 ];
     strcpy(*charstar, str.c_str());

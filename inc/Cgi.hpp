@@ -13,6 +13,7 @@
 # pragma once
 
 # include <iostream>
+# include <stdio.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include <string>
@@ -57,28 +58,28 @@ class Cgi
         pid_t           _pid;
         int             _fds[2];
         
-        void            child_process(CGIrequest const& req);
-        void            parent_process(int status);
+        void            child_process(Request const& req)       const;
+        void            parent_process(int status, Client *c)   const;
 
-        void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo *server);                               // it should have two vars, http header and http body
-        char**                      getEnv();                                                       // return env as a char** for execve
-        std::string                 getEnvValue(std::string key);                                   
-        std::string                 getFromQueryString(std::string uri);            
+        void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo *server);                                  // it should have two vars, http header and http body
+        char**                      getEnv()                                            const;                                                                      // return env as a char** for execve
+        std::string                 getEnvValue(std::string key)                        const;                                   
+        std::string                 getFromQueryString(std::string uri)                 const;            
 
         void            set_CGIrequest(Request req, std::map<std::string, std::string> header,
                                         std::string path_to_script, std::string upload_store, ServerInfo *server); // size_t -> content length is never negative
         void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
         
-        std::string     get_CGIaction();
-        std::string     get_CGImethod();
-        size_t          get_CGIcontent_length();
-        std::string     get_CGIscript(std::string action);
+        std::string     get_CGIaction()                         const;
+        std::string     get_CGImethod()                         const;
+        size_t          get_CGIcontent_length()                 const;
+        std::string     get_CGIscript(std::string action)       const;
 
         bool            get_CGIparam(std::string param, std::string html_content, size_t &pos);
         std::string     set_CGIparam(std::string html_content, size_t &pos);
 
         // utils
-        void            string2charstar(char **charstar, std::string str);
+        void            string2charstar(char **charstar, std::string str)   const;
 
     public:
 
@@ -86,10 +87,10 @@ class Cgi
         ~Cgi();
 
         void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
-        void            exec_CGI(CGIrequest const & req);
+        void            exec_CGI(Request const & req, Client *c)    ;
 
         bool            isCGI_request(Client *c);
-        CGIrequest&     get_CGIrequest();
+        CGIrequest&     get_CGIrequest()                            const;
         
         void            http_header();
         void            redirect_http_header(std::string loc);
