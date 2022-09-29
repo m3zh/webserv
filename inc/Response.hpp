@@ -26,7 +26,7 @@
 # define LENGTH_REQUIRED	    "411"
 # define REQUEST_URI_TOO_LONG   "414"
 # define NOT_IMPLEMENTED		"501"
-# define GATEWAY_TIMEOUT		"504"	
+# define BAD_GATEWAY    		"502"	
 # define HTTP_VERSION_NOT_SUPPORTED "505"
 
 # define ERROR_FILE_PATH "/pages/error-pages"

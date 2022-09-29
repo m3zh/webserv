@@ -22,10 +22,12 @@
 # include <map>
 
 # include "Request.hpp"
+# include "Client.hpp"
 
 # define READ 0
 # define WRITE 1
 # define MAX_SIZE 2000
+# define CGI_PATH "/app"
 
 // ****************************
 // the CGI class execute dynamic web pages
@@ -43,7 +45,7 @@ struct CGIrequest
     std::string     path_to_script;                 // abs path to CGI script
     std::string     upload_store;                   // upload_store in config
     size_t          content_length;                 // content length field in HTML header
-    int             socket_fd;                      // the CGI script output should be written to this fd
+    //int             socket_fd;                      // the CGI script output should be written to this fd
 };
 
 class Cgi
@@ -58,12 +60,13 @@ class Cgi
         void            child_process(CGIrequest const& req);
         void            parent_process(int status);
 
-        void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header);                               // it should have two vars, http header and http body
+        void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo *server);                               // it should have two vars, http header and http body
         char**                      getEnv();                                                       // return env as a char** for execve
         std::string                 getEnvValue(std::string key);                                   
         std::string                 getFromQueryString(std::string uri);            
 
-        void            set_CGIrequest(std::string action, std::string method, size_t content_length); // size_t -> content length is never negative
+        void            set_CGIrequest(Request req, std::map<std::string, std::string> header,
+                                        std::string path_to_script, std::string upload_store, ServerInfo *server); // size_t -> content length is never negative
         void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
         
         std::string     get_CGIaction();
@@ -79,17 +82,18 @@ class Cgi
 
     public:
 
-        Cgi(Request const &req);
+        Cgi();
         ~Cgi();
 
         void            parse_CGIrequest(std::string http_content);                     // parse the HTTP request 
         void            exec_CGI(CGIrequest const & req);
 
-        bool            isCGI_request(Request const &req);
+        bool            isCGI_request(Client *c);
         CGIrequest&     get_CGIrequest();
         
         void            http_header();
         void            redirect_http_header(std::string loc);
 };
+
 
 

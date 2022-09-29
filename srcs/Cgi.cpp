@@ -12,46 +12,43 @@
 
 # include "../inc/Cgi.hpp"
 
-Cgi::Cgi(Request const &req)        {
-                                        std::string pwd = getenv("PWD");
-                                        std::string root = pwd + "/cgi-bin/";
-                                        std::map<std::string, std::string> header = req.get_header_map();
-                                        root += header["action"];
-                                        _request.path_to_script = root;
-                                        set_CGIrequest(header["action"], header["method"], std::stoi(header["Content-Length"]));
-                                        set_CGIenv(req, header);   
-                                    };
-Cgi::~Cgi()                         {};
+Cgi::Cgi()                  {};
+Cgi::~Cgi()                 {};
 
 // checks action, method, content-length in html message 
 // returns true if it's good for cgi
-bool        Cgi::isCGI_request(Request const &req)
+bool        Cgi::isCGI_request(Client *c)
 {
-    size_t pos = 0;
-    std::string pwd = getenv("PWD");
-    std::string root = pwd + "/cgi-bin/";                                       // hardcoded here; this should be retrieved from ServerInfo > page > root
-    std::string body = req.get_body();
-    std::cout << "BODY: " << body << std::endl;                                       
+    std::string         pwd(getenv("PWD"));
+    std::string         path_to_script;
+    std::string         upload_store;
+    ServerInfo*         _server = c->getServerInfo();
+    Request             req = c->getRequest();
+    std::vector<page>   pages = _server->getPages();
+    std::vector<page>::iterator cgi_page = pages.begin();
+
+    for ( ; cgi_page != pages.end(); cgi_page++ )
+    {                                                                     // check for cgi location in config
+        if ( (*cgi_page).location_path == CGI_PATH )                                                
+        {   path_to_script = pwd + _server->getServerRoot() + (*cgi_page).location_path;              // set path to script                                                      
+            upload_store = (*cgi_page).upload_store;  break ;     }                                 // set path to upload_store
+    }                                                      
     std::map<std::string, std::string> header = req.get_header_map();
     // ------
     // ACTION
     // ------
-    if (get_CGIparam("action", body, pos) == false)                 // action="........", we want to start from the first \" after the =
-        return false;
-    std::string action = set_CGIparam(body, pos);
-    // std::cout << action << std::endl;
+    std::string action = req.get_location();
+    std::cout << action << std::endl;
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py")                         // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
         && action.compare(extension, action.size(), ".pl"))
         {   std::cout << "Invalid file extension for CGI\n"; return false;      };
     // ------
     // METHOD
-    // ------
-    if (get_CGIparam("method", body, pos) == false)
-        return false;                                
-    std::string method = set_CGIparam(body, pos);
-    if (method.compare("get") != 0                                              // only methods get and post are accepted for cgi
-        && method.compare("post") != 0)
+    // ------                              
+    std::string method = req.get_method();
+    if (method.compare("GET") != 0                                              // only methods get and post are accepted for cgi
+        && method.compare("POST") != 0)
         {   std::cout << "Invalid method for CGI\n"; return false;              };
     // ------
     // CONTENT LENGTH
@@ -64,10 +61,10 @@ bool        Cgi::isCGI_request(Request const &req)
     // ------
     // SCRIPT -> root + action
     // ------
-    root += action;
-    if (access(root.c_str(), X_OK) < 0)                                                 // if executable exists and it's executable
-        {   std::cout << "Script not executable by CGI\n"; return false;            };
-    set_CGIrequest(action, method, content_length);      
+    std::string script = path_to_script + action;
+    if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
+        {   std::cout << "Script " << script << " not executable by CGI\n"; return false;            };
+    set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);      
     return true;
 }
 
@@ -172,43 +169,46 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 // https://developer.mozilla.org/en-US/docs/Glossary/Request_header
 // NOTE on PATH_INFO/PATH_TRANSLATED vs SCRIPT_NAME/SCRIPT_FILENAME > here we treat them as equivalent
 // more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
-void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> header)
+void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo* server)
 {
     std::string body = req.get_body();
     std::string pwd = getenv("PWD");
    
     _env["AUTH_TYPE"] = "";
-    _env["DOCUMENT_ROOT"] = "~/webserv";                                                        // add a function get_pwd?                                  
-	_env["CONTENT_LENGTH"] = header["Content-Length"];                                          // because we need it as string, _request.content_length is an int XXXX
-    if (header.find("Cookies") != header.end())                                                 // Cookies or cookie?
+    _env["DOCUMENT_ROOT"] = "~/webserv";                                                                                          
+	_env["CONTENT_LENGTH"] = header["Content-Length"];                                          
+    if (header.find("Cookies") != header.end())                                                 
 	    _env["HTTP_COOKIE"] = header["Cookies"];
     _env["HTTP_HOST"] = header["Host"];
     _env["HTTP_REFERER"] = header["Referer"];
     _env["HTTP_USER_AGENT "] = header["User-Agent"]; 
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["PATH_INFO"] = "/app";                                                             // the path as requested by the client, eg. www.xxx.com/app
-	_env["PATH_TRANSLATED"] = pwd + "/cgi-bin/" + _request.action;                          // the actual path to the script
-	_env["QUERY_STRING"] = getFromQueryString("blabla.com/en?name=Undi&age=11");            // hard-coded here, to be fetched from request
-	// _env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
-	_env["REMOTE_ADDR"] = "127.0.0.1";                                                      // hard-coded here, to be fetched from request
+	_env["PATH_INFO"] = req.get_location();                                                         // the path as requested by the client, eg. www.xxx.com/app
+	_env["PATH_TRANSLATED"] = _request.path_to_script + _request.action;                            // the actual path to the script
+	_env["QUERY_STRING"] = getFromQueryString(req.get_location());            
+	_env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
+	_env["REMOTE_ADDR"] = "127.0.0.1";                                                     
 	_env["REMOTE_USER"] = "";
 	_env["REMOTE_IDENT"] = "";
 	_env["REQUEST_METHOD"] = _request.method;
-	_env["REQUEST_URI"] = "/app";                                                           // hard-coded here, to be fetched from request
+	_env["REQUEST_URI"] = "/app";                                                           
 	_env["SCRIPT_NAME"] = _request.action;
-	_env["SCRIPT_FILENAME"] = pwd + "/cgi-bin/" + _request.action;
-	_env["SERVER_NAME"] = "codedinbelgium.be";                                              // getEnvValue("HTTP_HOST");
+	_env["SCRIPT_FILENAME"] = _request.path_to_script + _request.action;
+	_env["SERVER_NAME"] = server->getServerName();                                                  // getEnvValue("HTTP_HOST");
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	_env["SERVER_PORT"] = "80";                                                             // hard-coded here, to be fetched from request
+	_env["SERVER_PORT"] = server->getPort();;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
 }
 
-void    Cgi::set_CGIrequest(std::string action, std::string method, size_t content_length)
+void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
 {
-    _request.action = action;
-    _request.method = method;
-    _request.content_length = content_length;
+    _request.action = req.get_location();
+    _request.method = req.get_method();
+    _request.content_length = std::stoi(header["Content-Length"]);
+    _request.path_to_script = path_to_script;
+    _request.upload_store = upload_store;
+    set_CGIenv(req, header, server);  
 };
 
 void    Cgi::clear_CGIrequest()
