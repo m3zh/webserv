@@ -337,10 +337,16 @@ void Webserv::GETmethod(Client *c)  const
             break ;
         }
     }
-    // if (cgi.isCGI_request(c))
-	// {   std::cout << "GET request for CGI!" << std::endl;            return ;        }
-    if ( !fileInRootFolder && page_requested == pages.end() )
-    {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
+    if ( !fileInRootFolder && page_requested == pages.end() )                                                   // if nothing is found 
+    {                                                                                                           // we check if is a CGI request   
+        if (req.get_location().find("?") != std::string::npos
+            || req.get_location().find(".py") != std::string::npos  )
+        {
+            if (cgi.isCGI_request(c))
+	        {   std::cout << "GET request for CGI!" << std::endl;            return ;        }
+        }     
+        c->setResponseString(NOT_FOUND, "", "");    return ;        
+    }
     if (!fileInRootFolder)  {
         std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
         std::ifstream   file(path2file.c_str());
