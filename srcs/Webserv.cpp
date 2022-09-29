@@ -337,8 +337,8 @@ void Webserv::GETmethod(Client *c)  const
             break ;
         }
     }
-    if (cgi.isCGI_request(c))
-	{   std::cout << "GET request for CGI!" << std::endl;            return ;        }
+    // if (cgi.isCGI_request(c))
+	// {   std::cout << "GET request for CGI!" << std::endl;            return ;        }
     if ( !fileInRootFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
     if (!fileInRootFolder)  {

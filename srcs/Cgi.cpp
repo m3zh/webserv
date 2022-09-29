@@ -43,33 +43,37 @@ bool        Cgi::isCGI_request(Client *c)
         action = action.substr(0, req.get_location().find("?"));
     std::cout << action << std::endl;
     size_t extension = action.size() - 3;
-    if (action.compare(extension, action.size(), ".py")                         // check if it's a pyhton or perl script [ our CGI supports only py and perl ]
-        && action.compare(extension, action.size(), ".pl"))
-        {   std::cout << "Invalid file extension for CGI\n"; return false;      };
+    if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
+        {   std::cout << "Invalid file extension for CGI\n"; 
+            c->setResponseString(BAD_GATEWAY,"",""); return false;      };
     // ------
     // METHOD
     // ------                              
     std::string method = req.get_method();
     if (method.compare("GET") != 0                                              // only methods get and post are accepted for cgi
         && method.compare("POST") != 0)
-        {   std::cout << "Invalid method for CGI\n"; return false;              };
+        {   std::cout << "Invalid method for CGI\n";
+            c->setResponseString(METHOD_NOT_ALLOWED,"","");    return false;              };
     // ------
     // CONTENT LENGTH
     // ------
     if (method == "POST")
     {
         if (header.find("Content-Length") == header.end())
-        {   std::cout << "No content length for post method CGI\n"; return false;  };
+        {   std::cout << "No content length for post method CGI\n"; 
+            c->setResponseString(LENGTH_REQUIRED,"","");    return false;  };
         size_t content_length = std::stoi(header["Content-Length"]);
         if (content_length <= 0)
-        {   std::cout << "No content length for post method CGI\n"; return false;  };
+        {   std::cout << "No content length for post method CGI\n";
+            c->setResponseString(LENGTH_REQUIRED,"","");    return false;  };
     }
     // ------
     // SCRIPT -> root + action
     // ------
     std::string script = path_to_script + action;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
-        {   std::cout << "Script " << script << " not executable by CGI\n"; return false;            };
+        {   std::cout << "Script " << script << " not executable by CGI\n";
+            c->setResponseString(BAD_GATEWAY,"","");    return false;            };
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
     exec_CGI(req, c);      
     return true;
@@ -184,12 +188,10 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 // more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
 void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo* server)
 {
-    std::string body = req.get_body();
-    std::string pwd = getenv("PWD");
-   
     _env["AUTH_TYPE"] = "";
-    _env["DOCUMENT_ROOT"] = "~/webserv";                                                                                          
-	_env["CONTENT_LENGTH"] = header["Content-Length"];                                          
+    _env["DOCUMENT_ROOT"] = "~/webserv";
+    if ( header.find("Content-Length") != header.end() )                                                                                          
+	    _env["CONTENT_LENGTH"] = header["Content-Length"];                                          
     if (header.find("Cookies") != header.end())                                                 
 	    _env["HTTP_COOKIE"] = header["Cookies"];
     _env["HTTP_HOST"] = header["Host"];
@@ -218,7 +220,8 @@ void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> head
 {
     _request.action = req.get_location();
     _request.method = req.get_method();
-    _request.content_length = std::stoi(header["Content-Length"]);
+    if ( header.find("Content-Length") != header.end() )
+        _request.content_length = std::stoi(header["Content-Length"]);
     _request.path_to_script = path_to_script;
     _request.upload_store = upload_store;
     set_CGIenv(req, header, server);  
