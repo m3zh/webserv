@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/19 16:49:13 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/29 17:41:55 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,7 @@ void    Cgi::child_process(Request const& req) const
 void    Cgi::parent_process(int status, Client *c) const
 {
     int nbytes;
+    (void)nbytes;
     char buffer[1024];
     
 

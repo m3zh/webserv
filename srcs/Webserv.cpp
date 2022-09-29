@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/28 20:53:39 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/29 17:40:52 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ void    Webserv::looping_through_read_set()
         if (FD_ISSET(client_socket, &_read_set))
         {
             std::cout << "Reading...\n" << std::endl;
-            char buffer[READ_BUFFER];
+            char buffer[READ_WRITE_BUFFER];
             bzero(&buffer, sizeof(buffer));
             int bytes_recv;
             // we can call parse_request as soon as the header is read. 
@@ -187,35 +187,88 @@ void    Webserv::looping_through_read_set()
 
 void    Webserv::looping_through_write_set()
 {
+    // need to make the it++ in the code itself, to manage when deleting clients
     // looping to all clients to see which one is ready to receive data.
     // condition to send to a client is that recv has returned 0 (nothing more to read) and that select() has put it in the write set
     
-    for ( std::list<Client*>::iterator it = _clients_list.begin(); it != _clients_list.end(); it++ )
+    for ( std::list<Client*>::iterator it = _clients_list.begin(); it != _clients_list.end(); /* it++ */ ) // increment must be done in the code because we delete from the list
     {
-        int client_socket = (*it)->getClientSocket();
+        int     client_socket = (*it)->getClientSocket();
+        ssize_t bytes_sent;
+        (void)bytes_sent;
         if ( FD_ISSET(client_socket, &(_write_set)) && (*it)->isReadComplete() )
         {
 
 
-            // if ((*it)->headerHasBeenSent() == false)
-            // {
-            //     if ((send(client_socket, (*it)->getResponseString().c_str(), (*it)->getResponseString().size(), 0)) < 0)
-            //         throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
-            //     (*it)->setHeaderBeenSent();
-            //     if ((*it)->thereIsAFileToSend() == false)
-            //     {
-            //         // close the socket
-            //     }
-            // }
-            // else // there is a file to send
-            // {
-            //     // put the buffer here but put a std::string in client for remaining to send
-            //     if ((*it)->getResponseFileStream().good())
-            //     {
-            //         (*it)->getResponseFileStream().read((*it)->response_file_buffer, sizeof((*it)->response_file_buffer));
-            //     }
-            // }
+        //     if ((*it)->headerHasBeenSent() == false) // first send the header
+        //     {
+        //         if ((*it)->getRemainingBufferToSend().size() > 0) // in case the whole header could not be sent in 1 time
+        //         {
+        //             if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) < 0)
+        //                 throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+        //             (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
+        //             if ((*it)->getRemainingBufferToSend().size() == 0) // means it was all sent successfully
+        //                 (*it)->setHeaderBeenSent();
+        //             ++it;
+        //             continue; // not more than 1 send() per select()
+        //         }
+        //         if ((bytes_sent = send(client_socket, (*it)->getResponseString().c_str(), (*it)->getResponseString().size(), 0)) < 0)
+        //             throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+        //         if (bytes_sent < (*it)->getResponseString().size())
+        //             (*it)->getRemainingBufferToSend().assign((*it)->getResponseString(), bytes_sent, std::string::npos);
+        //         else
+        //             (*it)->setHeaderBeenSent();
+        //     }
+        //     else // header has been sent already
+        //     {
+        //         // if there is no file to send, close the socket here
+        //         if ((*it)->thereIsAFileToSend() == false)
+        //         {
+        //             close(client_socket);
+        //             FD_CLR(client_socket, &_current_set);
+        //             std::list<Client*>::iterator    to_delete = it;
+        //             ++it; // ready for next loop cycle
+        //             delete (*to_delete); // Client is allocated
+        //             _clients_list.erase(to_delete);
+        //             continue; // we had to increment the iterator before deleting the node in the list. We cannot increment an iterator to a deleted node
+        //             // we also cannot decrement the iterator as it might be the first node of the list
+        //         }
+        //         if ((*it)->getRemainingBufferToSend().size())
+        //         {
+        //             if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) < 0)
+        //                 throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+        //             (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
+        //             ++it;
+        //             continue; // not more than 1 send() per select()
+        //         }
+        //         char             buffer[READ_WRITE_BUFFER];
+        //         std::streamsize  effective_size_of_buffer = 0;
 
+        //         if ((*it)->getResponseFileStream().good()) // what if we have issue with the stream ?
+        //         {
+        //             (*it)->getResponseFileStream().read(buffer, sizeof(buffer));
+        //             effective_size_of_buffer = (*it)->getResponseFileStream().gcount();
+        //         }
+        //         if (effective_size_of_buffer != 0) // this might be the case if EOF is reached or if there is an issue with the stream
+        //         {
+        //             if ((bytes_sent = send(client_socket, buffer, effective_size_of_buffer, 0)) < 0)
+        //                 throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+        //             if (bytes_sent < effective_size_of_buffer)
+        //                 (*it)->getRemainingBufferToSend().assign(&buffer[bytes_sent], effective_size_of_buffer - bytes_sent);
+        //         }
+        //         if ((*it)->getResponseFileStream().eof() == true && (*it)->getRemainingBufferToSend().size() == 0) // the file has been fully transmitted
+        //         {
+        //             close(client_socket);
+        //             FD_CLR(client_socket, &_current_set);
+        //             std::list<Client*>::iterator    to_delete = it;
+        //             ++it; // ready for next loop cycle
+        //             delete (*to_delete); // Client is allocated
+        //             _clients_list.erase(to_delete);
+        //             continue; // we had to increment the iterator before deleting the node in the list. We cannot increment an iterator to a deleted node
+        //             // we also cannot decrement the iterator as it might be the first node of the list
+        //         }
+        //     }
+        // ++it; // put it here instead of in the for loop declaration
 
 
 
@@ -234,11 +287,13 @@ void    Webserv::looping_through_write_set()
             close (client_socket);
             FD_CLR(client_socket, &_current_set);
             std::list<Client*>::iterator    to_delete = it;
-            --it;
+            --it; // not ok because we might decrement before the begin()
             delete (*to_delete); // Client is allocated
             _clients_list.erase(to_delete);
         }
+        it++;
     }
+
 }
 
 void    Webserv::close_all()

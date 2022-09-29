@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/28 13:40:24 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/29 17:07:15 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,18 @@ Client::Client( int client_socket,
 Client::~Client()                                                                               {};
 
 // GETTERS
-int                     Client::getClientSocket()                       const   {   return  client_socket;      };
-struct sockaddr_in      Client::getClientAddress()                      const   {   return  client_addrs;       };
-ServerInfo *            Client::getServerInfo()                         const   {   return  associated_server;  };
-std::string             Client::getRequestString()                      const   {   return  request_str;        };
-Request                 Client::getRequest()                            const   {   return  request;            };
-std::string             Client::getResponseString()                     const   {   return  response_str;       };
-std::string             Client::getResponseFile()                       const   {   return  response_file;      };
+int                     Client::getClientSocket()                       const   {   return  client_socket;          };
+struct sockaddr_in      Client::getClientAddress()                      const   {   return  client_addrs;           };
+ServerInfo *            Client::getServerInfo()                         const   {   return  associated_server;      };
+std::string             Client::getRequestString()                      const   {   return  request_str;            };
+Request                 Client::getRequest()                            const   {   return  request;                };
+std::string             Client::getResponseString()                     const   {   return  response_str;           };
+std::string             Client::getResponseFile()                       const   {   return  response_file;          };
+
+std::ifstream &         Client::getResponseFileStream()                         {    return response_file_stream;   };
+std::string &           Client::getRemainingBufferToSend()                        {    return remaining_buffer_to_send;  };
+
+
 
 // SETTERS
 void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
@@ -73,3 +78,8 @@ bool                    Client::isReadComplete()                        {   retu
 void                    Client::setReadAsComplete(bool state)           {   is_read_complete = state;            };
 bool                    Client::headerIsReadComplete()                  {   return  header_is_read_complete;     };
 void                    Client::setHeaderReadAsComplete(bool state)     {   header_is_read_complete = state;     };
+
+bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
+void                    Client::setHeaderBeenSent()                     {   header_has_been_sent = true;         };
+bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
+void                    Client::setThereIsAFileToSend()                 {   there_is_a_file_to_send = true;      };

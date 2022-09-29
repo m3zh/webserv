@@ -73,3 +73,6 @@ Should we check that already in handleRequest() ?
 
 			* condition to clear a client :
 				- stream to send has reached eof AND buffer to send is emtpy
+
+			temporary buffer in the function to be filled by read.
+			permanent std::string in the client class that will hold the remaining to send, if there is one

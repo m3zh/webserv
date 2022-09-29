@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/27 17:21:54 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/29 17:17:56 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ extern bool keep_alive;
 
 # define BACKLOG 255
 # define NBPORTS 3
-# define READ_BUFFER 16384 // 2^14
+# define READ_WRITE_BUFFER 16384 // 2^14
 # define MAX_URI 1024
 # define MAX_UPLOAD_FILE 2048
 //# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
