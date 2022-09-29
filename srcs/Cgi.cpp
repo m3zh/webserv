@@ -71,9 +71,12 @@ bool        Cgi::isCGI_request(Client *c)
     // SCRIPT -> root + action
     // ------
     std::string script = path_to_script + action;
+    std::cout << "SCRIPT: " << script << std::endl;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
         {   std::cout << "Script " << script << " not executable by CGI\n";
             c->setResponseString(BAD_GATEWAY,"","");    return false;            };
+    c->setCGIrequest(true);
+    _request.action = action;
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
     exec_CGI(req, c);      
     return true;
@@ -110,7 +113,7 @@ void    Cgi::child_process(Request const& req) const
         std::string content = req.get_body();
         write(_fds[READ], content.c_str(), _request.content_length);
     }
-    if (dup2(_fds[READ], STDIN_FILENO) < 0)                                         // in the child the output is written to the end of the pipe
+    if (dup2(_fds[READ], STDIN_FILENO) < 0)                                             // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
@@ -127,7 +130,6 @@ void    Cgi::parent_process(int status, Client *c) const
 {
     int nbytes;
     char buffer[1024];
-    
 
     close(_fds[READ]);
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
@@ -218,7 +220,6 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 
 void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
 {
-    _request.action = req.get_location();
     _request.method = req.get_method();
     if ( header.find("Content-Length") != header.end() )
         _request.content_length = std::stoi(header["Content-Length"]);
