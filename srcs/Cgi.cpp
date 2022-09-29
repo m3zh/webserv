@@ -114,11 +114,18 @@ void    Cgi::child_process(Request const& req) const
 }
 
 void    Cgi::parent_process(int status, Client *c) const
-{    
+{
+    int nbytes;
+    char buffer[1024];
+    
+
     close(_fds[READ]);
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
-    c->setResponseString(OK,"","");
+    
+    nbytes = read(_fds[WRITE], buffer, sizeof(buffer));
+    std::string     _response(buffer);                                             
+    c->setResponseString(OK, _response,"");
     
 }
 
@@ -216,6 +223,8 @@ void    Cgi::clear_CGIrequest()
     _request.action = "";
     _request.method = "";
     _request.content_length = 0;    
+    _request.upload_store = "";    
+    _request.path_to_script = "";    
 };
 
 std::string     Cgi::set_CGIparam(std::string html_content, size_t &pos)

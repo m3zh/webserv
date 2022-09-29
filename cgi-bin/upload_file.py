@@ -5,13 +5,14 @@ import cgitb
 
 cgitb.enable()
 
-# for param in os.environ.keys():                                     # <-- check params passed in env
-#    print "<b>%20s</b>: %s<\br>" % (param, os.environ[param])
+for param in os.environ.keys():                                     # <-- check params passed in env
+   print "<b>%20s</b>: %s<\br>" % (param, os.environ[param])
 
 form = cgi.FieldStorage()
 
 # A nested FieldStorage instance holds the file
 fileitem = form.getvalue('file')                                       # . is added to create dir in cwd
+directory = "dump"
 
 if os.path.exists(directory) == False:
     os.system("sudo mkdir ." + directory)
