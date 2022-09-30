@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/29 17:07:15 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/30 13:14:23 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,17 +58,21 @@ void                    Client::setResponseString(std::string code, std::string 
     status["504"] = "Gateway Timeout";
     status["505"] = "HTTP Version Not Supported";
     
+    std::cout << "CODE: ";
+    std::cout << code;
+    std::cout << "\n";
+    std::cout << location;
     std::string error_file(ERROR_FILE_PATH);
     response_str = "HTTP/1.1 " + code + " " + status[code];
     if ( code == "301" )
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
-    else if ( isCGIrequest() )
-    {
-        response_str += location;                               // we append the message we got from the python script
-        file = "";                                              // we set the file to "" ( there is no file to read )
-    }
+    // else if ( isCGIrequest() )
+    // {
+    //     response_str += location;                               // we append the message we got from the python script
+    //     file = "";                                              // we set the file to "" ( there is no file to read )
+    // }
     else if( code == "200" )
     {
         if ( root.back() != '/' && location[0] != '/')
