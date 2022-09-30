@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/30 13:14:23 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/30 13:45:19 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,9 @@ Client::Client( int client_socket,
                                                     associated_server(associated_server),
                                                     request_str("")                            {
                                                                                                         setReadAsComplete(false);
-                                                                                                        setHeaderReadAsComplete(false); 
+                                                                                                        setHeaderReadAsComplete(false);
+                                                                                                        setThereIsAFileToSend(false);
+                                                                                                        setHeaderBeenSent(false);
                                                                                                 };
 Client::~Client()                                                                               {};
 
@@ -82,7 +84,8 @@ void                    Client::setResponseString(std::string code, std::string 
     response_str += "\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);    
-        
+    getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);
+    setThereIsAFileToSend(true);
 };
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };
 
@@ -94,9 +97,9 @@ void                    Client::setHeaderReadAsComplete(bool state)     {   head
 
 
 bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
-void                    Client::setHeaderBeenSent()                     {   header_has_been_sent = true;         };
+void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;         };
 bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
-void                    Client::setThereIsAFileToSend()                 {   there_is_a_file_to_send = true;      };
+void                    Client::setThereIsAFileToSend(bool state)       {   there_is_a_file_to_send = state;      };
 
 bool                    Client::isCGIrequest()                          {   return is_cgi_request;               };
 void                    Client::setCGIrequest(bool state)               {   is_cgi_request = state;              };

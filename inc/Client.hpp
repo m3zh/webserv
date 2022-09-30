@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/29 17:07:15 by artmende         ###   ########.fr       */
+/*   Updated: 2022/09/30 13:43:17 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,9 +87,9 @@ class Client
         bool                    isCGIrequest();
         void                    setCGIrequest(bool state);
         bool                    headerHasBeenSent();
-        void                    setHeaderBeenSent();
+        void                    setHeaderBeenSent(bool state);
         bool                    thereIsAFileToSend();
-        void                    setThereIsAFileToSend();
+        void                    setThereIsAFileToSend(bool state);
 
 
         //Response class
