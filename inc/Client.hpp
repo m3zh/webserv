@@ -47,6 +47,7 @@ class Client
 
         bool                        header_is_read_complete;
         bool                        is_read_complete;       
+        bool                        is_cgi_request;       
 
         Client();
         Client(Client const & x);
@@ -83,6 +84,8 @@ class Client
         void                    setReadAsComplete(bool state);
         bool                    headerIsReadComplete();
         void                    setHeaderReadAsComplete(bool state);
+        bool                    isCGIrequest();
+        void                    setCGIrequest(bool state);
         bool                    headerHasBeenSent();
         void                    setHeaderBeenSent();
         bool                    thereIsAFileToSend();

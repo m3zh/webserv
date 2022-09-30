@@ -393,12 +393,12 @@ void Webserv::GETmethod(Client *c)  const
         }
     }
     if ( !fileInRootFolder && page_requested == pages.end() )                                                   // if nothing is found 
-    {                                                                                                           // we check if is a CGI request   
+    {                                                                                                           // we check if it is a CGI request   
         if (req.get_location().find("?") != std::string::npos
             || req.get_location().find(".py") != std::string::npos  )
         {
             if (cgi.isCGI_request(c))
-	        {   std::cout << "GET request for CGI!" << std::endl;            return ;        }
+	        {   std::cout << "GET request for CGI!" << std::endl;  exit(1);          return ;        }
         }     
         c->setResponseString(NOT_FOUND, "", "");    return ;        
     }

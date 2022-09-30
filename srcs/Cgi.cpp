@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 # include "../inc/Cgi.hpp"
+# include <string.h>
 
 Cgi::Cgi()                  {};
 Cgi::~Cgi()                 {};
@@ -71,9 +72,12 @@ bool        Cgi::isCGI_request(Client *c)
     // SCRIPT -> root + action
     // ------
     std::string script = path_to_script + action;
+    std::cout << "SCRIPT: " << script << std::endl;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
         {   std::cout << "Script " << script << " not executable by CGI\n";
             c->setResponseString(BAD_GATEWAY,"","");    return false;            };
+    c->setCGIrequest(true);
+    _request.action = action;
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
     exec_CGI(req, c);      
     return true;
@@ -101,26 +105,34 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 }
 */
 
-void    Cgi::child_process(Request const& req) const
+void    Cgi::child_process(Request const& req, Client *c) const
 {
-    char    *cmd[3]; 
+    char    *cmd[3];
+    std::string pwd = getenv("PWD"); 
     
     if (req.get_method() == "POST")                                                       // if post method, we write content to stdin
     {
         std::string content = req.get_body();
         write(_fds[READ], content.c_str(), _request.content_length);
     }
-    if (dup2(_fds[READ], STDIN_FILENO) < 0)                                         // in the child the output is written to the end of the pipe
+    if (dup2(_fds[READ], STDIN_FILENO) < 0)                                             // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
     string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                    // cmd[0] -> /usr/bin/python                
-    string2charstar(&cmd[1], _request.path_to_script.c_str());                           // cmd[1] -> cgi-script.py
+    string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());                           // cmd[1] -> cgi-script.py
     cmd[2] = 0;
     close(_fds[WRITE]);
+    write(2, "***\n", 4);
+    write(2, cmd[0], strlen(cmd[0]));
+    write(2, "***\n", 4);
+    write(2, cmd[1], strlen(cmd[1]));
+    write(2, "***\n", 4);
+    write(2, pwd.c_str(), pwd.size());
+    write(2, "***\n", 4);
     if (execve(cmd[0], cmd, getEnv()) < 0)
-    {    perror("cgi execve"); exit(EXIT_FAILURE);   }
+    {    perror("cgi execve"); c->setResponseString(BAD_GATEWAY, "", ""); exit(1);  }
 }
 
 void    Cgi::parent_process(int status, Client *c) const
@@ -128,7 +140,6 @@ void    Cgi::parent_process(int status, Client *c) const
     int nbytes;
     (void)nbytes;
     char buffer[1024];
-    
 
     close(_fds[READ]);
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
@@ -150,7 +161,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     if (_pid < 0)
     {    perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
-        child_process(req);
+        child_process(req, c);
     else
         parent_process(status, c);
 }
@@ -213,13 +224,13 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 	_env["SCRIPT_FILENAME"] = _request.path_to_script + _request.action;
 	_env["SERVER_NAME"] = server->getServerName();                                                  // getEnvValue("HTTP_HOST");
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	_env["SERVER_PORT"] = server->getPort();;                                                             
+    std::string port = std::to_string(server->getPort());
+	_env["SERVER_PORT"] = port;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
 }
 
 void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
 {
-    _request.action = req.get_location();
     _request.method = req.get_method();
     if ( header.find("Content-Length") != header.end() )
         _request.content_length = std::stoi(header["Content-Length"]);
@@ -317,6 +328,8 @@ void    Cgi::redirect_http_header(std::string loc)
 
 void   Cgi::string2charstar(char** charstar, std::string str)   const
 {
+    // write(2, "****", 4);
     *charstar = new char[ str.size() + 1 ];
     strcpy(*charstar, str.c_str());
+    // write(2, *charstar, strlen(*charstar));
 }
