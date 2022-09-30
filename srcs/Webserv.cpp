@@ -398,7 +398,7 @@ void Webserv::GETmethod(Client *c)  const
             || req.get_location().find(".py") != std::string::npos  )
         {
             if (cgi.isCGI_request(c))
-	        {   std::cout << "GET request for CGI!" << std::endl;  exit(1);          return ;        }
+	        {   std::cout << "GET request for CGI!" << std::endl; return ;        }
         }     
         c->setResponseString(NOT_FOUND, "", "");    return ;        
     }

@@ -26,4 +26,5 @@ def cgi_script():
     """%message)
 
 if __name__ == "__main__":
+    os.write(2, b"Executing python script...\n")
     cgi_script()

@@ -109,6 +109,7 @@ void    Cgi::child_process(Request const& req, Client *c) const
 {
     char    *cmd[3];
     std::string pwd = getenv("PWD"); 
+    (void)c;
     
     if (req.get_method() == "POST")                                                       // if post method, we write content to stdin
     {
@@ -123,7 +124,7 @@ void    Cgi::child_process(Request const& req, Client *c) const
     string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                    // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());                           // cmd[1] -> cgi-script.py
     cmd[2] = 0;
-    close(_fds[WRITE]);
+    close(_fds[READ]);
     write(2, "***\n", 4);
     write(2, cmd[0], strlen(cmd[0]));
     write(2, "***\n", 4);
@@ -132,23 +133,21 @@ void    Cgi::child_process(Request const& req, Client *c) const
     write(2, pwd.c_str(), pwd.size());
     write(2, "***\n", 4);
     if (execve(cmd[0], cmd, getEnv()) < 0)
-    {    perror("cgi execve"); c->setResponseString(BAD_GATEWAY, "", ""); exit(1);  }
+    {    perror("cgi execve"); exit(1);  }
 }
 
 void    Cgi::parent_process(int status, Client *c) const
 {
-    int nbytes;
-    (void)nbytes;
-    char buffer[1024];
-
-    close(_fds[READ]);
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
     
-    nbytes = read(_fds[WRITE], buffer, sizeof(buffer));
-    std::string     _response(buffer);                                             
-    c->setResponseString(OK, _response,"");
-    
+    // if fdopen();                                                                 // to check if file can be opened, else error
+    std::string     _response = file2string(_fds[WRITE]); 
+    std::cerr << "RES: " << _response;    
+    if (_response.size())                                                           // if we have an output, execve has succeded                                        
+    {    write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");   return;     }
+    write(2, "PARENT NOK\n", 11);
+    c->setResponseString(BAD_GATEWAY, "", "");                                      // if execve has failed, we send error BAD_GATEWAY
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
@@ -328,8 +327,19 @@ void    Cgi::redirect_http_header(std::string loc)
 
 void   Cgi::string2charstar(char** charstar, std::string str)   const
 {
-    // write(2, "****", 4);
     *charstar = new char[ str.size() + 1 ];
     strcpy(*charstar, str.c_str());
-    // write(2, *charstar, strlen(*charstar));
+}
+
+std::string Cgi::file2string(int fd) const
+{
+    struct stat sb;
+    std::string res;
+
+    fstat(fd, &sb);
+    res.resize(sb.st_size);
+    read(fd, (char*)(res.data()), sb.st_size);
+    close(fd);
+
+    return res;
 }
