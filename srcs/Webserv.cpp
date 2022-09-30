@@ -349,9 +349,7 @@ void Webserv::GETmethod(Client *c)  const
             file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
         if ( req.get_location().compare((*page_requested).location_path) == 0 )                                 // if the page required is exactly as in config
         {                                                                                                       
-            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
-                                                            (*page_requested).methods.end(), "GET");
-            if ( method_it == (*page_requested).methods.end() )
+            if ( invalidMethod(*page_requested, "GET") )
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             if ((*page_requested).redirect.size())                                                              // check for redirection
                 redirect = 1;
@@ -360,9 +358,7 @@ void Webserv::GETmethod(Client *c)  const
         else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                    // else if a file in the root folder matches the one required
         {   
             fileInRootFolder = 1;                                                                                                  
-            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
-                                                            (*page_requested).methods.end(), "GET");
-            if ( method_it == (*page_requested).methods.end() )
+            if ( invalidMethod(*page_requested, "GET") )
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             break ;
         }
@@ -413,9 +409,7 @@ void Webserv::POSTmethod(Client *c) const
             file_path = pwd + (*page_requested).root;                                                             
             if ( access((file_path + req.get_location()).c_str(), F_OK) != -1 )                                 // if the location required exists
             {                                                                                                   
-                std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),     // check for method 
-                                                                (*page_requested).methods.end(), "POST");
-                if ( method_it == (*page_requested).methods.end() )
+                if ( invalidMethod(*page_requested, "POST") ) 
                 {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
                 break ;
             }
@@ -430,6 +424,7 @@ void Webserv::POSTmethod(Client *c) const
 
 void Webserv::DELETEmethod(Client *c) const
 {
+    // struct stat         check_file;
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
     ServerInfo*         _server = c->getServerInfo();
@@ -444,25 +439,21 @@ void Webserv::DELETEmethod(Client *c) const
             file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
         if ( req.get_location().compare((*page_requested).location_path) == 0 )                                 // if the location is exactly as in config,
         {                                                                                                       
-            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
-                                                            (*page_requested).methods.end(), "DELETE");
-            if ( method_it == (*page_requested).methods.end() )
+            if ( invalidMethod(*page_requested, "DELETE") )
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             break ;
         }
         else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                   // else if a file in the root folder matches the one required
         {   
             fileInRootFolder = 1;                                                                                                  
-            std::vector<std::string>::iterator method_it = std::find((*page_requested).methods.begin(),         // check for method 
-                                                            (*page_requested).methods.end(), "DELETE");
-            if ( method_it == (*page_requested).methods.end() )
+            if ( invalidMethod(*page_requested, "DELETE") )
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             break ;
         }
     }
     if ( !fileInRootFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;           }
-    // from here on the code is specific to DELETE
+    // if ( remove(pwd + _server->getServerRoot() + file_path) != -1 )
 };
 
 // SIGNALS
@@ -474,3 +465,14 @@ void signal_handler(int signum)
     std::cout << "Shutting down gracefully ...\n";
 }
 
+// UTILS
+
+int     Webserv::invalidMethod(page page, std::string method)   const
+{
+    std::vector<std::string>::iterator method_it = std::find(page.methods.begin(),
+                                                            page.methods.end(), method);
+    if ( method_it == page.methods.end() )
+        return 1;
+    return 0;
+
+}

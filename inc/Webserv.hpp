@@ -63,6 +63,8 @@ class Webserv
 
         std::list<Client *>         _clients_list;
 
+        int                         invalidMethod(page page, std::string method) const;
+
         Webserv();
         Webserv(Webserv const & x);
         Webserv &   operator=(Webserv const & x);
