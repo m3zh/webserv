@@ -107,7 +107,9 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 
 void    Cgi::child_process(Request const& req, Client *c) const
 {
-    char    *cmd[3]; 
+    char    *cmd[3];
+    std::string pwd = getenv("PWD"); 
+    (void)c;
     
     (void)req;
     // if (req.get_method() == "POST")                                                       // if post method, we write content to stdin
@@ -130,13 +132,14 @@ void    Cgi::child_process(Request const& req, Client *c) const
     write(2, "***\n", 4);
     write(2, cmd[1], strlen(cmd[1]));
     write(2, "***\n", 4);
+    write(2, pwd.c_str(), pwd.size());
+    write(2, "***\n", 4);
     if (execve(cmd[0], cmd, getEnv()) < 0)
-    {    perror("cgi execve"); c->setResponseString(BAD_GATEWAY, "", ""); exit(1);  }
+    {    perror("cgi execve"); exit(1);  }
 }
 
 void    Cgi::parent_process(int status, Client *c) const
 {
-
     close(_fds[READ]);
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
@@ -300,7 +303,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;    }           
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;    }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;    }   
-std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "python";   return "/usr/bin/perl";  } 
+std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  } 
 
 // ************
 // HTTP HEADERS functions
@@ -328,10 +331,8 @@ void    Cgi::redirect_http_header(std::string loc)
 
 void   Cgi::string2charstar(char** charstar, std::string str)   const
 {
-    // write(2, "****", 4);
     *charstar = new char[ str.size() + 1 ];
     strcpy(*charstar, str.c_str());
-    // write(2, *charstar, strlen(*charstar));
 }
 
 std::string Cgi::file2string(int fd) const

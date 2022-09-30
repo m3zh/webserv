@@ -21,6 +21,7 @@
 # include <vector>
 # include <sys/wait.h>
 # include <sys/stat.h>
+# include <fcntl.h>
 # include <map>
 
 # include "Request.hpp"
