@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/19 16:49:13 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/29 17:41:55 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,11 +109,12 @@ void    Cgi::child_process(Request const& req, Client *c) const
 {
     char    *cmd[3]; 
     
-    if (req.get_method() == "POST")                                                       // if post method, we write content to stdin
-    {
-        std::string content = req.get_body();
-        write(_fds[READ], content.c_str(), _request.content_length);
-    }
+    (void)req;
+    // if (req.get_method() == "POST")                                                       // if post method, we write content to stdin
+    // {
+    //     std::string content = req.get_body();
+    //     write(_fds[READ], content.c_str(), _request.content_length);
+    // }
     if (dup2(_fds[READ], STDIN_FILENO) < 0)                                             // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
@@ -122,6 +123,7 @@ void    Cgi::child_process(Request const& req, Client *c) const
     string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                    // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());                           // cmd[1] -> cgi-script.py
     cmd[2] = 0;
+    close(_fds[READ]);
     close(_fds[WRITE]);
     write(2, "***\n", 4);
     write(2, cmd[0], strlen(cmd[0]));
@@ -134,17 +136,19 @@ void    Cgi::child_process(Request const& req, Client *c) const
 
 void    Cgi::parent_process(int status, Client *c) const
 {
-    int nbytes;
-    char buffer[1024];
 
     close(_fds[READ]);
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
     
-    nbytes = read(_fds[WRITE], buffer, sizeof(buffer));
-    std::string     _response(buffer);                                             
-    c->setResponseString(OK, _response,"");
-    
+    if (!fdopen(_fds[WRITE], "r"))
+    {   write(2, "BAD FD\n", 7);   c->setResponseString(BAD_GATEWAY, "", "");  return;     }                                                                 // to check if file can be opened, else error
+    std::string     _response = file2string(_fds[WRITE]); 
+    std::cerr << "RES: " << _response;    
+    if (_response.size())                                                           // if we have an output, execve has succeded                                        
+    {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");   return;     }
+    write(2, "PARENT NOK\n", 11);
+    c->setResponseString(BAD_GATEWAY, "", "");                                      // if execve has failed, we send error BAD_GATEWAY
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
