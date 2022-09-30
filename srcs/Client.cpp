@@ -70,8 +70,9 @@ void                    Client::setResponseString(std::string code, std::string 
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
-    else if ( isCGIrequest() )
+    else if ( isCGIrequest() || request.get_method() == "DELETE" )
     {
+        std::cout << "DELETE!!\n";
         response_str += location;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
         setResponseFile(file); 

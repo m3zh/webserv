@@ -180,6 +180,8 @@ void    Webserv::looping_through_read_set()
             if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
                 handleRequest(*it); // we handle the request and create a response to send
+                if ((*it)->getRequest().get_method() == "DELETE")
+                    exit(1);
             }
         }
     }
@@ -424,7 +426,6 @@ void Webserv::POSTmethod(Client *c) const
 
 void Webserv::DELETEmethod(Client *c) const
 {
-    // struct stat         check_file;
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
     ServerInfo*         _server = c->getServerInfo();
@@ -453,7 +454,9 @@ void Webserv::DELETEmethod(Client *c) const
     }
     if ( !fileInRootFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;           }
-    // if ( remove(pwd + _server->getServerRoot() + file_path) != -1 )
+    if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != -1 )
+    {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
+    c->setResponseString(OK, "File successfully deleted\n", "");
 };
 
 // SIGNALS
