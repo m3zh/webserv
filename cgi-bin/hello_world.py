@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
 import cgi, os
-import cgitb;
-cgitb.enable()
 
 def cgi_script():
     form = cgi.FieldStorage()
@@ -26,4 +24,5 @@ def cgi_script():
     """%message)
 
 if __name__ == "__main__":
+    os.write(2, b"Executing python script...\n")
     cgi_script()

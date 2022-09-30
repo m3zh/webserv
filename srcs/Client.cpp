@@ -70,11 +70,13 @@ void                    Client::setResponseString(std::string code, std::string 
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
-    // else if ( isCGIrequest() )
-    // {
-    //     response_str += location;                               // we append the message we got from the python script
-    //     file = "";                                              // we set the file to "" ( there is no file to read )
-    // }
+    else if ( isCGIrequest() )
+    {
+        response_str += location;                               // we append the message we got from the python script
+        file = "";                                              // we set the file to "" ( there is no file to send )
+        setResponseFile(file); 
+        setThereIsAFileToSend(false);   return ;                                           
+    }
     else if( code == "200" )
     {
         if ( root.back() != '/' && location[0] != '/')
@@ -83,7 +85,7 @@ void                    Client::setResponseString(std::string code, std::string 
     }
     response_str += "\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
-    setResponseFile(file);    
+    setResponseFile(file); 
     getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);
     setThereIsAFileToSend(true);
 };
@@ -95,11 +97,11 @@ void                    Client::setReadAsComplete(bool state)           {   is_r
 bool                    Client::headerIsReadComplete()                  {   return  header_is_read_complete;     };
 void                    Client::setHeaderReadAsComplete(bool state)     {   header_is_read_complete = state;     };
 
-
-bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
-void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;         };
-bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
-void                    Client::setThereIsAFileToSend(bool state)       {   there_is_a_file_to_send = state;      };
-
 bool                    Client::isCGIrequest()                          {   return is_cgi_request;               };
 void                    Client::setCGIrequest(bool state)               {   is_cgi_request = state;              };
+
+bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
+void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;        };
+bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
+void                    Client::setThereIsAFileToSend(bool state)       {   there_is_a_file_to_send = state;     };
+

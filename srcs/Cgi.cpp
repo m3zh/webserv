@@ -38,10 +38,13 @@ bool        Cgi::isCGI_request(Client *c)
     // ------
     // ACTION
     // ------
+    std::cout << "LOC: ";
+    std::cout << req.get_location() << std::endl;
     std::string action = req.get_location();
     size_t check4querystring = req.get_location().find("?");
     if ( check4querystring != std::string::npos)
         action = action.substr(0, req.get_location().find("?"));
+    std::cout << "ACT: ";
     std::cout << action << std::endl;
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
@@ -109,46 +112,37 @@ void    Cgi::child_process(Request const& req, Client *c) const
 {
     char    *cmd[3];
     std::string pwd = getenv("PWD"); 
+    (void)c;
     
-    if (req.get_method() == "POST")                                                       // if post method, we write content to stdin
-    {
-        std::string content = req.get_body();
-        write(_fds[READ], content.c_str(), _request.content_length);
-    }
-    if (dup2(_fds[READ], STDIN_FILENO) < 0)                                             // in the child the output is written to the end of the pipe
-        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+    (void)req;
+    // if (dup2(_fds[READ], STDIN_FILENO) < 0)                                                  // in the child the output is written to the end of the pipe
+    //     {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
-    string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                    // cmd[0] -> /usr/bin/python                
-    string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());                           // cmd[1] -> cgi-script.py
+    string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                           // cmd[0] -> /usr/bin/python                
+    string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());              // cmd[1] -> cgi-script.py
     cmd[2] = 0;
     close(_fds[WRITE]);
-    write(2, "***\n", 4);
-    write(2, cmd[0], strlen(cmd[0]));
-    write(2, "***\n", 4);
-    write(2, cmd[1], strlen(cmd[1]));
-    write(2, "***\n", 4);
-    write(2, pwd.c_str(), pwd.size());
-    write(2, "***\n", 4);
+    close(_fds[READ]);
     if (execve(cmd[0], cmd, getEnv()) < 0)
-    {    perror("cgi execve"); c->setResponseString(BAD_GATEWAY, "", ""); exit(1);  }
+    {    perror("cgi execve"); exit(1);  }
 }
 
 void    Cgi::parent_process(int status, Client *c) const
 {
-    int nbytes;
-    (void)nbytes;
-    char buffer[1024];
-
-    close(_fds[READ]);
+    // close(_fds[READ]);
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
     
-    nbytes = read(_fds[WRITE], buffer, sizeof(buffer));
-    std::string     _response(buffer);                                             
-    c->setResponseString(OK, _response,"");
-    
+    if (!fdopen(_fds[READ], "r"))
+    {   write(2, "BAD FD\n", 7);   c->setResponseString(BAD_GATEWAY, "", "");  return;     }                                                                 // to check if file can be opened, else error
+    std::string     _response = file2string(_fds[READ]); 
+    std::cerr << "RES: " << _response;    
+    if (_response.size())                                                           // if we have an output, execve has succeded                                        
+    {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");   return;     }
+    write(2, "PARENT NOK\n", 11);
+    c->setResponseString(BAD_GATEWAY, "", "");                                      // if execve has failed, we send error BAD_GATEWAY
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
@@ -227,6 +221,7 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
     std::string port = std::to_string(server->getPort());
 	_env["SERVER_PORT"] = port;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
+    _env["UPLOAD_STORE"] = _request.upload_store;
 }
 
 void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
@@ -328,8 +323,19 @@ void    Cgi::redirect_http_header(std::string loc)
 
 void   Cgi::string2charstar(char** charstar, std::string str)   const
 {
-    // write(2, "****", 4);
     *charstar = new char[ str.size() + 1 ];
     strcpy(*charstar, str.c_str());
-    // write(2, *charstar, strlen(*charstar));
+}
+
+std::string Cgi::file2string(int fd) const
+{
+    struct stat sb;
+    std::string res;
+
+    fstat(fd, &sb);
+    res.resize(sb.st_size);
+    read(fd, (char*)(res.data()), sb.st_size);
+    close(fd);
+
+    return res;
 }
