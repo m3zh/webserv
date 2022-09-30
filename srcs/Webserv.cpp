@@ -449,7 +449,7 @@ void Webserv::POSTmethod(Client *c) const
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "POST request for CGI!" << std::endl;            return ;        }
+	{   std::cout << "POST request for CGI!" << std::endl;  exit(1); return ;        }
     c->setResponseString(BAD_GATEWAY, "", "");
 };
 

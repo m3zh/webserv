@@ -3,20 +3,22 @@
 import cgi, os
 import cgitb
 
-def cgi_script()
-    cgitb.enable()
+cgitb.enable()
+
+def cgi_script():
 
     for param in os.environ.keys():                                     # <-- check params passed in env
-    print "<b>%20s</b>: %s<\br>" % (param, os.environ[param])
+        print "<b>%20s</b>: %s<\br>" % (param, os.environ[param])
 
     form = cgi.FieldStorage()
-
+    os.write(2, form)
+    
     # A nested FieldStorage instance holds the file
-    fileitem = form.getvalue('file')                                       # . is added to create dir in cwd
+    fileitem = form.getvalue('filename')                                       # . is added to create dir in cwd
     directory = "dump"
 
     if os.path.exists(directory) == False:
-        os.system("sudo mkdir ." + directory)
+        os.system("sudo mkdir ./" + directory)
     # Test if the file was uploaded
     if fileitem.filename:
         # strip leading path from file name

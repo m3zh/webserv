@@ -38,10 +38,13 @@ bool        Cgi::isCGI_request(Client *c)
     // ------
     // ACTION
     // ------
+    std::cout << "LOC: ";
+    std::cout << req.get_location() << std::endl;
     std::string action = req.get_location();
     size_t check4querystring = req.get_location().find("?");
     if ( check4querystring != std::string::npos)
         action = action.substr(0, req.get_location().find("?"));
+    std::cout << "ACT: ";
     std::cout << action << std::endl;
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
@@ -112,11 +115,6 @@ void    Cgi::child_process(Request const& req, Client *c) const
     (void)c;
     
     (void)req;
-    // if (req.get_method() == "POST")                                                          // if post method, we write content to stdin
-    // {
-    //     std::string content = req.get_body();
-    //     write(_fds[READ], content.c_str(), _request.content_length);
-    // }
     // if (dup2(_fds[READ], STDIN_FILENO) < 0)                                                  // in the child the output is written to the end of the pipe
     //     {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
@@ -125,7 +123,6 @@ void    Cgi::child_process(Request const& req, Client *c) const
     string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                           // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());              // cmd[1] -> cgi-script.py
     cmd[2] = 0;
-    // 
     close(_fds[WRITE]);
     close(_fds[READ]);
     if (execve(cmd[0], cmd, getEnv()) < 0)
@@ -224,6 +221,7 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
     std::string port = std::to_string(server->getPort());
 	_env["SERVER_PORT"] = port;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
+    _env["UPLOAD_STORE"] = _request.upload_store;
 }
 
 void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)

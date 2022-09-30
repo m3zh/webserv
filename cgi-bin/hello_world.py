@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
 import cgi, os
-import cgitb;
-cgitb.enable()
 
 def cgi_script():
     form = cgi.FieldStorage()
