@@ -333,3 +333,16 @@ void   Cgi::string2charstar(char** charstar, std::string str)   const
     strcpy(*charstar, str.c_str());
     // write(2, *charstar, strlen(*charstar));
 }
+
+std::string Cgi::file2string(int fd) const
+{
+    struct stat sb;
+    std::string res;
+
+    fstat(fd, &sb);
+    res.resize(sb.st_size);
+    read(fd, (char*)(res.data()), sb.st_size);
+    close(fd);
+
+    return res;
+}

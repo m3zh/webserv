@@ -20,6 +20,7 @@
 # include <string.h>
 # include <vector>
 # include <sys/wait.h>
+# include <sys/stat.h>
 # include <map>
 
 # include "Request.hpp"
@@ -80,6 +81,7 @@ class Cgi
 
         // utils
         void            string2charstar(char **charstar, std::string str)   const;
+        std::string     file2string(int fd)                                 const;
 
     public:
 
