@@ -295,7 +295,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;    }           
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;    }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;    }   
-std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  } 
+std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/bin/python3";   return "/usr/bin/perl";  } 
 
 // ************
 // HTTP HEADERS functions

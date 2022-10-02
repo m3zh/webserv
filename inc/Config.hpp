@@ -47,7 +47,7 @@ class Config
         ~Config();
 
         
-        int             read(char   *config, char **envp);
+        int             is_valid(char   *config, char **envp);
         
         void            setServers(ServerInfo &s);
         void            setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it);

@@ -15,7 +15,7 @@
 Config::Config()      {};
 Config::~Config()     {};
 
-int     Config::read(char   *config, char **envp)
+int     Config::is_valid(char   *config, char **envp)
 {
     Lexer parser;
 

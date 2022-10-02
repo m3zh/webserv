@@ -29,7 +29,7 @@
 # define BAD_GATEWAY    		"502"	
 # define HTTP_VERSION_NOT_SUPPORTED "505"
 
-# define ERROR_FILE_PATH "/pages/error-pages"
+# define ERROR_FILE_PATH "/www/error-pages"
 
 
 // Should be an attribute of the Client class

@@ -17,13 +17,14 @@ Client::Client( int client_socket,
                 ServerInfo *associated_server)  :   client_socket(client_socket),
                                                     client_addrs(client_addrs),
                                                     associated_server(associated_server),
-                                                    request_str("")                            {
-                                                                                                        setReadAsComplete(false);
-                                                                                                        setHeaderReadAsComplete(false);
-                                                                                                        setThereIsAFileToSend(false);
-                                                                                                        setHeaderBeenSent(false);
-                                                                                                };
-Client::~Client()                                                                               {};
+                                                    request_str(""),
+                                                    is_cgi_request(false)       {
+                                                                                    setReadAsComplete(false);
+                                                                                    setHeaderReadAsComplete(false);
+                                                                                    setThereIsAFileToSend(false);
+                                                                                    setHeaderBeenSent(false);
+                                                                                };
+Client::~Client()                                                               {};
 
 // GETTERS
 int                     Client::getClientSocket()                       const   {   return  client_socket;          };
@@ -70,7 +71,7 @@ void                    Client::setResponseString(std::string code, std::string 
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
-    else if ( isCGIrequest() || request.get_method() == "DELETE" )
+    else if ( isCGIrequest() ) /* request.get_method() == "DELETE" ) */
     {
         std::cout << "DELETE!!\n";
         response_str += location;                               // we append the message we got from the python script

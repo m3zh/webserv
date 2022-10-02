@@ -55,7 +55,8 @@ extern bool keep_alive;
 class Webserv
 {
     private:
-        std::vector<ServerInfo>     _servers; // each one of them will contains port, listening socket and listening addrs
+        // each one of them will contains port, listening socket and listening addrs
+        std::vector<ServerInfo>     _servers; 
 
         fd_set                      _current_set;
         fd_set                      _read_set;
@@ -63,6 +64,7 @@ class Webserv
 
         std::list<Client *>         _clients_list;
 
+        // for each page requested, check if method GET POST DEL is allowed
         int                         invalidMethod(page page, std::string method) const;
 
         Webserv();
