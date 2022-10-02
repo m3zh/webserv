@@ -24,15 +24,23 @@ int                             Webserv::set_server()
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
     {
         int listening_socket;
+        // check for creation of socket to bind with each server
         if ((listening_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)                       {   close_all();    return -1;      }
+        // setting socket in non blocking mode, to allow it to connect to multiple clients ; instead of having a blocking socket restricted to one client
         if (fcntl(listening_socket, F_SETFL, O_NONBLOCK) < 0)                               {   close_all();    return -2;      }
+        // setting socket options to allow it to reuse local address (even after a client disconnects)
         if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)    {   close_all();    return -3;      }
         struct sockaddr_in  listening_addrs;
+        // we use memset to initialize a sockaddr_in structure
         memset(&listening_addrs, 0, sizeof(listening_addrs));
         listening_addrs.sin_family = AF_INET;
+        // adding port
         listening_addrs.sin_addr.s_addr = inet_addr("127.0.0.1");
+        // convert host address to network bytes address
         listening_addrs.sin_port = htons((*it).getPort());
+        // we bind the socket to a "file" descriptor => we get a socket descriptor
         if ((bind(listening_socket, (struct sockaddr *)&listening_addrs, sizeof(listening_addrs))) < 0)     {   close_all();    return -4;  }
+        // we launch the socket, with a maximum of 256 different sockets in the queue
         if ((listen(listening_socket, BACKLOG) < 0))                                        {   close_all();    return -5;      }
         (*it).setListeningSocket(listening_socket);
         (*it).setListeningAddrs(listening_addrs);
