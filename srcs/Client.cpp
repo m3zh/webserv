@@ -107,3 +107,17 @@ void                    Client::setHeaderBeenSent(bool state)           {   head
 bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
 void                    Client::setThereIsAFileToSend(bool state)       {   there_is_a_file_to_send = state;     };
 
+// UTILS
+
+// ************
+// HTTP HEADERS functions
+// ************
+
+// information are sent to the HTTP response header
+// https://developer.mozilla.org/en-US/docs/Glossary/Response_header
+// void    http_header()
+// {
+//     std::cout << "Content-Type: text/html; charset=utf-8;";
+//     std::cout << "Set-Cookie: Cookies are set\r\n\r\n";
+// }
+

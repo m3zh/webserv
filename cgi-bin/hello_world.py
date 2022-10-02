@@ -23,6 +23,8 @@ def cgi_script():
     </body></html>
     """%message)
 
+    os.write(2, message.encode())
+
 if __name__ == "__main__":
     os.write(2, b"Executing python script...\n")
     cgi_script()

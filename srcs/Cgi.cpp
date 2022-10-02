@@ -298,26 +298,6 @@ size_t          Cgi::get_CGIcontent_length()                    {   return get_C
 std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/bin/python3";   return "/usr/bin/perl";  } 
 
 // ************
-// HTTP HEADERS functions
-// ************
-
-// information are sent to the HTTP response header
-// https://developer.mozilla.org/en-US/docs/Glossary/Response_header
-void    Cgi::http_header()
-{
-    std::cout << "200 OK\n";
-    std::cout << "Content-Type: text/html; charset=utf-8;";
-    std::cout << "Set-Cookie: Cookies are set\r\n\r\n";
-}
-
-void    Cgi::redirect_http_header(std::string loc)
-{
-    std::cout << "Status:308 Permanent redirect\nLocation: ";
-    std::cout << loc;
-    std::cout << "\r\n\r\n";
-}
-
-// ************
 // UTILS functions
 // ************
 

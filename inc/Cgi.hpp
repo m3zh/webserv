@@ -94,9 +94,6 @@ class Cgi
 
         bool            isCGI_request(Client *c);
         CGIrequest&     get_CGIrequest();
-        
-        void            http_header();
-        void            redirect_http_header(std::string loc);
 };
 
 
