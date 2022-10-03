@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/09/19 15:38:47 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/02 20:48:11 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,11 @@
 # include <vector>
 # include <sys/wait.h>
 # include <sys/stat.h>
+# include <limits.h>
 # include <fcntl.h>
+# include <iostream>
+# include <fstream>
+# include <sstream>
 # include <map>
 
 # include "Request.hpp"

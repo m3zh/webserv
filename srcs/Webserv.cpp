@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/30 17:23:15 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/03 10:24:41 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ void    Webserv::looping_through_read_set()
                     std::map<std::string, std::string>::iterator    content_length_it = header_map.find("Content-Length");
                     if (content_length_it == (*it)->getRequest().get_header_map().end())
                         throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
-                    if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
+                    else if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
                         >= (unsigned long)(atoi((content_length_it->second).c_str())) )
                         (*it)->setReadAsComplete(true);
                 }
@@ -351,7 +351,7 @@ void Webserv::GETmethod(Client *c)  const
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 redirect = 0;
-    int                 fileInRootFolder = 0;
+    int                 fileInFolder = 0;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
     {
@@ -367,27 +367,27 @@ void Webserv::GETmethod(Client *c)  const
         }
         else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                    // else if a file in the root folder matches the one required
         {   
-            fileInRootFolder = 1;                                                                                                  
+            fileInFolder = 1;                                                                                                  
             if ( invalidMethod(*page_requested, "GET") )
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             break ;
         }
     }
-    if ( !fileInRootFolder && page_requested == pages.end() )                                                   // if nothing is found 
+    if ( !fileInFolder && page_requested == pages.end() )                                                   // if nothing is found 
     {                                                                                                           // we check if it is a CGI request   
         if (req.get_location().find("?") != std::string::npos
             || req.get_location().find(".py") != std::string::npos  )
         {
             if (cgi.isCGI_request(c))
-	        {   std::cout << "GET request for CGI!" << std::endl; exit(1); return ;        }
+	        {   std::cout << "GET request for CGI!" << std::endl; return ;        }
         }     
         c->setResponseString(NOT_FOUND, "", "");    return ;        
     }
-    if (!fileInRootFolder)  {
+    if (!fileInFolder)  {
         std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
         std::ifstream   file(path2file.c_str());
         if ( !file.good() )
-        {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
+        {    c->setResponseString(UNAUTHORIZED, "", "");    return ;        }
         if ( redirect )
 	    {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;   }
         if ( page_requested->autoindex == "on"

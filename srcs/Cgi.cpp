@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/29 17:41:55 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/03 10:23:49 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,7 +295,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;    }           
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;    }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;    }   
-std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/bin/python3";   return "/usr/bin/perl";  } 
+std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  } 
 
 // ************
 // UTILS functions
@@ -309,13 +309,34 @@ void   Cgi::string2charstar(char** charstar, std::string str)   const
 
 std::string Cgi::file2string(int fd) const
 {
-    struct stat sb;
+    // WORKS ONLY ON MAC
+    /*struct stat sb;
     std::string res;
 
-    fstat(fd, &sb);
-    res.resize(sb.st_size);
-    read(fd, (char*)(res.data()), sb.st_size);
+    if (fstat(fd, &sb) < 0)
+        perror("Fstat:");
+    std::cerr << sb.st_size << std::endl;
+    res.resize((int)sb.st_size);
+    read(fd, (char*)(res.data()), (int)sb.st_size);
     close(fd);
 
-    return res;
+    return res;*/
+
+    //+++++++++++++
+    // char filePath[PATH_MAX];
+    // if (fcntl(fd, F_GETPATH, filePath) != -1)
+    // {
+    //     std::ifstream input_file(filePath);
+    //     if (!input_file.is_open()) {
+    //         exit(EXIT_FAILURE);
+    // }
+    // return std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
+    //++++++++++++++
+
+    std::string res;
+    char buf[MAX_SIZE];
+	while (int r = read(fd, buf, MAX_SIZE))
+	{		buf[r] = '\0';  res += std::string(buf);     }
+	close(fd);
+	return res;
 }

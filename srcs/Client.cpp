@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/30 13:45:19 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/02 21:04:59 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,8 +66,8 @@ void                    Client::setResponseString(std::string code, std::string 
     std::cout << "\n";
     std::cout << location;
     std::string error_file(ERROR_FILE_PATH);
-    response_str = "HTTP/1.1 " + code + " " + status[code];
-    if ( code == "301" )
+    response_str = "HTTP/1.1 " + code + " " + status[code];                 // start of header
+    if ( code == "301" )                                                    // if it is a redirection
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
@@ -88,7 +88,7 @@ void                    Client::setResponseString(std::string code, std::string 
     response_str += "\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file); 
-    getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);
+    getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
     setThereIsAFileToSend(true);
 };
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };
