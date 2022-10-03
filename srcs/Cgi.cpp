@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/03 10:23:49 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/03 13:40:11 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,7 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 
 void    Cgi::child_process(Request const& req, Client *c) const
 {
-    char    *cmd[3];
+    char    *cmd[5];
     std::string pwd = getenv("PWD"); 
     (void)c;
     

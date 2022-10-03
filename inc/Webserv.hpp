@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/29 17:17:56 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/03 16:15:55 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,8 @@ class Webserv
         std::list<Client *>         _clients_list;
 
         // for each page requested, check if method GET POST DEL is allowed
-        int                         invalidMethod(page page, std::string method) const;
+        int                         invalidMethod(page page, std::string method)    const;
+        int                         isAutoindex(page page, std::string path2file)   const;
 
         Webserv();
         Webserv(Webserv const & x);
