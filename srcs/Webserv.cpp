@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/03 11:36:36 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/09/30 17:23:15 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,14 @@ int                             Webserv::set_server()
     {
         int listening_socket;
         // check for creation of socket to bind with each server
-        if ((listening_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)                       {   close_all();    return -1;      }
+        if ((listening_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+            throw WebException<int>(RED, "Socket error: socket creation failed", listening_socket);     close_all();    return -1;  }
         // setting socket in non blocking mode, to allow it to connect to multiple clients ; instead of having a blocking socket restricted to one client
-        if (fcntl(listening_socket, F_SETFL, O_NONBLOCK) < 0)                               {   close_all();    return -2;      }
+        if (fcntl(listening_socket, F_SETFL, O_NONBLOCK) < 0) {
+            throw WebException<int>(RED, "Socket error: fcntl failed", listening_socket);               close_all();    return -2;  }
         // setting socket options to allow it to reuse local address (even after a client disconnects)
-        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)    {   close_all();    return -3;      }
+        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+            throw WebException<int>(RED, "Socket error: setsockopt failed", listening_socket);          close_all();    return -3;  }
         struct sockaddr_in  listening_addrs;
         // we use memset to initialize a sockaddr_in structure
         memset(&listening_addrs, 0, sizeof(listening_addrs));
@@ -39,9 +42,11 @@ int                             Webserv::set_server()
         // convert host address to network bytes address
         listening_addrs.sin_port = htons((*it).getPort());
         // we bind the socket to a "file" descriptor => we get a socket descriptor
-        if ((bind(listening_socket, (struct sockaddr *)&listening_addrs, sizeof(listening_addrs))) < 0)     {   close_all();    return -4;  }
+        if ((bind(listening_socket, (struct sockaddr *)&listening_addrs, sizeof(listening_addrs))) < 0) { 
+            throw WebException<int>(RED, "Socket error: binding failed", listening_socket);             close_all();    return -4;  }
         // we launch the socket, with a maximum of 256 different sockets in the queue
-        if ((listen(listening_socket, BACKLOG) < 0))                                        {   close_all();    return -5;      }
+        if ((listen(listening_socket, BACKLOG) < 0)) {
+            throw WebException<int>(RED, "Socket error: listen failed", listening_socket);              close_all();    return -5;  }
         (*it).setListeningSocket(listening_socket);
         (*it).setListeningAddrs(listening_addrs);
     }
@@ -167,7 +172,7 @@ void    Webserv::looping_through_read_set()
                     std::map<std::string, std::string>::iterator    content_length_it = header_map.find("Content-Length");
                     if (content_length_it == (*it)->getRequest().get_header_map().end())
                         throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);
-                    else if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
+                    if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
                         >= (unsigned long)(atoi((content_length_it->second).c_str())) )
                         (*it)->setReadAsComplete(true);
                 }
@@ -188,6 +193,8 @@ void    Webserv::looping_through_read_set()
             if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
                 handleRequest(*it); // we handle the request and create a response to send
+                if ((*it)->getRequest().get_method() == "DELETE")
+                    exit(1);
             }
         }
     }
@@ -349,7 +356,7 @@ void Webserv::GETmethod(Client *c)  const
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 redirect = 0;
-    int                 fileInFolder = 0;
+    int                 fileInRootFolder = 0;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
     {
@@ -365,27 +372,27 @@ void Webserv::GETmethod(Client *c)  const
         }
         else if ( access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK) != -1 )                    // else if a file in the root folder matches the one required
         {   
-            fileInFolder = 1;                                                                                                  
+            fileInRootFolder = 1;                                                                                                  
             if ( invalidMethod(*page_requested, "GET") )
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             break ;
         }
     }
-    if ( !fileInFolder && page_requested == pages.end() )                                                   // if nothing is found 
+    if ( !fileInRootFolder && page_requested == pages.end() )                                                   // if nothing is found 
     {                                                                                                           // we check if it is a CGI request   
         if (req.get_location().find("?") != std::string::npos
             || req.get_location().find(".py") != std::string::npos  )
         {
             if (cgi.isCGI_request(c))
-	        {   std::cout << "GET request for CGI!" << std::endl; return ;        }
+	        {   std::cout << "GET request for CGI!" << std::endl; exit(1); return ;        }
         }     
         c->setResponseString(NOT_FOUND, "", "");    return ;        
     }
-    if (!fileInFolder)  {
+    if (!fileInRootFolder)  {
         std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
         std::ifstream   file(path2file.c_str());
         if ( !file.good() )
-        {    c->setResponseString(UNAUTHORIZED, "", "");    return ;        }
+        {    c->setResponseString(NOT_FOUND, "", "");    return ;        }
         if ( redirect )
 	    {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;   }
         if ( page_requested->autoindex == "on"
@@ -460,10 +467,9 @@ void Webserv::DELETEmethod(Client *c) const
     }
     if ( !fileInRootFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;           }
-    if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
+    if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != -1 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
     c->setResponseString(OK, "File successfully deleted\n", "");
-    c->setThereIsAFileToSend(false);
 };
 
 // SIGNALS
