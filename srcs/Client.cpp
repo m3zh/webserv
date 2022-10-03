@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/02 21:04:59 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/03 11:33:16 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,8 @@ void                    Client::setResponseString(std::string code, std::string 
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
-    else if ( isCGIrequest() ) /* request.get_method() == "DELETE" ) */
+    else if ( isCGIrequest() || getRequest().get_method() == "DELETE" )
     {
-        std::cout << "DELETE!!\n";
         response_str += location;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
         setResponseFile(file); 

@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/03 10:24:41 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/03 11:36:36 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,8 +188,6 @@ void    Webserv::looping_through_read_set()
             if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
                 handleRequest(*it); // we handle the request and create a response to send
-                if ((*it)->getRequest().get_method() == "DELETE")
-                    exit(1);
             }
         }
     }
@@ -462,9 +460,10 @@ void Webserv::DELETEmethod(Client *c) const
     }
     if ( !fileInRootFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;           }
-    if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != -1 )
+    if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
     c->setResponseString(OK, "File successfully deleted\n", "");
+    c->setThereIsAFileToSend(false);
 };
 
 // SIGNALS
