@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 11:09:09 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 16:57:51 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,9 +102,9 @@ The POST method id:
 
 Ex.:
 if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
-   read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'}); <--- POST 
+   read(STDIN, $buffer, $ENV{'CONTENT_LENGTH'});    <--- POST 
 } else {
-   $buffer = $ENV{'QUERY_STRING'}; <--- GET
+   $buffer = $ENV{'QUERY_STRING'};                  <--- GET
 }
 */
 
@@ -115,15 +115,16 @@ void    Cgi::child_process(Request const& req) const
 
     if (req.get_method() == "POST" )                                                           // if it's a post method
     {
-        std::string body = req.get_body();                                                                                         // we pass request as stdin
-        char name[] = TMPFILE;
+        std::string body = req.get_body();                                                     // we pass request as stdin
+        char name[] = TMPFILE;                                                                 // we create a tmp file with mkstemp to get an fd
         int body2stdin = mkstemp(name);
         std::fstream file;
         file.open(name, std::ios_base::out);
         if(!file.is_open()) {    perror("post dup2 in"); exit(EXIT_FAILURE);  }
         file.write(body.data(), body.size());
+        std::cerr << "DATA: " << body.data() << std::endl;                                                   // we write the body to our tmp file
         file.close();
-        dup2(body2stdin, STDIN_FILENO);
+        dup2(body2stdin, STDIN_FILENO);                                                         // we pass the tmpfile as stdin
         unlink(name);
     }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
@@ -208,12 +209,14 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
     _env["AUTH_TYPE"] = "";
     _env["DOCUMENT_ROOT"] = "~/webserv";
     if ( header.find("Content-Length") != header.end() )                                                                                          
-	    _env["CONTENT_LENGTH"] = header["Content-Length"];                                          
+	    _env["CONTENT_LENGTH"] = header["Content-Length"];
+    if ( header.find("Content-Type") != header.end() )                                                                                          
+	    _env["CONTENT_TYPE"] = header["Content-Type"];                                          
     if (header.find("Cookies") != header.end())                                                 
 	    _env["HTTP_COOKIE"] = header["Cookies"];
     _env["HTTP_HOST"] = header["Host"];
     _env["HTTP_REFERER"] = header["Referer"];
-    _env["HTTP_USER_AGENT "] = header["User-Agent"]; 
+    _env["HTTP_USER_AGENT"] = header["User-Agent"]; 
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["PATH_INFO"] = req.get_location();                                                         // the path as requested by the client, eg. www.xxx.com/app

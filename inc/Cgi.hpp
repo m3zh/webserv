@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/10/04 11:09:19 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 13:16:29 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ struct CGIrequest
     std::string     path_to_script;                 // abs path to CGI script
     std::string     upload_store;                   // upload_store in config
     size_t          content_length;                 // content length field in HTML header
-    //int             socket_fd;                      // the CGI script output should be written to this fd
 };
 
 class Cgi

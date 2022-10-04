@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/20 16:13:54 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/27 18:25:11 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 14:57:56 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,9 @@
 # define BAD_GATEWAY    		"502"	
 # define HTTP_VERSION_NOT_SUPPORTED "505"
 
-# define ERROR_FILE_PATH "/www/error-pages"
+# define ERROR_FILE_PATH    "/www/error-pages"
+# define LINK_BEGIN         "<p><a href=\"http://"
+# define LINK_END           "</a></p>\n"
 
 
 // Should be an attribute of the Client class

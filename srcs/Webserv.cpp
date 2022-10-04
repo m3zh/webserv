@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 10:28:22 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 15:11:26 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,6 +379,8 @@ void Webserv::GETmethod(Client *c)  const
         std::ifstream   file(path2file.c_str());
         if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");    return ;                        }
         if ( isAutoindex( *page_requested, path2file ) )                                         // if it is a directory and autoindex is on              
+        // {    c->setResponseString(OK, createAutoindex(), _server->getServerRoot());  return ;              }
+        // else
         {    c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot());  return ;              }
         c->setResponseString(OK, page_requested->location_path, _server->getServerRoot()); return ;
     }
@@ -478,3 +480,17 @@ int     Webserv::isAutoindex(page page_requested, std::string path2file)    cons
     }
     return 0;
 }
+
+// std::string     Webserv::createAutoindex(page page)
+// {
+//     // struct stat         check_file;
+
+//     // if ( page_requested.autoindex == "on"
+//     //         && !stat(path2file.c_str(), &check_file)   // if path exists
+//     //             && (check_file.st_mode & S_IFDIR )      )   {
+//     //     std::cout << "Autoindex is on for " << page_requested.location_path << std::endl;
+//     //     return 1;    
+//     // }
+//     // return 0;
+//     return std::string tmp("");
+// }
