@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/20 16:13:54 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/04 18:26:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 20:23:43 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@
 # define HTTP_VERSION_NOT_SUPPORTED "505"
 
 # define ERROR_FILE_PATH    "/www/error-pages"
-# define HREF_BEGIN         "<p><a href=\"http://"
+# define HREF_BEGIN         "<p><a href=\""
 # define HREF_END           "</a></p>\n"
 
 

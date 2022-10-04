@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 20:07:21 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 20:23:05 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -492,7 +492,10 @@ void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, S
         {   c->setResponseString(UNAUTHORIZED, "", "");  return ;   }
         while ( (dir_list = readdir(dir)) )    {
             std::string item(dir_list->d_name);
-            response += HREF_BEGIN + item + "'>" + item + HREF_END;
+            if ( item[0] == '/' )
+                response += HREF_BEGIN + item + "'>" + item + HREF_END;
+            else
+                response += HREF_BEGIN.append("/") + item + "'>" + item + HREF_END;
         }
         response += "</body></html>";
         c->setNoFileToSend(true);

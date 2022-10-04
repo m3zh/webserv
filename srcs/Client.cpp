@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/04 20:11:47 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 20:14:16 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void                    Client::setResponseString(std::string code, std::string 
         file += error_file + "/HTTP" + code + ".html";
     else if ( noFileToSend() )
     {
-        response_str += "Content-Type: text/html; charset=utf-8;\r\n\r\n";
+        response_str += " Content-Type: text/html; charset=utf-8;\r\n\r\n";
         response_str += location;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
         std::cout << "STR RES: " << response_str;
@@ -86,7 +86,7 @@ void                    Client::setResponseString(std::string code, std::string 
             root += "/";
         file += root + location;
     }
-    response_str += "Content-Type: text/html; charset=utf-8;\r\n\r\n";
+    response_str += " Content-Type: text/html; charset=utf-8;\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file); 
     if ( root != "" )    {   
