@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/30 13:43:17 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/04 19:10:20 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ class Client
 
         bool                        header_is_read_complete;
         bool                        is_read_complete;       
-        bool                        is_cgi_request;       
+        bool                        noFileToSend;       
 
         Client();
         Client(Client const & x);
@@ -84,8 +84,8 @@ class Client
         void                    setReadAsComplete(bool state);
         bool                    headerIsReadComplete();
         void                    setHeaderReadAsComplete(bool state);
-        bool                    isCGIrequest();
-        void                    setCGIrequest(bool state);
+        bool                    noFileToSend();
+        void                    setNoFileToSend(bool state);
         bool                    headerHasBeenSent();
         void                    setHeaderBeenSent(bool state);
         bool                    thereIsAFileToSend();

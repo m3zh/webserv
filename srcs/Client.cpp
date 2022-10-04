@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/03 11:33:16 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 19:11:04 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ Client::Client( int client_socket,
                                                     client_addrs(client_addrs),
                                                     associated_server(associated_server),
                                                     request_str(""),
-                                                    is_cgi_request(false)       {
+                                                    noFileToSend(false)       {
                                                                                     setReadAsComplete(false);
                                                                                     setHeaderReadAsComplete(false);
                                                                                     setThereIsAFileToSend(false);
@@ -71,7 +71,7 @@ void                    Client::setResponseString(std::string code, std::string 
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
-    else if ( isCGIrequest() || getRequest().get_method() == "DELETE" )
+    else if ( noFileToSend )
     {
         response_str += location;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
@@ -87,8 +87,10 @@ void                    Client::setResponseString(std::string code, std::string 
     response_str += "\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file); 
-    getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
-    setThereIsAFileToSend(true);
+    if ( root != "" )    {   
+        getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
+        setThereIsAFileToSend(true);
+    }
 };
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };
 
@@ -98,8 +100,8 @@ void                    Client::setReadAsComplete(bool state)           {   is_r
 bool                    Client::headerIsReadComplete()                  {   return  header_is_read_complete;     };
 void                    Client::setHeaderReadAsComplete(bool state)     {   header_is_read_complete = state;     };
 
-bool                    Client::isCGIrequest()                          {   return is_cgi_request;               };
-void                    Client::setCGIrequest(bool state)               {   is_cgi_request = state;              };
+bool                    Client::noFileToSend()                          {   return noFileToSend;               };
+void                    Client::setNoFileToSend(bool state)             {   noFileToSend = state;              };
 
 bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
 void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;        };

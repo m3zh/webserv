@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 15:11:26 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 19:12:02 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -378,10 +378,8 @@ void Webserv::GETmethod(Client *c)  const
         std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
         std::ifstream   file(path2file.c_str());
         if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");    return ;                        }
-        if ( isAutoindex( *page_requested, path2file ) )                                         // if it is a directory and autoindex is on              
-        // {    c->setResponseString(OK, createAutoindex(), _server->getServerRoot());  return ;              }
-        // else
-        {    c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot());  return ;              }
+        if ( isDirectory(  path2file ) )                                                        // if it is a directory, check for autoindex              
+            return checkAutoindex( *page_requested, path2file, c, _server );
         c->setResponseString(OK, page_requested->location_path, _server->getServerRoot()); return ;
     }
 	c->setResponseString(OK, file_path, _server->getServerRoot());
@@ -413,7 +411,7 @@ void Webserv::POSTmethod(Client *c) const
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "POST request for CGI!" << std::endl;   return ;        }
+	{   std::cout << "POST request for CGI!" << std::endl; c->noFileToSend = true; return ;        }
     c->setResponseString(BAD_GATEWAY, "", "");
 };
 
@@ -445,7 +443,7 @@ void Webserv::DELETEmethod(Client *c) const
     if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
     c->setResponseString(OK, "File successfully deleted\n", "");
-    c->setThereIsAFileToSend(false);
+    c->noFileToSend = true;
 };
 
 // SIGNALS
@@ -468,29 +466,39 @@ int     Webserv::invalidMethod(page page, std::string method)   const
     return 0;
 }
 
-int     Webserv::isAutoindex(page page_requested, std::string path2file)    const
+int     Webserv::isDirectory( std::string path2file )    const
 {
     struct stat         check_file;
 
-    if ( page_requested.autoindex == "on"
-            && !stat(path2file.c_str(), &check_file)   // if path exists
-                && (check_file.st_mode & S_IFDIR )      )   {
-        std::cout << "Autoindex is on for " << page_requested.location_path << std::endl;
+    if ( !stat(path2file.c_str(), &check_file)   // if path exists
+                && (check_file.st_mode & S_IFDIR )      )
         return 1;    
-    }
     return 0;
 }
 
-// std::string     Webserv::createAutoindex(page page)
-// {
-//     // struct stat         check_file;
+void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, ServerInfo* _server ) const
+{
+    if ( page.autoindex == "on" )
+    {
+        std::cout << "Autoindex is on for " << page.location_path << std::endl;
+        struct dirent *dir_list;
+        std::string response;
 
-//     // if ( page_requested.autoindex == "on"
-//     //         && !stat(path2file.c_str(), &check_file)   // if path exists
-//     //             && (check_file.st_mode & S_IFDIR )      )   {
-//     //     std::cout << "Autoindex is on for " << page_requested.location_path << std::endl;
-//     //     return 1;    
-//     // }
-//     // return 0;
-//     return std::string tmp("");
-// }
+        response = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'> \
+                    <title> Index of" + page.location_path + "</title></head><body>"; 
+        response += "<h1>Index of " + page.location_path + "</h1>";
+
+        DIR *dir = opendir(path2file.c_str());
+        if ( dir == NULL )
+        {   c->setResponseString(UNAUTHORIZED, "", "");  return ;   }
+        while ( (dir_list = readdir(dir)) )    {
+            std::string item(dir_list->d_name);
+            response += HREF_BEGIN + item + "'>" + item + HREF_END;
+        }
+        response += "</body></html>";
+        c->noFileToSend = true;
+        c->setResponseString(OK, response, "");  exit(1);
+    }
+    c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot());  exit(1);return ;
+}
+
