@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 16:57:51 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 17:38:07 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,10 @@ bool        Cgi::isCGI_request(Client *c)
     // ------
     // ACTION
     // ------
-    std::cout << "LOC: ";
-    std::cout << req.get_location() << std::endl;
     std::string action = req.get_location();
     size_t check4querystring = req.get_location().find("?");
     if ( check4querystring != std::string::npos)
         action = action.substr(0, req.get_location().find("?"));
-    std::cout << "ACT: ";
-    std::cout << action << std::endl;
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
         {   std::cout << "Invalid file extension for CGI\n"; 
@@ -75,7 +71,6 @@ bool        Cgi::isCGI_request(Client *c)
     // SCRIPT -> root + action
     // ------
     std::string script = path_to_script + action;
-    std::cout << "SCRIPT: " << script << std::endl;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
         {   std::cout << "Script " << script << " not executable by CGI\n";
             c->setResponseString(BAD_GATEWAY,"","");    return false;            };
@@ -121,8 +116,7 @@ void    Cgi::child_process(Request const& req) const
         std::fstream file;
         file.open(name, std::ios_base::out);
         if(!file.is_open()) {    perror("post dup2 in"); exit(EXIT_FAILURE);  }
-        file.write(body.data(), body.size());
-        std::cerr << "DATA: " << body.data() << std::endl;                                                   // we write the body to our tmp file
+        file.write(body.data(), body.size());                                                // we write the body to our tmp file
         file.close();
         dup2(body2stdin, STDIN_FILENO);                                                         // we pass the tmpfile as stdin
         unlink(name);
@@ -309,7 +303,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;    }           
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;    }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;    }   
-std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/perl";  } 
+std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python3";   return "/usr/bin/perl";  } 
 
 // ************
 // UTILS functions
