@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/10/04 10:15:30 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 11:09:19 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 # define WRITE 1
 # define MAX_SIZE 2000
 # define CGI_PATH "/app"
+# define TMPFILE  "tmp.XXXXXX"
 
 // ****************************
 // the CGI class execute dynamic web pages

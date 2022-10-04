@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 10:27:52 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 11:09:09 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,24 +111,16 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 void    Cgi::child_process(Request const& req) const
 {
     char    *cmd[3];
-    std::string pwd = getenv("PWD");
-    std::string body = req.get_body();
+    std::string pwd = getenv("PWD");    
 
-    
-
-    if (req.get_method() == "POST" )
+    if (req.get_method() == "POST" )                                                           // if it's a post method
     {
-        std::cerr << "BODY: " << body << std::endl;
-        // size_t len = stoi(req.get_header_map().at("Content-Length"));
-        char name[] = "tmp.XXXXXX";
+        std::string body = req.get_body();                                                                                         // we pass request as stdin
+        char name[] = TMPFILE;
         int body2stdin = mkstemp(name);
         std::fstream file;
         file.open(name, std::ios_base::out);
-        if(!file.is_open())
-        {
-            std::cerr<<"Unable to open the file.\n";
-            exit(1);
-        }
+        if(!file.is_open()) {    perror("post dup2 in"); exit(EXIT_FAILURE);  }
         file.write(body.data(), body.size());
         file.close();
         dup2(body2stdin, STDIN_FILENO);
@@ -352,6 +344,7 @@ std::string Cgi::file2string(int fd) const
     // return std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
     //++++++++++++++
 
+    
     std::string res;
     char buf[MAX_SIZE];
 	while (int r = read(fd, buf, MAX_SIZE))
