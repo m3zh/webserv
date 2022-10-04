@@ -6,13 +6,14 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/10/02 20:48:11 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 10:15:30 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # pragma once
 
 # include <iostream>
+# include <fstream>
 # include <stdio.h>
 # include <unistd.h>
 # include <stdlib.h>
@@ -28,8 +29,9 @@
 # include <sstream>
 # include <map>
 
-# include "Request.hpp"
+# include "Webserv.hpp"
 # include "Client.hpp"
+# include "Request.hpp"
 
 # define READ 0
 # define WRITE 1
@@ -64,7 +66,7 @@ class Cgi
         pid_t           _pid;
         int             _fds[2];
         
-        void            child_process(Request const& req, Client *c)       const;
+        void            child_process(Request const& req)       const;
         void            parent_process(int status, Client *c)   const;
 
         void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo *server);                                  // it should have two vars, http header and http body

@@ -9,14 +9,15 @@ def cgi_script():
 
     for param in os.environ.keys():                                     # <-- check params passed in env
         print "<b>%20s</b>: %s<\br>" % (param, os.environ[param])
-
+    os.write(2, b"first...\n")
     form = cgi.FieldStorage()
-    os.write(2, form)
+    os.write(2, b"second...\n")
     
+    os.write(2, fileitem.encode()) 
     # A nested FieldStorage instance holds the file
-    fileitem = form.getvalue('filename')                                       # . is added to create dir in cwd
+    fileitem = form.getvalue('filename')                                # . is added to create dir in cwd
     directory = "dump"
-
+    
     if os.path.exists(directory) == False:
         os.system("sudo mkdir ./" + directory)
     # Test if the file was uploaded
@@ -36,6 +37,8 @@ def cgi_script():
     <p>%s</p>
     </body></html>
     """%message)
+
+    os.write(2, message.encode())
 
 if __name__ == "__main__":
     os.write(2, b"Executing python script...\n")

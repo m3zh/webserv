@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/03 13:40:11 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 10:27:52 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,16 +108,33 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 }
 */
 
-void    Cgi::child_process(Request const& req, Client *c) const
+void    Cgi::child_process(Request const& req) const
 {
-    char    *cmd[5];
-    std::string pwd = getenv("PWD"); 
-    (void)c;
+    char    *cmd[3];
+    std::string pwd = getenv("PWD");
+    std::string body = req.get_body();
+
     
-    (void)req;
-    // if (dup2(_fds[READ], STDIN_FILENO) < 0)                                                  // in the child the output is written to the end of the pipe
-    //     {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
+
+    if (req.get_method() == "POST" )
+    {
+        std::cerr << "BODY: " << body << std::endl;
+        // size_t len = stoi(req.get_header_map().at("Content-Length"));
+        char name[] = "tmp.XXXXXX";
+        int body2stdin = mkstemp(name);
+        std::fstream file;
+        file.open(name, std::ios_base::out);
+        if(!file.is_open())
+        {
+            std::cerr<<"Unable to open the file.\n";
+            exit(1);
+        }
+        file.write(body.data(), body.size());
+        file.close();
+        dup2(body2stdin, STDIN_FILENO);
+        unlink(name);
+    }
+    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
         {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
     string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                           // cmd[0] -> /usr/bin/python                
@@ -135,6 +152,8 @@ void    Cgi::parent_process(int status, Client *c) const
     close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
     
+    if (keep_alive == false)
+        return ;
     if (!fdopen(_fds[READ], "r"))
     {   write(2, "BAD FD\n", 7);   c->setResponseString(BAD_GATEWAY, "", "");  return;     }                                                                 // to check if file can be opened, else error
     std::string     _response = file2string(_fds[READ]); 
@@ -155,7 +174,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     if (_pid < 0)
     {    perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
-        child_process(req, c);
+        child_process(req);
     else
         parent_process(status, c);
 }

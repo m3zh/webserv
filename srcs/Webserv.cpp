@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/03 20:30:43 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 10:28:22 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,7 +355,7 @@ void Webserv::GETmethod(Client *c)  const
         std::cout << "PAGES\n";
         if ((*page_requested).location_path.back() == '/')
             file_path = (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
-        if ( file_path.back() != '/')
+        if ( file_path.back() != '/')                                                           // if it is not a folder, check file path
             fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK);
         if ( req.get_location().compare((*page_requested).location_path) == 0                   // if the page required is exactly as in config
                 || fileInFolder == 0 )                                                          // or if it is found in a config folder                     
@@ -411,7 +411,7 @@ void Webserv::POSTmethod(Client *c) const
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "POST request for CGI!" << std::endl;  exit(1); return ;        }
+	{   std::cout << "POST request for CGI!" << std::endl;   return ;        }
     c->setResponseString(BAD_GATEWAY, "", "");
 };
 
