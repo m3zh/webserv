@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/04 19:10:20 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 19:59:27 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,11 +43,10 @@ class Client
         std::string                 remaining_buffer_to_send; // In case send() couldn't transmit the full buffer
         bool                        there_is_a_file_to_send;
         bool                        header_has_been_sent;
-        // Response                    response;
 
         bool                        header_is_read_complete;
         bool                        is_read_complete;       
-        bool                        noFileToSend;       
+        bool                        FileToSend;       
 
         Client();
         Client(Client const & x);

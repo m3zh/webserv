@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 19:10:16 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 20:02:16 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ bool        Cgi::isCGI_request(Client *c)
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
         {   std::cout << "Script " << script << " not executable by CGI\n";
             c->setResponseString(BAD_GATEWAY,"","");    return false;            };
-    c->setNnoFileToSend(true);
+    c->setNoFileToSend(true);
     _request.action = action;
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
     exec_CGI(req, c);      

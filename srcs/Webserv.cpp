@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 19:12:02 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 20:07:21 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -352,7 +352,6 @@ void Webserv::GETmethod(Client *c)  const
 
     for ( ; page_requested != pages.end(); page_requested++ )                                   // check for location in config
     {
-        std::cout << "PAGES\n";
         if ((*page_requested).location_path.back() == '/')
             file_path = (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
         if ( file_path.back() != '/')                                                           // if it is not a folder, check file path
@@ -411,7 +410,7 @@ void Webserv::POSTmethod(Client *c) const
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "POST request for CGI!" << std::endl; c->noFileToSend = true; return ;        }
+	{   std::cout << "POST request for CGI!" << std::endl; c->setNoFileToSend(true); return ;        }
     c->setResponseString(BAD_GATEWAY, "", "");
 };
 
@@ -443,7 +442,7 @@ void Webserv::DELETEmethod(Client *c) const
     if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
     c->setResponseString(OK, "File successfully deleted\n", "");
-    c->noFileToSend = true;
+    c->setNoFileToSend(true);
 };
 
 // SIGNALS
@@ -496,9 +495,9 @@ void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, S
             response += HREF_BEGIN + item + "'>" + item + HREF_END;
         }
         response += "</body></html>";
-        c->noFileToSend = true;
-        c->setResponseString(OK, response, "");  exit(1);
+        c->setNoFileToSend(true);
+        c->setResponseString(OK, response, ""); return ;
     }
-    c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot());  exit(1);return ;
+    c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot());  return ;
 }
 

@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/04 19:11:04 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/04 20:11:47 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ Client::Client( int client_socket,
                                                     client_addrs(client_addrs),
                                                     associated_server(associated_server),
                                                     request_str(""),
-                                                    noFileToSend(false)       {
+                                                    FileToSend(false)           {
                                                                                     setReadAsComplete(false);
                                                                                     setHeaderReadAsComplete(false);
                                                                                     setThereIsAFileToSend(false);
@@ -71,10 +71,12 @@ void                    Client::setResponseString(std::string code, std::string 
         response_str += "\nLocation: " + location;
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
-    else if ( noFileToSend )
+    else if ( noFileToSend() )
     {
+        response_str += "Content-Type: text/html; charset=utf-8;\r\n\r\n";
         response_str += location;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
+        std::cout << "STR RES: " << response_str;
         setResponseFile(file); 
         setThereIsAFileToSend(false);   return ;                                           
     }
@@ -84,7 +86,7 @@ void                    Client::setResponseString(std::string code, std::string 
             root += "/";
         file += root + location;
     }
-    response_str += "\r\n\r\n";
+    response_str += "Content-Type: text/html; charset=utf-8;\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file); 
     if ( root != "" )    {   
@@ -100,8 +102,8 @@ void                    Client::setReadAsComplete(bool state)           {   is_r
 bool                    Client::headerIsReadComplete()                  {   return  header_is_read_complete;     };
 void                    Client::setHeaderReadAsComplete(bool state)     {   header_is_read_complete = state;     };
 
-bool                    Client::noFileToSend()                          {   return noFileToSend;               };
-void                    Client::setNoFileToSend(bool state)             {   noFileToSend = state;              };
+bool                    Client::noFileToSend()                          {   return FileToSend;                   };
+void                    Client::setNoFileToSend(bool state)             {   FileToSend = state;                  };
 
 bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
 void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;        };
@@ -118,7 +120,7 @@ void                    Client::setThereIsAFileToSend(bool state)       {   ther
 // https://developer.mozilla.org/en-US/docs/Glossary/Response_header
 // void    http_header()
 // {
-//     std::cout << "Content-Type: text/html; charset=utf-8;";
+//     std::cout << 
 //     std::cout << "Set-Cookie: Cookies are set\r\n\r\n";
 // }
 
