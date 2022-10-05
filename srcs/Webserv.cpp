@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/05 09:23:24 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/05 10:01:02 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,11 +56,10 @@ int     Webserv::run_server()
     if (set_server() < 0)
         return -1;
     FD_ZERO(&_current_set);
-    //_fd_max = (_servers.rbegin())->getListeningSocket(); // the listening socket of the last server setup has the biggest fd so far
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
         FD_SET((*it).getListeningSocket(), &_current_set);
     signal(SIGINT, signal_handler);
-    while (keep_alive)///////////////////////
+    while (keep_alive)
     {
         std::cout << "Connecting ...\n";
 /*
@@ -236,8 +235,7 @@ void    Webserv::looping_through_write_set()
                     ++it; // ready for next loop cycle
                     delete (*to_delete); // Client is allocated
                     _clients_list.erase(to_delete);
-                    continue; // we had to increment the iterator before deleting the node in the list. We cannot increment an iterator to a deleted node
-                    // we also cannot decrement the iterator as it might be the first node of the list
+                    continue;
                 }
                 if ((*it)->getRemainingBufferToSend().size())
                 {
@@ -262,7 +260,8 @@ void    Webserv::looping_through_write_set()
                     if (bytes_sent < effective_size_of_buffer)
                         (*it)->getRemainingBufferToSend().assign(&buffer[bytes_sent], effective_size_of_buffer - bytes_sent);
                 }
-                if ((*it)->getResponseFileStream().eof() == true && (*it)->getRemainingBufferToSend().size() == 0) // the file has been fully transmitted
+                if ((*it)->getResponseFileStream().eof() == true
+                    && (*it)->getRemainingBufferToSend().size() == 0) // the file has been fully transmitted
                 {
                     close(client_socket);
                     FD_CLR(client_socket, &_current_set);
@@ -270,8 +269,7 @@ void    Webserv::looping_through_write_set()
                     ++it; // ready for next loop cycle
                     delete (*to_delete); // Client is allocated
                     _clients_list.erase(to_delete);
-                    continue; // we had to increment the iterator before deleting the node in the list. We cannot increment an iterator to a deleted node
-                    // we also cannot decrement the iterator as it might be the first node of the list
+                    continue;
                 }
             }
         }
@@ -455,7 +453,6 @@ void signal_handler(int signum)
 }
 
 // UTILS
-
 int     Webserv::invalidMethod(page page, std::string method)   const
 {
     std::vector<std::string>::iterator method_it = std::find(page.methods.begin(),
@@ -493,8 +490,10 @@ void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, S
         while ( (dir_list = readdir(dir)) )    {
             std::string item(dir_list->d_name);
             std::string href = item;
-            if ( item[0] != '/' )   {   href.insert(0, "/");     }
-            response += HREF_BEGIN + item + "\">" + item + HREF_END;
+            if ( item == "." )          {   href = path2file.substr(path2file.find_last_of("\\/"), path2file.size());  }
+            else if ( item == ".." )    {   href = path2file.substr(0, path2file.find_last_of("\\/"));  }
+            else if ( item[0] != '/' )  {   href.insert(0, "/");     }
+            response += HREF_BEGIN + href + "\">" + item + HREF_END;
             std::cout << response << std::endl;
             std::cout << "****\n" << std::endl;
         }
