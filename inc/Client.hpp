@@ -6,15 +6,15 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/04 19:59:27 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/05 10:48:24 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <iostream>
-#include <netinet/in.h>
 #include <fstream>
+#include <string>
 #include "Request.hpp"
 #include "Response.hpp"
 #include "ServerInfo.hpp"

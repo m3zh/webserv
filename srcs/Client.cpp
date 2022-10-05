@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/05 09:04:58 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/05 11:01:20 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,14 +66,15 @@ void                    Client::setResponseString(std::string code, std::string 
     std::cout << "\n";
     std::cout << location;
     std::string error_file(ERROR_FILE_PATH);
-    response_str = "HTTP/1.1 " + code + " " + status[code];                 // start of header
+    response_str = "HTTP/1.1 " + code + " " + status[code] + "\r\n";        // start of header
     if ( code == "301" )                                                    // if it is a redirection
-        response_str += "\nLocation: " + location;
+        response_str += "\nLocation: " + location + "\r\n";
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
     else if ( noFileToSend() )
     {
-        response_str += " Content-Type: text/html; charset=utf-8;\r\n\r\n";
+        response_str += "Content-Type: text/html; charset=utf-8;\r\n";
+        response_str += "Content-Length: " + std::to_string(location.size()) + "\r\n\r\n";
         response_str += location;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
         std::cout << "STR RES: " << response_str;
@@ -86,13 +87,12 @@ void                    Client::setResponseString(std::string code, std::string 
             root += "/";
         file += root + location;
     }
-    response_str += " Content-Type: text/html; charset=utf-8;\r\n\r\n";
+    response_str += "Content-Type: text/html; charset=utf-8;\r\n";
+    response_str += "Content-Length: " + std::to_string(location.size()) + "\r\n\r\n";
     std::cout << "FILE: " << file << std::endl;
-    setResponseFile(file); 
-    if ( root != "" )    {   
-        getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
-        setThereIsAFileToSend(true);
-    }
+    setResponseFile(file);  
+    getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
+    setThereIsAFileToSend(true);
 };
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };
 
