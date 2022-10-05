@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/20 16:13:54 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/04 20:23:43 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/05 09:14:08 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,15 +30,16 @@
 # define HTTP_VERSION_NOT_SUPPORTED "505"
 
 # define ERROR_FILE_PATH    "/www/error-pages"
-# define HREF_BEGIN         "<p><a href=\""
-# define HREF_END           "</a></p>\n"
+# define HREF_BEGIN         "<li><a href=\""
+# define HREF_END           "</a></li>\n"
 
 
-// Should be an attribute of the Client class
-// This class shall contain :
-    // The header of the response
-    // A pointer to the data to be sent
-    // Some way to know what has been sent so far
+// ************
+// HTTP HEADERS 
+// ************
+
+// information are sent to the HTTP response header
+// https://developer.mozilla.org/en-US/docs/Glossary/Response_header
 
 
 class Response

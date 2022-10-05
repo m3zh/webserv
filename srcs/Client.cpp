@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/04 20:14:16 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/05 09:04:58 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,17 +110,4 @@ void                    Client::setHeaderBeenSent(bool state)           {   head
 bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
 void                    Client::setThereIsAFileToSend(bool state)       {   there_is_a_file_to_send = state;     };
 
-// UTILS
-
-// ************
-// HTTP HEADERS functions
-// ************
-
-// information are sent to the HTTP response header
-// https://developer.mozilla.org/en-US/docs/Glossary/Response_header
-// void    http_header()
-// {
-//     std::cout << 
-//     std::cout << "Set-Cookie: Cookies are set\r\n\r\n";
-// }
 

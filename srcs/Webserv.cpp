@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 20:23:05 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/05 09:23:24 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -485,19 +485,20 @@ void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, S
 
         response = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'> \
                     <title> Index of" + page.location_path + "</title></head><body>"; 
-        response += "<h1>Index of " + page.location_path + "</h1>";
+        response += "<h1>Index of " + page.location_path + "</h1><hr><br><div>";
 
         DIR *dir = opendir(path2file.c_str());
         if ( dir == NULL )
         {   c->setResponseString(UNAUTHORIZED, "", "");  return ;   }
         while ( (dir_list = readdir(dir)) )    {
             std::string item(dir_list->d_name);
-            if ( item[0] == '/' )
-                response += HREF_BEGIN + item + "'>" + item + HREF_END;
-            else
-                response += HREF_BEGIN.append("/") + item + "'>" + item + HREF_END;
+            std::string href = item;
+            if ( item[0] != '/' )   {   href.insert(0, "/");     }
+            response += HREF_BEGIN + item + "\">" + item + HREF_END;
+            std::cout << response << std::endl;
+            std::cout << "****\n" << std::endl;
         }
-        response += "</body></html>";
+        response += "</div></body></html>";
         c->setNoFileToSend(true);
         c->setResponseString(OK, response, ""); return ;
     }
