@@ -68,6 +68,7 @@ class Client
         std::string             getResponseFile()   const;
         std::ifstream &         getResponseFileStream(); // probably not const as reading will affect the state of the stream
         std::string &           getRemainingBufferToSend();
+        std::string             getContentType(std::string file);
 
         // SETTERS
         void                    setRequest(std::string const &s);

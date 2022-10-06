@@ -86,13 +86,27 @@ void                    Client::setResponseString(std::string code, std::string 
     }
     else if( code == "200" )
         file = file_path;
-    response_str += "Content-Type: text/html; charset=utf-8;\r\n";
+    response_str += "Content-Type: " + getContentType(file_path) + "; charset=utf-8;\r\n";
     response_str += "Content-Length: " + std::to_string(content.size()) + ";\r\n\r\n";
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);
     getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
     setThereIsAFileToSend(true); 
+};
+
+std::string           Client::getContentType(std::string file)
+{
+    std::string ret;
+    std::string extension = file.substr(file.find_last_of(".") + 1, file.size());
+    if ( extension == "html" || extension == "css" 
+        || extension == "xml" || extension == "csv" )
+    {    ret = "text/" + extension; return ret;     }
+    if ( extension == "jpeg" || extension == "png" || extension == "gif" 
+        || extension == "svg" || extension == "webp" || extension == "jpg" )
+    {    ret = "image/" + extension; return ret;     }
+    ret = "text/plain";
+    return ret;
 };
 
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };

@@ -79,10 +79,10 @@ class Cgi
                                         std::string path_to_script, std::string upload_store, ServerInfo *server); // size_t -> content length is never negative
         void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
         
-        std::string     get_CGIaction()                         ;
-        std::string     get_CGImethod()                         ;
-        size_t          get_CGIcontent_length()                 ;
-        std::string     get_CGIscript(std::string action)       const;
+        std::string     get_CGIaction()                          ;
+        std::string     get_CGImethod()                          ;
+        size_t          get_CGIcontent_length()                  ;
+        std::string     get_CGIscript()                     const;
 
         bool            get_CGIparam(std::string param, std::string html_content, size_t &pos);
         std::string     set_CGIparam(std::string html_content, size_t &pos);

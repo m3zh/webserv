@@ -17,7 +17,7 @@ def cgi_script():
         message = "Hey there " + name + ',\nyou\'re, what, ' + age + ' years old already?'
 
     print ("""\
-    Content-Type: text/html\n\r\n\r
+    Content-Type: text/html\r\n\r\n
     <html><body>
     <p>%s</p>
     </body></html>

@@ -111,18 +111,19 @@ void    Cgi::child_process(Request const& req) const
         std::string body = req.get_body();                                                     // we pass request as stdin
         char name[] = TMPFILE;                                                                 // we create a tmp file with mkstemp to get an fd
         int body2stdin = mkstemp(name);
+        if(body2stdin < 0) {    perror("mkstemp failed"); exit(EXIT_FAILURE);  }
         std::fstream file;
         file.open(name, std::ios_base::out);
         if(!file.is_open()) {    perror("post dup2 in"); exit(EXIT_FAILURE);  }
-        file.write(body.data(), body.size());                                                // we write the body to our tmp file
+        file.write("filename=\"hello_world.py\"", 26);                                                // we write the body to our tmp file
         file.close();
         dup2(body2stdin, STDIN_FILENO);                                                         // we pass the tmpfile as stdin
         unlink(name);
     }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
-        {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+    {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
-    string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                           // cmd[0] -> /usr/bin/python                
+    string2charstar(&cmd[0], get_CGIscript().c_str());                                          // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());              // cmd[1] -> cgi-script.py
     cmd[2] = 0;
     close(_fds[WRITE]);
@@ -159,7 +160,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     if (_pid < 0)
     {    perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
-        child_process(req);
+    {    child_process(req);}
     else
         parent_process(status, c);
 }
@@ -298,11 +299,11 @@ std::string     Cgi::getFromQueryString(std::string uri)    const
     return uri.substr(pos, uri.size() - pos);
 }
 
-CGIrequest&     Cgi::get_CGIrequest()                           {   return _request;                   }           
-std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;    }           
-std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;    }           
-size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;    }   
-std::string     Cgi::get_CGIscript(std::string action)   const  {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python3";   return "/usr/bin/perl";  } 
+CGIrequest&     Cgi::get_CGIrequest()                           {   return _request;                            }           
+std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;             }                   
+std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;             }           
+size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;     }   
+std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python";                   } 
 
 // ************
 // UTILS functions
@@ -315,32 +316,7 @@ void   Cgi::string2charstar(char** charstar, std::string str)   const
 }
 
 std::string Cgi::file2string(int fd) const
-{
-    // WORKS ONLY ON MAC
-    /*struct stat sb;
-    std::string res;
-
-    if (fstat(fd, &sb) < 0)
-        perror("Fstat:");
-    std::cerr << sb.st_size << std::endl;
-    res.resize((int)sb.st_size);
-    read(fd, (char*)(res.data()), (int)sb.st_size);
-    close(fd);
-
-    return res;*/
-
-    //+++++++++++++
-    // char filePath[PATH_MAX];
-    // if (fcntl(fd, F_GETPATH, filePath) != -1)
-    // {
-    //     std::ifstream input_file(filePath);
-    //     if (!input_file.is_open()) {
-    //         exit(EXIT_FAILURE);
-    // }
-    // return std::string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
-    //++++++++++++++
-
-    
+{  
     std::string res;
     char buf[MAX_SIZE];
 	while (int r = read(fd, buf, MAX_SIZE))
