@@ -51,28 +51,24 @@ bool        Cgi::isCGI_request(Client *c)
     std::string method = req.get_method();
     if (method.compare("GET") != 0                                              // only methods get and post are accepted for cgi
         && method.compare("POST") != 0)
-        {   //std::cout << "Invalid method for CGI\n"; c->setResponseString(METHOD_NOT_ALLOWED,"","");
-                return false;              };
+        {   std::cout << "Invalid method for CGI\n"; c->setResponseString(METHOD_NOT_ALLOWED,"","");                return false;              };
     // ------
     // CONTENT LENGTH
     // ------
     if (method == "POST")
     {
         if (header.find("Content-Length") == header.end())
-        {   //std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");
-                return false;  };
+        {   std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");    return false;               };
         size_t content_length = std::stoi(header["Content-Length"]);
         if (content_length <= 0)
-        {   //std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");
-                return false;  };
+        {   std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");    return false;              };
     }
     // ------
     // SCRIPT -> root + action
     // ------
     std::string script = path_to_script + action;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
-        {   //std::cout << "Script " << script << " not executable by CGI\n"; c->setResponseString(BAD_GATEWAY,"","");
-                return false;            };
+    {   std::cout << "Script " << script << " not executable by CGI\n"; c->setResponseString(BAD_GATEWAY,"","");    return false;            };
     _request.action = action;
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
     exec_CGI(req, c);      

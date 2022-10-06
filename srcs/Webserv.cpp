@@ -330,7 +330,7 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                         if ( uri.size() > MAX_URI )
                                                             c->setResponseString(REQUEST_URI_TOO_LONG, "", "");
                                                         if ( version != "HTTP/1.1" )
-                                                            c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", ""); 
+                                                            c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", "");
                                                         if (method == "GET")            GETmethod(c);
                                                         else if (method == "POST")      POSTmethod(c);
                                                         else if (method == "DELETE")    DELETEmethod(c);
@@ -367,17 +367,17 @@ void Webserv::GETmethod(Client *c)  const
         }
     }
     if ( fileInFolder < 0 && page_requested == pages.end() )                                    // if nothing is found 
-    {
-                                                                                                 // we check if it is a CGI request   
-        if (cgi.isCGI_request(c))
-        {   std::cout << "GET request for CGI!" << std::endl; return ;        }
-        c->setResponseString(NOT_FOUND, "", "");    return ;        
+    {   
+        if (req.get_location().find("py") != std::string::npos )  {                                                                                  // we check if it is a CGI request   
+            if (cgi.isCGI_request(c)) {   std::cout << "GET request for CGI!" << std::endl; exit(1); return ;        }
+        }
+        c->setResponseString(NOT_FOUND, "", "");   std::cout << "POST"; exit(1); return ;        
     }
     if ( redirect )     {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;     }
     if ( fileInFolder < 0 )  {
         std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
         std::ifstream   file(path2file.c_str());
-        if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  std::cout << "DENIED\n"; exit(1); return ;                        }
+        if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  return ;                        }
         if ( isDirectory(  path2file ) )                                                        // if it is a directory, check for autoindex              
         {    checkAutoindex( *page_requested, path2file, c, _server );  return;     }
         c->setResponseString(OK, page_requested->location_path, _server->getServerRoot()); return ;
@@ -409,9 +409,9 @@ void Webserv::POSTmethod(Client *c) const
         }
     }
     if ( page_requested == pages.end() )
-    {    c->setResponseString(NOT_FOUND, "", "");    return ;       }  
+    {    c->setResponseString(NOT_FOUND, "", "");  std::cout << "POST"; exit(1);   return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "POST request for CGI!" << std::endl; c->setNoFileToSend(true); return ;        }
+	{   std::cout << "POST request for CGI!" << std::endl; c->setNoFileToSend(true); exit(1); return ;        }
     c->setResponseString(BAD_GATEWAY, "", "");
 };
 
@@ -439,7 +439,7 @@ void Webserv::DELETEmethod(Client *c) const
         }
     }
     if ( fileInFolder < 0 && page_requested == pages.end() )
-    {    c->setResponseString(NOT_FOUND, "", "");    return ;           }
+    {    c->setResponseString(NOT_FOUND, "", "");  std::cout << "DEL"; exit(1);  return ;           }
     if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
     c->setResponseString(OK, "File successfully deleted\n", "");
