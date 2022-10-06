@@ -482,7 +482,7 @@ void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, S
 
         response = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'> \
                     <title> Index of" + page.location_path + "</title></head><body>"; 
-        response += "<h1>Index of " + page.location_path + "</h1><hr><br><div>";
+        response += "<h1>Index of " + page.location_path + "</h1><hr><br><div><ul style=\"list-style: none;padding: 0;\">";
 
         DIR *dir = opendir(path2file.c_str());
         if ( dir == NULL )
@@ -497,7 +497,7 @@ void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, S
             std::cout << response << std::endl;
             std::cout << "****\n" << std::endl;
         }
-        response += "</div></body></html>";
+        response += "</ul></div></body></html>";
         c->setNoFileToSend(true);
         c->setResponseString(OK, response, ""); return ;
     }

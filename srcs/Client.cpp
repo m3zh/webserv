@@ -36,7 +36,7 @@ std::string             Client::getResponseString()                     const   
 std::string             Client::getResponseFile()                       const   {   return  response_file;          };
 
 std::ifstream &         Client::getResponseFileStream()                         {    return response_file_stream;   };
-std::string &           Client::getRemainingBufferToSend()                        {    return remaining_buffer_to_send;  };
+std::string &           Client::getRemainingBufferToSend()                      {    return remaining_buffer_to_send;  };
 
 
 
