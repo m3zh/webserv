@@ -42,6 +42,9 @@ bool        Cgi::isCGI_request(Client *c)
     size_t check4querystring = req.get_location().find("?");
     if ( check4querystring != std::string::npos)
         action = action.substr(0, req.get_location().find("?"));
+    check4querystring = req.get_location().find_last_of("/");
+    if ( check4querystring != 0 )
+        action = action.substr(check4querystring, action.size() );
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
         return false;
