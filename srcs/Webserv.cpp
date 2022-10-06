@@ -229,7 +229,6 @@ void    Webserv::looping_through_write_set()
                 // if there is no file to send, close the socket here
                 if ((*it)->thereIsAFileToSend() == false)
                 {
-                    std::cout << "FALSE\n";
                     close(client_socket);
                     FD_CLR(client_socket, &_current_set);
                     std::list<Client*>::iterator    to_delete = it;
@@ -240,7 +239,6 @@ void    Webserv::looping_through_write_set()
                 }
                 if ((*it)->getRemainingBufferToSend().size())
                 {
-                    std::cout << "TRUE\n";
                     if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) < 0)
                         throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
                     (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
@@ -355,7 +353,7 @@ void Webserv::GETmethod(Client *c)  const
         if ((*page_requested).location_path.back() == '/')
             file_path = (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
         if ( file_path.back() != '/')                                                           // if it is not a folder, check file path
-            fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), F_OK | R_OK);
+            fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), F_OK );
         if ( req.get_location().compare((*page_requested).location_path) == 0                   // if the page required is exactly as in config
                 || fileInFolder == 0 )                                                          // or if it is found in a config folder                     
         {                                                                                                       
@@ -374,15 +372,18 @@ void Webserv::GETmethod(Client *c)  const
         c->setResponseString(NOT_FOUND, "", "");  return ;        
     }
     if ( redirect )     {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;     }
-    if ( fileInFolder < 0 )  {
-        std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
-        std::ifstream   file(path2file.c_str());
-        if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  return ;                        }
-        if ( isDirectory(  path2file ) )                                                        // if it is a directory, check for autoindex              
-        {    checkAutoindex( *page_requested, path2file, c, _server );  return;     }
-        c->setResponseString(OK, page_requested->location_path, _server->getServerRoot()); return ;
+    if ( !fileInFolder )  {
+        std::cout << "FileInFolder: " << pwd << _server->getServerRoot() << file_path << std::endl; 
+        if (open((pwd + _server->getServerRoot() + file_path).c_str(), O_RDONLY) < 0)
+        {    c->setResponseString(UNAUTHORIZED, "", "");  return ;  }
+        c->setResponseString(OK, file_path, _server->getServerRoot());
     }
-	c->setResponseString(OK, file_path, _server->getServerRoot());
+    std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
+    std::ifstream   file(path2file.c_str());
+    if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  return ;          }
+    if ( isDirectory(  path2file ) )                                                        // if it is a directory, check for autoindex              
+        {    checkAutoindex( *page_requested, path2file, c, _server );  return;     }
+    c->setResponseString(OK, page_requested->location_path, _server->getServerRoot()); return ; // to del?
 };
 
 void Webserv::POSTmethod(Client *c) const
