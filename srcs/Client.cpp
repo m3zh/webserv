@@ -44,7 +44,7 @@ std::string &           Client::getRemainingBufferToSend()                      
 void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
 void                    Client::setRequestString(std::string s)                 {   request_str.append(s);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
-void                    Client::setResponseString(std::string code, std::string location, std::string root)
+void                    Client::setResponseString(std::string code, std::string content, std::string root)
 {
     std::string file = getenv("PWD");
     std::map<std::string, std::string> status;
@@ -64,18 +64,18 @@ void                    Client::setResponseString(std::string code, std::string 
     std::cout << "CODE: ";
     std::cout << code;
     std::cout << "\n";
-    std::cout << location;
+    std::cout << content;
     std::string error_file(ERROR_FILE_PATH);
     response_str = "HTTP/1.1 " + code + " " + status[code] + "\r\n";        // start of header
     if ( code == "301" )                                                    // if it is a redirection
-        response_str += "\nLocation: " + location + "\r\n";
+        response_str += "\nLocation: " + content + "\r\n";
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
     else if ( noFileToSend() )
     {
         response_str += "Content-Type: text/html; charset=utf-8;\r\n";
-        response_str += "Content-Length: " + std::to_string(location.size()) + "\r\n\r\n";
-        response_str += location;                               // we append the message we got from the python script
+        response_str += "Content-Length: " + std::to_string(content.size()) + "\r\n\r\n";
+        response_str += content;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
         std::cout << "STR RES: " << response_str;
         setResponseFile(file); 
@@ -83,17 +83,19 @@ void                    Client::setResponseString(std::string code, std::string 
     }
     else if( code == "200" )
     {
-        if ( root.back() != '/' && location[0] != '/')
+        if ( root.back() != '/' && content[0] != '/')
             root += "/";
-        file += root + location;
+        file += root + content;
     }
     response_str += "Content-Type: text/html; charset=utf-8;\r\n";
-    response_str += "Content-Length: " + std::to_string(location.size()) + "\r\n\r\n";
+    response_str += "Content-Length: " + std::to_string(content.size()) + ";\r\n\r\n";
+    std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);  
     getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
-    setThereIsAFileToSend(true);
+    setThereIsAFileToSend(true); 
 };
+
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };
 
 // BOOLS
