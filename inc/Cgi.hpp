@@ -54,6 +54,7 @@ struct CGIrequest
     std::string     method;                         // method field in html 
     std::string     path_to_script;                 // abs path to CGI script
     std::string     upload_store;                   // upload_store in config
+    std::string     absolute_path;                  // upload_store in config
     size_t          content_length;                 // content length field in HTML header
 };
 

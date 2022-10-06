@@ -73,6 +73,7 @@ bool        Cgi::isCGI_request(Client *c)
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
     {   std::cout << "Script " << script << " not executable by CGI\n"; c->setResponseString(BAD_GATEWAY,"","");    return false;            };
     _request.action = action;
+    c->setNoFileToSend(true);
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
     exec_CGI(req, c);      
     return true;
@@ -244,8 +245,9 @@ void    Cgi::clear_CGIrequest()
     _request.action = "";
     _request.method = "";
     _request.content_length = 0;    
-    _request.upload_store = "";    
-    _request.path_to_script = "";    
+    _request.upload_store = "";  
+    _request.absolute_path = "";  
+    _request.path_to_script = "";
 };
 
 std::string     Cgi::set_CGIparam(std::string html_content, size_t &pos)
