@@ -373,17 +373,15 @@ void Webserv::GETmethod(Client *c)  const
     }
     if ( redirect )     {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");    return  ;     }
     if ( !fileInFolder )  {
-        std::cout << "FileInFolder: " << pwd << _server->getServerRoot() << file_path << std::endl; 
         if (open((pwd + _server->getServerRoot() + file_path).c_str(), O_RDONLY) < 0)
         {    c->setResponseString(UNAUTHORIZED, "", "");  return ;  }
-        c->setResponseString(OK, file_path, _server->getServerRoot());
+        c->setResponseString(OK, "", pwd + _server->getServerRoot() + file_path); return ;
     }
     std::string     path2file = pwd + _server->getServerRoot() + page_requested->location_path;
     std::ifstream   file(path2file.c_str());
     if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  return ;          }
     if ( isDirectory(  path2file ) )                                                        // if it is a directory, check for autoindex              
-        {    checkAutoindex( *page_requested, path2file, c, _server );  return;     }
-    c->setResponseString(OK, page_requested->location_path, _server->getServerRoot()); return ; // to del?
+    {    checkAutoindex( *page_requested, path2file, c, _server );  return;     }
 };
 
 void Webserv::POSTmethod(Client *c) const

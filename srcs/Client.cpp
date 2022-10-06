@@ -44,7 +44,7 @@ std::string &           Client::getRemainingBufferToSend()                      
 void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
 void                    Client::setRequestString(std::string s)                 {   request_str.append(s);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
-void                    Client::setResponseString(std::string code, std::string content, std::string root)
+void                    Client::setResponseString(std::string code, std::string content, std::string file_path)
 {
     std::string file = getenv("PWD");
     std::map<std::string, std::string> status;
@@ -82,16 +82,12 @@ void                    Client::setResponseString(std::string code, std::string 
         setThereIsAFileToSend(false);   return ;                                           
     }
     else if( code == "200" )
-    {
-        if ( root.back() != '/' && content[0] != '/')
-            root += "/";
-        file += root + content;
-    }
+        file = file_path;
     response_str += "Content-Type: text/html; charset=utf-8;\r\n";
     response_str += "Content-Length: " + std::to_string(content.size()) + ";\r\n\r\n";
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
-    setResponseFile(file);  
+    setResponseFile(file);
     getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
     setThereIsAFileToSend(true); 
 };
