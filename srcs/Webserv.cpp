@@ -367,7 +367,8 @@ void Webserv::GETmethod(Client *c)  const
         }
     }
     if ( fileInFolder < 0 && page_requested == pages.end() )                                    // if nothing is found 
-    {                                                                                           // we check if it is a CGI request   
+    {
+                                                                                                 // we check if it is a CGI request   
         if (cgi.isCGI_request(c))
         {   std::cout << "GET request for CGI!" << std::endl; return ;        }
         c->setResponseString(NOT_FOUND, "", "");    return ;        
