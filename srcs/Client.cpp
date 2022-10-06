@@ -23,6 +23,7 @@ Client::Client( int client_socket,
                                                                                     setHeaderReadAsComplete(false);
                                                                                     setThereIsAFileToSend(false);
                                                                                     setHeaderBeenSent(false);
+                                                                                    setIsNotCgi(true);
                                                                                 };
 Client::~Client()                                                               {};
 
@@ -73,10 +74,10 @@ void                    Client::setResponseString(std::string code, std::string 
         file += error_file + "/HTTP" + code + ".html";
     else if ( noFileToSend() )
     {
-        if ( getRequest().get_method() == "DELETE" )
+        if ( isNotCgi() )
             response_str += "Content-Type: text/html; charset=utf-8;\r\n";
         response_str += "Content-Length: " + std::to_string(content.size());
-        if ( getRequest().get_method() == "DELETE" )
+        if ( isNotCgi()  )
             response_str += "\r\n\r\n";
         response_str += content;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
@@ -124,5 +125,6 @@ bool                    Client::headerHasBeenSent()                     {   retu
 void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;        };
 bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
 void                    Client::setThereIsAFileToSend(bool state)       {   there_is_a_file_to_send = state;     };
-
+bool                    Client::isNotCgi()                              {   return is_not_cgi;      };
+void                    Client::setIsNotCgi(bool state)                 {   is_not_cgi = state;     };
 

@@ -74,6 +74,7 @@ bool        Cgi::isCGI_request(Client *c)
     {   std::cout << "Script " << script << " not executable by CGI\n"; c->setResponseString(BAD_GATEWAY,"","");    return false;            };
     _request.action = action;
     c->setNoFileToSend(true);
+    c->setIsNotCgi(false);
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
     exec_CGI(req, c);      
     return true;

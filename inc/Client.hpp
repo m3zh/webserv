@@ -46,7 +46,8 @@ class Client
 
         bool                        header_is_read_complete;
         bool                        is_read_complete;       
-        bool                        FileToSend;       
+        bool                        FileToSend;
+        bool                        is_not_cgi;       
 
         Client();
         Client(Client const & x);
@@ -90,6 +91,8 @@ class Client
         void                    setHeaderBeenSent(bool state);
         bool                    thereIsAFileToSend();
         void                    setThereIsAFileToSend(bool state);
+        bool                    isNotCgi();
+        void                    setIsNotCgi(bool state);        
 
 
         //Response class
