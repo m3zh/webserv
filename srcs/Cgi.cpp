@@ -200,6 +200,9 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 // more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
 void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo* server)
 {
+    std::cout << "STORE: " << _request.upload_store;
+    if (_request.upload_store != "")
+        _env["DIR_UPLOAD"] = _request.upload_store;
     _env["AUTH_TYPE"] = "";
     _env["DOCUMENT_ROOT"] = "~/webserv";
     if ( header.find("Content-Length") != header.end() )                                                                                          
@@ -229,7 +232,6 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
     std::string port = std::to_string(server->getPort());
 	_env["SERVER_PORT"] = port;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
-    _env["UPLOAD_STORE"] = _request.upload_store;
 }
 
 void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
