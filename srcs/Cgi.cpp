@@ -116,7 +116,7 @@ void    Cgi::child_process(Request const& req) const
         std::fstream file;
         file.open(name, std::ios_base::out);
         if(!file.is_open()) {    perror("post dup2 in"); exit(EXIT_FAILURE);  }
-        file.write(sendInputAsSTDIN(body).c_str(), body.size());                                                  // we write the body to our tmp file
+        file.write(body.c_str(), body.size());                                                  // we write the body to our tmp file
         file.close();
         dup2(body2stdin, STDIN_FILENO);                                                         // we pass the tmpfile as stdin
         unlink(name);
@@ -326,9 +326,9 @@ std::string Cgi::file2string(int fd) const
 	return res;
 }
 
-std::string Cgi::sendInputAsSTDIN(std::string body) const
-{
-    (void)body;
-    std::string ret("\\{\"files\": (\"hello_world.py\", \"some file content\")\\}");
-    return      ret;
-}
+// std::string Cgi::sendInputAsSTDIN(std::string body) const
+// {
+//     (void)body;
+//     std::string ret("\\{\"files\": (\"hello_world.py\", \"some file content\")\\}");
+//     return      ret;
+// }

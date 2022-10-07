@@ -34,6 +34,16 @@ int main(int argc, char **args, char **envp)
             std::cout << e.what() << std::endl;
             return EXIT_FAILURE;
         }
+        catch (WebException<int>& e)
+        {
+            std::cout << e.what() << std::endl;
+            return EXIT_FAILURE;
+        }
+        catch (...)
+        {
+		    std::cout << "Unrecognized error\nClosing server...\n";
+		    return EXIT_FAILURE;
+	    }
     }
 
     return EXIT_SUCCESS;
