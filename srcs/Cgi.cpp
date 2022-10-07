@@ -112,11 +112,11 @@ void    Cgi::child_process(Request const& req) const
         std::string body = req.get_body();                                                     // we pass request as stdin
         char name[] = TMPFILE;                                                                 // we create a tmp file with mkstemp to get an fd
         int body2stdin = mkstemp(name);
-        if(body2stdin < 0) {    perror("mkstemp failed"); exit(EXIT_FAILURE);  }
+        if(body2stdin < 0)  {    perror("mkstemp failed"); exit(EXIT_FAILURE);  }
         std::fstream file;
         file.open(name, std::ios_base::out);
         if(!file.is_open()) {    perror("post dup2 in"); exit(EXIT_FAILURE);  }
-        file.write("filename=\"hello_world.py\"", 26);                                                // we write the body to our tmp file
+        file.write(sendInputAsSTDIN(body).c_str(), body.size());                                                  // we write the body to our tmp file
         file.close();
         dup2(body2stdin, STDIN_FILENO);                                                         // we pass the tmpfile as stdin
         unlink(name);
@@ -304,7 +304,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;             }                   
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;             }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;     }   
-std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python";                   } 
+std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python3";                  } 
 
 // ************
 // UTILS functions
@@ -324,4 +324,11 @@ std::string Cgi::file2string(int fd) const
 	{		buf[r] = '\0';  res += std::string(buf);     }
 	close(fd);
 	return res;
+}
+
+std::string Cgi::sendInputAsSTDIN(std::string body) const
+{
+    (void)body;
+    std::string ret("\\{\"files\": (\"hello_world.py\", \"some file content\")\\}");
+    return      ret;
 }

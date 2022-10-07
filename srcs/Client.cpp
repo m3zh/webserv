@@ -87,8 +87,8 @@ void                    Client::setResponseString(std::string code, std::string 
     }
     else if( code == "200" )
         file = file_path;
-    response_str += "Content-Type: " + getContentType(file_path) + "; charset=utf-8;\r\n";
-    response_str += "Content-Length: " + std::to_string(content.size()) + ";\r\n\r\n";
+    response_str += "Content-Type: " + getContentType(file) + "; charset=utf-8;\r\n";
+    response_str += "Content-Length: " + std::to_string(file.size()) + ";\r\n\r\n";             // file size !!!
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);
