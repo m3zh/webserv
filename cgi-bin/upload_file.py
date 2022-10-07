@@ -8,7 +8,7 @@ cgitb.enable()
 def cgi_script():
     os.write(2, b"first...\n")
     form = cgi.FieldStorage()
-    cgi.print_form(form)
+    #cgi.print_form(form)
     os.write(2, b"******\n")
     
     # A nested FieldStorage instance holds the file
@@ -32,7 +32,7 @@ def cgi_script():
         message = 'No file was uploaded'
 
     print ("""\
-    Content-Type: text/html\r\n\r\n
+    Content-Type: text/html; charset=utf-8;\r\n\r\n
     <html><body>
     <p>%s</p>
     </body></html>

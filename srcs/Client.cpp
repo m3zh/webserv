@@ -76,14 +76,14 @@ void                    Client::setResponseString(std::string code, std::string 
     {
         if ( isNotCgi() )
             response_str += "Content-Type: text/html; charset=utf-8;\r\n";
-        response_str += "Content-Length: " + std::to_string(content.size());
-        if ( isNotCgi()  )
+        response_str += "Content-Length: " + std::to_string(content.size()) + "\r\n";
+        if ( isNotCgi() )
             response_str += "\r\n\r\n";
         response_str += content;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
-        std::cout << "STR RES: " << response_str;
+        std::cout << "STR RES: " << response_str; 
         setResponseFile(file); 
-        setThereIsAFileToSend(false);   return ;                                           
+        setThereIsAFileToSend(false);  return ;                                           
     }
     else if( code == "200" )
         file = file_path;
