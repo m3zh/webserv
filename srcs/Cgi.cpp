@@ -107,22 +107,10 @@ void    Cgi::child_process(Request const& req) const
     char    *cmd[3];
     std::string pwd = getenv("PWD");    
 
-    if (req.get_method() == "POST" )                                                           // if it's a post method
-    {
-        std::string body = req.get_body();                                                     // we pass request as stdin
-        char name[] = TMPFILE;                                                                 // we create a tmp file with mkstemp to get an fd
-        int body2stdin = mkstemp(name);
-        if(body2stdin < 0)  {    perror("mkstemp failed"); exit(EXIT_FAILURE);  }
-        std::fstream file;
-        file.open(name, std::ios_base::out);
-        if(!file.is_open()) {    perror("post dup2 in"); exit(EXIT_FAILURE);  }
-        file.write(body.c_str(), body.size());                                                  // we write the body to our tmp file
-        file.close();
-        dup2(body2stdin, STDIN_FILENO);                                                         // we pass the tmpfile as stdin
-        unlink(name);
-    }
-    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
+    if (dup2(_fds[READ], STDIN_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
     {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
+    {    perror("cgi dup2 out"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
     string2charstar(&cmd[0], get_CGIscript().c_str());                                          // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());              // cmd[1] -> cgi-script.py
@@ -135,35 +123,42 @@ void    Cgi::child_process(Request const& req) const
 
 void    Cgi::parent_process(int status, Client *c) const
 {
-    // close(_fds[READ]);
-    close(_fds[WRITE]);                                                             // in the parent the output written to the end of the pipe
+    close(_fds[READ]);                                               // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
     
     if (keep_alive == false)
         return ;
-    if (!fdopen(_fds[READ], "r"))
-    {   write(2, "BAD FD\n", 7);   c->setResponseString(BAD_GATEWAY, "", "");      return;     }                                                                 // to check if file can be opened, else error
-    std::string     _response = file2string(_fds[READ]); 
-    std::cerr << "RES: " << _response;    
-    if (_response.size())                                                           // if we have an output, execve has succeded                                        
-    {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");       return;     }
-    write(2, "PARENT NOK\n", 11);
-    c->setResponseString(BAD_GATEWAY, "", "");                                      // if execve has failed, we send error BAD_GATEWAY
+    if WIFEXITED(status)
+        if (WEXITSTATUS(status) != 0)     {         perror("cgi runtime error"); exit(1);        }
+    (void)c;                  // if execve has failed, we send error BAD_GATEWAY
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
 {
     int status = 0;
+    _stdin = tmpfile(); _stdout = tmpfile();   
+    _fds[READ] = fileno(_stdin);
+    _fds[WRITE] = fileno(_stdout);
+
+    write(_fds[READ], req.get_body().c_str(), req.get_body().size());
+    lseek(_fds[READ], 0, SEEK_SET);
     
-    if (pipe(_fds) < 0)
-    {    perror("cgi pipe"); exit(EXIT_FAILURE);  }
     _pid = fork();
     if (_pid < 0)
     {    perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
-    {    child_process(req);}
+        child_process(req);
     else
         parent_process(status, c);
+    lseek(_fds[WRITE], 0, SEEK_SET);
+    if (!fdopen(_fds[WRITE], "r"))
+    {   write(2, "BAD FD\n", 7);   c->setResponseString(UNAUTHORIZED, "", "");      return;      }                                                                 // to check if file can be opened, else error
+    std::string     _response = file2string(_fds[WRITE]); 
+    std::cerr << "RES: " << _response;    
+    if (_response.size())                                                           // if we have an output, execve has succeded                                        
+    {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");       return;      }
+    write(2, "PARENT NOK\n", 11);
+    c->setResponseString(BAD_GATEWAY, "", "");
 }
 
 // ************
@@ -327,10 +322,3 @@ std::string Cgi::file2string(int fd) const
 	close(fd);
 	return res;
 }
-
-// std::string Cgi::sendInputAsSTDIN(std::string body) const
-// {
-//     (void)body;
-//     std::string ret("\\{\"files\": (\"hello_world.py\", \"some file content\")\\}");
-//     return      ret;
-// }

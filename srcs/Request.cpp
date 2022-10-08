@@ -97,5 +97,5 @@ std::string     Request::get_body()                                 const
 {    
     if (_index_beginning_body != std::string::npos) // it means there is a body
     {   std::string char2string(&_raw_request.c_str()[_index_beginning_body]); return char2string;   }
-    return NULL;
+    return "";
 }

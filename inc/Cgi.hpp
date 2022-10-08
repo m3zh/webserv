@@ -14,6 +14,7 @@
 
 # include <iostream>
 # include <fstream>
+# include <sstream>
 # include <stdio.h>
 # include <unistd.h>
 # include <stdlib.h>
@@ -23,10 +24,6 @@
 # include <sys/wait.h>
 # include <sys/stat.h>
 # include <limits.h>
-# include <fcntl.h>
-# include <iostream>
-# include <fstream>
-# include <sstream>
 # include <map>
 
 # include "Webserv.hpp"
@@ -66,6 +63,8 @@ class Cgi
         CGIrequest      _request;
         pid_t           _pid;
         int             _fds[2];
+        FILE            *_stdin;
+        FILE            *_stdout;
         
         void            child_process(Request const& req)       const;
         void            parent_process(int status, Client *c)   const;

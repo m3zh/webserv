@@ -345,13 +345,13 @@ void Webserv::GETmethod(Client *c)  const
 {
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
-    Cgi                 cgi;
     ServerInfo*         _server = c->getServerInfo();
     Request             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 redirect = 0;
     int                 fileInFolder = -1;
+    Cgi                 cgi;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                   // check for location in config
     {
@@ -395,9 +395,9 @@ void Webserv::POSTmethod(Client *c) const
     std::string         file_path;
     ServerInfo*         _server = c->getServerInfo();
     Request             req = c->getRequest();
-    Cgi                 cgi;
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
+    Cgi                 cgi;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
     {
