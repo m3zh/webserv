@@ -27,7 +27,8 @@ bool        Cgi::isCGI_request(Client *c)
     Request             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator cgi_page = pages.begin();
-        
+
+    clear_CGIrequest();       
     for ( ; cgi_page != pages.end(); cgi_page++ )
     {                                                                     // check for cgi location in config
         if ( (*cgi_page).location_path == CGI_PATH )                                                
@@ -72,7 +73,7 @@ bool        Cgi::isCGI_request(Client *c)
     std::string script = path_to_script + action;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
     {   std::cout << "Script " << script << " not executable by CGI\n"; c->setResponseString(BAD_GATEWAY,"","");    return false;            };
-    _request.action = action;
+    _request.action = action; 
     c->setNoFileToSend(true);
     c->setIsNotCgi(false);
     set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
@@ -130,7 +131,7 @@ void    Cgi::parent_process(int status) const
         return ;
     if WIFEXITED(status)
         if (WEXITSTATUS(status) != 0)
-            {         perror("cgi runtime error"); exit(1);        }
+            {   perror("cgi runtime error"); exit(1);        }
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
@@ -141,7 +142,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     _fds[WRITE] = fileno(_stdout);
 
     std::cerr << "MY BODY MY RULES :\n";
-    std::cerr << req.get_body() << std::endl; 
+    std::cerr << req.get_body() << std::endl;
     write(_fds[READ], req.get_body().c_str(), req.get_body().size());
     lseek(_fds[READ], 0, SEEK_SET);
     
@@ -191,32 +192,39 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 {
     if (_request.upload_store != "")
         _env["DIR_UPLOAD"] = _request.upload_store;
-    _env["AUTH_TYPE"] = "";
+    if ( header.find("Auth-Type") != header.end() )  
+        _env["AUTH_TYPE"] = header["Auth-Type"];
     _env["DOCUMENT_ROOT"] = "~/webserv";
     if ( header.find("Content-Length") != header.end() )                                                                                          
 	    _env["CONTENT_LENGTH"] = header["Content-Length"];
     if ( header.find("Content-Type") != header.end() )                                                                                          
-	    _env["CONTENT_TYPE"] = header["Content-Type"];                                          
+	    _env["CONTENT_TYPE"] = header["Content-Type"];                                       
     if (header.find("Cookies") != header.end())                                                 
 	    _env["HTTP_COOKIE"] = header["Cookies"];
-    _env["HTTP_HOST"] = header["Host"];
-    _env["HTTP_REFERER"] = header["Referer"];
-    _env["HTTP_USER_AGENT"] = header["User-Agent"]; 
+    if ( header.find("Host") != header.end() ) 
+        _env["HTTP_HOST"] = header["Host"];
+    if ( header.find("Referer") != header.end() ) 
+        _env["HTTP_REFERER"] = header["Referer"];
+    if ( header.find("User-Agent") != header.end() ) 
+        _env["HTTP_USER_AGENT"] = header["User-Agent"];
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["PATH_INFO"] = req.get_location().substr(req.get_location().find("?"), req.get_location().size());         // the path as requested by the client, eg. www.xxx.com/app
-	_env["PATH_TRANSLATED"] = _request.path_to_script + _request.action;                                            // the actual path to the script
-	_env["QUERY_STRING"] = getFromQueryString(req.get_location());            
-	_env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
-	_env["REMOTE_ADDR"] = "127.0.0.1";                                                     
-	_env["REMOTE_USER"] = "";
-	_env["REMOTE_IDENT"] = "";
+	_env["PATH_INFO"] = req.get_location();                                                         // the path as requested by the client, eg. www.xxx.com/app
+	_env["PATH_TRANSLATED"] = _request.path_to_script + _request.action;                            // the actual path to the script
+	_env["QUERY_STRING"] = getFromQueryString(req.get_location());
+    if ( header.find("Host") != header.end() )
+	    _env["REMOTE_HOST"] = header["Host"];
+	_env["REMOTE_ADDR"] = "127.0.0.1";
+    if ( header.find("Remote-User") != header.end() )                                                      
+	    _env["REMOTE_USER"] = header["Remote-User"];
+    if ( header.find("Remote-Ident") != header.end() )  
+	    _env["REMOTE_IDENT"] = header["Remote-Ident"];
 	_env["REQUEST_METHOD"] = _request.method;
 	_env["REQUEST_URI"] = req.get_location();                                                           
 	_env["SCRIPT_NAME"] = _request.action;
 	_env["SCRIPT_FILENAME"] = _request.path_to_script + _request.action;
 	_env["SERVER_NAME"] = server->getServerName();                                                  // getEnvValue("HTTP_HOST");
-	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
+	_env["SERVER_PROTOCOL"] = req.get_http_version();
     std::string port = std::to_string(server->getPort());
 	_env["SERVER_PORT"] = port;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
@@ -224,7 +232,8 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 
 void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
 {
-    _request.method = req.get_method();
+    if ( header.find("Method") != header.end() )
+        _request.method = req.get_method();
     if ( header.find("Content-Length") != header.end() )
         _request.content_length = std::stoi(header["Content-Length"]);
     _request.path_to_script = path_to_script;
@@ -286,15 +295,20 @@ bool            Cgi::get_CGIparam(std::string param, std::string html_content, s
 
 std::string     Cgi::getFromQueryString(std::string uri)    const
 {
-    size_t pos = uri.find("?") + 1;   
-    return uri.substr(pos, uri.size() - pos);
+    std::cout << "QUERY\n";
+    size_t pos = uri.find("?");
+    if ( pos != std::string::npos )  
+        std::cout << uri.substr(pos + 1, uri.size() - pos + 1) << std::endl; 
+        return uri.substr(pos + 1, uri.size() - pos + 1);
+    std::cout << "QUERY2\n";
+    return "";
 }
 
 CGIrequest&     Cgi::get_CGIrequest()                           {   return _request;                            }           
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;             }                   
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;             }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;     }   
-std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python";                  } 
+std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python";                   } 
 
 // ************
 // UTILS functions

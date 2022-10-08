@@ -1,10 +1,14 @@
 #!/usr/bin/python
 
 import cgi, os
+import cgitb
+
+cgitb.enable()
 
 def cgi_script():
     form = cgi.FieldStorage()
 
+    message = cgi.print_form(form)
     # check params passed in env
     #for param in os.environ.keys():
     #    print "<b>%20s</b>: %s</br>" % (param, os.environ[param])
@@ -22,8 +26,6 @@ def cgi_script():
     <p>%s</p>
     </body></html>
     """%message)
-
-    os.write(2, message.encode())
 
 if __name__ == "__main__":
     os.write(2, b"Executing python script...\n")

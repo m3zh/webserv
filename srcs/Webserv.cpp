@@ -329,12 +329,12 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
                                                         if ( !method.size() || !uri.size() || !version.size() )
-                                                            c->setResponseString(BAD_REQUEST, "", "");
+                                                        {    c->setResponseString(BAD_REQUEST, "", "");         return;     }
                                                         if ( uri.size() > MAX_URI )
-                                                            c->setResponseString(REQUEST_URI_TOO_LONG, "", "");
+                                                        {   c->setResponseString(REQUEST_URI_TOO_LONG, "", ""); return;     }
                                                         if ( version != "HTTP/1.1" )
-                                                            c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", "");
-                                                            // 
+                                                        {   c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", "");    return;     }
+                                                            // get_content_type
                                                         if (method == "GET")            GETmethod(c);
                                                         else if (method == "POST")      POSTmethod(c);
                                                         else if (method == "DELETE")    DELETEmethod(c);
@@ -416,7 +416,7 @@ void Webserv::POSTmethod(Client *c) const
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");  return ;       }  
     if (cgi.isCGI_request(c))
-	{   std::cout << "POST request for CGI!" << std::endl; c->setNoFileToSend(true); return ;        }
+	{   std::cout << "POST request for CGI!" << std::endl; c->setNoFileToSend(true); std::cout << "HERE POST\n"; return ;        }
     c->setResponseString(BAD_GATEWAY, "", "");
 };
 
