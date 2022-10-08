@@ -141,6 +141,8 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     _fds[READ] = fileno(_stdin);
     _fds[WRITE] = fileno(_stdout);
 
+    std::cerr << "MY RAW REQ :\n";
+    std::cerr << req.get_raw_request() << std::endl;
     std::cerr << "MY BODY MY RULES :\n";
     std::cerr << req.get_body() << std::endl;
     write(_fds[READ], req.get_body().c_str(), req.get_body().size());
