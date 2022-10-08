@@ -38,16 +38,13 @@ def cgi_script():
     if not os.path.exists(os.getcwd() + directory):
         os.umask(0)
         os.makedirs(os.getcwd() + directory, mode=0o777)
-
+    target_dir = os.path.dirname(directory)[1:]
+    with open(target_dir + directory[1:] + "/" + filename, 'wb') as target:
+            for line in content:
+                target.write(line)
 
     try:
-        fn = os.path.basename("Makefile")
-        target_dir = os.path.dirname(directory)[1:]
-        with open(fn,'rb') as source:
-            with open(target_dir + directory + "Makefile", 'wb') as target:
-                for line in source:
-                    target.write(line)
-        message = 'The file "' + fn + '" was uploaded successfully to directory ' + target_dir
+        message = 'The file "' + filename + '" was uploaded successfully to directory ' + target_dir
     except:
         message = 'The file could not be uploaded to directory ' + target_dir
 

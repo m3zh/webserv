@@ -109,9 +109,9 @@ void    Cgi::child_process() const
     std::string pwd = getenv("PWD");    
 
     if (dup2(_fds[READ], STDIN_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
-    {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
+    {    close_fds(_fds[READ], _fds[WRITE]); perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
-    {    perror("cgi dup2 out"); exit(EXIT_FAILURE);  }
+    {    close_fds(_fds[READ], _fds[WRITE]); perror("cgi dup2 out"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
     string2charstar(&cmd[0], get_CGIscript().c_str());                                          // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());              // cmd[1] -> cgi-script.py
@@ -124,14 +124,14 @@ void    Cgi::child_process() const
 
 void    Cgi::parent_process(int status) const
 {
-    close(_fds[READ]);                                               // in the parent the output written to the end of the pipe
+    close(_fds[READ]);                                                              // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
     
     if (keep_alive == false)
         return ;
     if WIFEXITED(status)
         if (WEXITSTATUS(status) != 0)
-            {   perror("cgi runtime error"); exit(1);        }
+            {   close_fds(_fds[READ], _fds[WRITE]); perror("cgi runtime error"); exit(1);        }
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
@@ -148,7 +148,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     
     _pid = fork();
     if (_pid < 0)
-    {    perror("cgi fork"); exit(EXIT_FAILURE);  }
+    {    close_fds(_fds[READ], _fds[WRITE]); perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
         child_process();
     else
@@ -330,7 +330,7 @@ std::string Cgi::file2string(int fd) const
 	return res;
 }
 
-void Cgi::sendCGI_response(Client *c)
+void        Cgi::sendCGI_response(Client *c)
 {
     lseek(_fds[WRITE], 0, SEEK_SET);
     if (!fdopen(_fds[WRITE], "r"))
@@ -341,4 +341,10 @@ void Cgi::sendCGI_response(Client *c)
     {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");       return;      }
     write(2, "PARENT NOK\n", 11);
     c->setResponseString(BAD_GATEWAY, "", "");
+}
+
+void        Cgi::close_fds(int fd1, int fd2)    const
+{
+    close(fd1);
+    close(fd2);
 }
