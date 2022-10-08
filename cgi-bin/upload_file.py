@@ -9,10 +9,8 @@ def cgi_script():
     #    message += ":"
     #    message += os.environ[param]
     #    message += "\n"
-    # directory = os.environ["DIR_UPLOAD"]
-    # # content_type = os.environ["CONTENT_TYPE"]
-    # if not os.path.exists(directory):
-    #     os.makedirs(directory)
+    directory = os.environ["DIR_UPLOAD"].strip()
+    content_type = os.environ["CONTENT_TYPE"]
 
     body = ""
     for line in sys.stdin:              # read in chunks          
@@ -29,49 +27,35 @@ def cgi_script():
     message += "\n"
     message += filename
 
-    content = body[body.find("\n") + 4:]
+    content = body[body.find("\n"):]
     content = content[:content.find(boundary)].strip()
 
-    message += "***\n"
+    message += "***"
     message += content
+    message += "***"
+    message += directory
 
-# def cgi_script():
-#     form = cgi.FieldStorage()
-
-#     # Generator to buffer file chunks
-#     def fbuffer(f, chunk_size=1024):
-#         while True:
-#             chunk = f.read(chunk_size)
-#             if not chunk: break
-#             yield chunk
+    if not os.path.exists(os.getcwd() + directory):
+        os.umask(0)
+        os.makedirs(os.getcwd() + directory, mode=0o777)
     
-#     # A nested FieldStorage instance holds the file
-#     fileitem = form.getvalue("files")                              # . is added to create dir in cwd
-#     directory = "../dump"
-#     #os.write(2, fileitem.encode())
-#     if not os.path.exists(directory):
-#         os.makedirs(directory)
-#     # Test if the file was uploaded
-#     if fileitem:
-#         # strip leading path from file name
-#         # to avoid directory traversal attacks
-#         fn = os.path.basename(fileitem)
-#         try:
-#             with open(fn,'rb') as source, open(directory + '/' + fileitem, 'wb') as target:
-#                 for line in source:
-#                     target.write(line)
-#             message = 'The file "' + fn + '" was uploaded successfully to directory ' + directory
-#         except:
-#             message = cgi.FieldStorage()
-#     else:
-#         message = cgi.FieldStorage()
+    try:
+        # strip leading path from file name
+        # to avoid directory traversal attacks
+        fn = os.path.basename(filename)
+        with open(fn,'rb') as source, open(directory + '/' + fileitem, 'wb') as target:
+            for line in source:
+                target.write(line)
+        message = 'The file "' + fn + '" was uploaded successfully to directory ' + directory
+    except:
+        message = 'The file could not be uploaded to directory ' + directory
 
     print ("""\
-    Content-Type: text/html; charset=utf-8;\r\n\r\n
+    Content-Type: %s; charset=utf-8;\r\n\r\n
     <html><body>
     <p>%s</p>
     </body></html>
-    """%message)
+    """%(content_type,message))
 
 if __name__ == "__main__":
     os.write(2, b"Executing python script...\n")

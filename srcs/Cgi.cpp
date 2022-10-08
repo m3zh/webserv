@@ -102,7 +102,7 @@ if ($ENV{'REQUEST_METHOD'} eq \"POST\") {
 }
 */
 
-void    Cgi::child_process(Request const& req) const
+void    Cgi::child_process() const
 {
     char    *cmd[3];
     std::string pwd = getenv("PWD");    
@@ -121,7 +121,7 @@ void    Cgi::child_process(Request const& req) const
     {    perror("cgi execve"); exit(1);  }
 }
 
-void    Cgi::parent_process(int status, Client *c) const
+void    Cgi::parent_process(int status) const
 {
     close(_fds[READ]);                                               // in the parent the output written to the end of the pipe
     waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
@@ -129,8 +129,8 @@ void    Cgi::parent_process(int status, Client *c) const
     if (keep_alive == false)
         return ;
     if WIFEXITED(status)
-        if (WEXITSTATUS(status) != 0)     {         perror("cgi runtime error"); exit(1);        }
-    (void)c;                  // if execve has failed, we send error BAD_GATEWAY
+        if (WEXITSTATUS(status) != 0)
+            {         perror("cgi runtime error"); exit(1);        }
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
@@ -140,6 +140,8 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     _fds[READ] = fileno(_stdin);
     _fds[WRITE] = fileno(_stdout);
 
+    std::cerr << "MY BODY MY RULES :\n";
+    std::cerr << req.get_body() << std::endl; 
     write(_fds[READ], req.get_body().c_str(), req.get_body().size());
     lseek(_fds[READ], 0, SEEK_SET);
     
@@ -147,18 +149,10 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     if (_pid < 0)
     {    perror("cgi fork"); exit(EXIT_FAILURE);  }
     if (_pid == 0)
-        child_process(req);
+        child_process();
     else
-        parent_process(status, c);
-    lseek(_fds[WRITE], 0, SEEK_SET);
-    if (!fdopen(_fds[WRITE], "r"))
-    {   write(2, "BAD FD\n", 7);   c->setResponseString(UNAUTHORIZED, "", "");      return;      }                                                                 // to check if file can be opened, else error
-    std::string     _response = file2string(_fds[WRITE]); 
-    std::cerr << "RES: " << _response;    
-    if (_response.size())                                                           // if we have an output, execve has succeded                                        
-    {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");       return;      }
-    write(2, "PARENT NOK\n", 11);
-    c->setResponseString(BAD_GATEWAY, "", "");
+        parent_process(status);
+    sendCGI_response(c);
 }
 
 // ************
@@ -195,7 +189,6 @@ SERVER_SOFTWARE 	The server software you're using (e.g. Apache 1.3)
 // more on this: https://stackoverflow.com/questions/279966/php-self-vs-path-info-vs-script-name-vs-request-uri
 void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo* server)
 {
-    std::cout << "STORE: " << _request.upload_store;
     if (_request.upload_store != "")
         _env["DIR_UPLOAD"] = _request.upload_store;
     _env["AUTH_TYPE"] = "";
@@ -211,15 +204,15 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
     _env["HTTP_USER_AGENT"] = header["User-Agent"]; 
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["PATH_INFO"] = req.get_location();                                                         // the path as requested by the client, eg. www.xxx.com/app
-	_env["PATH_TRANSLATED"] = _request.path_to_script + _request.action;                            // the actual path to the script
+	_env["PATH_INFO"] = req.get_location().substr(req.get_location().find("?"), req.get_location().size());         // the path as requested by the client, eg. www.xxx.com/app
+	_env["PATH_TRANSLATED"] = _request.path_to_script + _request.action;                                            // the actual path to the script
 	_env["QUERY_STRING"] = getFromQueryString(req.get_location());            
 	_env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
 	_env["REMOTE_ADDR"] = "127.0.0.1";                                                     
 	_env["REMOTE_USER"] = "";
 	_env["REMOTE_IDENT"] = "";
 	_env["REQUEST_METHOD"] = _request.method;
-	_env["REQUEST_URI"] = "/app";                                                           
+	_env["REQUEST_URI"] = req.get_location();                                                           
 	_env["SCRIPT_NAME"] = _request.action;
 	_env["SCRIPT_FILENAME"] = _request.path_to_script + _request.action;
 	_env["SERVER_NAME"] = server->getServerName();                                                  // getEnvValue("HTTP_HOST");
@@ -301,7 +294,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;             }                   
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;             }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;     }   
-std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python3";                  } 
+std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python";                  } 
 
 // ************
 // UTILS functions
@@ -321,4 +314,17 @@ std::string Cgi::file2string(int fd) const
 	{		buf[r] = '\0';  res += std::string(buf);     }
 	close(fd);
 	return res;
+}
+
+void Cgi::sendCGI_response(Client *c)
+{
+    lseek(_fds[WRITE], 0, SEEK_SET);
+    if (!fdopen(_fds[WRITE], "r"))
+    {   write(2, "BAD FD\n", 7);   c->setResponseString(UNAUTHORIZED, "", "");      return;      }                                                                 // to check if file can be opened, else error
+    std::string     _response = file2string(_fds[WRITE]); 
+    std::cerr << "RES: " << _response;    
+    if (_response.size())                                                           // if we have an output, execve has succeded                                        
+    {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");       return;      }
+    write(2, "PARENT NOK\n", 11);
+    c->setResponseString(BAD_GATEWAY, "", "");
 }

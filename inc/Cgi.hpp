@@ -66,8 +66,9 @@ class Cgi
         FILE            *_stdin;
         FILE            *_stdout;
         
-        void            child_process(Request const& req)       const;
-        void            parent_process(int status, Client *c)   const;
+        void            child_process()                 const;
+        void            parent_process(int status)      const;
+        void            sendCGI_response(Client *c)      ;
 
         void                        set_CGIenv(Request const &req, std::map<std::string, std::string> header, ServerInfo *server);                                  // it should have two vars, http header and http body
         char**                      getEnv()                                            const;                                                                      // return env as a char** for execve

@@ -334,6 +334,7 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                             c->setResponseString(REQUEST_URI_TOO_LONG, "", "");
                                                         if ( version != "HTTP/1.1" )
                                                             c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", "");
+                                                            // 
                                                         if (method == "GET")            GETmethod(c);
                                                         else if (method == "POST")      POSTmethod(c);
                                                         else if (method == "DELETE")    DELETEmethod(c);
