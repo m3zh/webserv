@@ -42,7 +42,7 @@ std::string &           Client::getRemainingBufferToSend()                      
 
 
 // SETTERS
-void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
+void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();     };
 void                    Client::setRequestString(std::string s)                 {   request_str.append(s);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
 void                    Client::setResponseString(std::string code, std::string content, std::string file_path)
@@ -58,6 +58,7 @@ void                    Client::setResponseString(std::string code, std::string 
     status["405"] = "Method Not Allowed";
     status["411"] = "Length Required";
     status["414"] = "Request URI Too Long";
+    status["415"] = "Unsupported Media Type";
     status["501"] = "Not Implemented";
     status["504"] = "Gateway Timeout";
     status["505"] = "HTTP Version Not Supported";
@@ -87,7 +88,7 @@ void                    Client::setResponseString(std::string code, std::string 
     }
     else if( code == "200" )
         file = file_path;
-    response_str += "Content-Type: " + getContentType(file) + "; charset=utf-8;\r\n";
+    response_str += "Content-Type: " + getRequest().get_header_map()["Content-Type"] + "; charset=utf-8;\r\n";
     response_str += "Content-Length: " + std::to_string(file.size()) + ";\r\n\r\n";             // file size !!!
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;

@@ -23,7 +23,6 @@ extern bool keep_alive;
 # define READ_WRITE_BUFFER 16384 // 2^14
 # define MAX_URI 1024
 # define MAX_UPLOAD_FILE 2048
-//# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
 
 # include <stdio.h>
 # include <stdlib.h>
