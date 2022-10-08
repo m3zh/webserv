@@ -89,7 +89,7 @@ void                    Client::setResponseString(std::string code, std::string 
     else if( code == "200" )
         file = file_path;
     response_str += "Content-Type: " + getRequest().get_header_map()["Content-Type"] + "; charset=utf-8;\r\n";
-    response_str += "Content-Length: " + std::to_string(file.size()) + ";\r\n\r\n";             // file size !!!
+    response_str += "Content-Length: " + getFileSize(file) + ";\r\n\r\n";             // file size !!!
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);
@@ -97,19 +97,13 @@ void                    Client::setResponseString(std::string code, std::string 
     setThereIsAFileToSend(true); 
 };
 
-std::string           Client::getContentType(std::string file)
+std::string           Client::getFileSize(std::string file)
 {
-    std::string ret;
-    std::string extension = file.substr(file.find_last_of(".") + 1, file.size());
-    if ( extension == "html" || extension == "css" 
-        || extension == "xml" || extension == "csv" )
-    {    ret = "text/" + extension; return ret;     }
-    if ( extension == "jpeg" || extension == "png" || extension == "gif" 
-        || extension == "svg" || extension == "webp" || extension == "jpg" )
-    {    ret = "image/" + extension; return ret;     }
-    ret = "text/plain";
-    return ret;
-};
+    struct stat st;
+    stat(file.c_str(), &st);
+    off_t size = st.st_size; 
+    return std::to_string(size);
+}
 
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };
 
