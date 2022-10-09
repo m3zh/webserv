@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 15:08:47 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 18:52:29 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/09 21:14:37 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ class Webserv
         // for each page requested, check if method GET POST DEL is allowed
         int                         invalidMethod(page page, std::string method)                                         const;
         int                         isDirectory( std::string path2file )                                                 const;
+        int                         isAfileInFolder( std::string path2file )                                             const;
         void                        checkAutoindex(page page, std::string path2file, Client *c, ServerInfo* _server)     const;
 
         Webserv();

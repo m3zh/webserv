@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/05 10:01:02 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/09 21:35:54 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -352,26 +352,29 @@ void Webserv::GETmethod(Client *c)  const
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 redirect = 0;
-    int                 fileInFolder = -1;
+    int                 fileInFolder = 0;
     Cgi                 cgi;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                   // check for location in config
     {
-        if ((*page_requested).location_path.back() == '/')
-            file_path = (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
-        if ( file_path.back() != '/')                                                           // if it is not a folder, check file path
-            fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK );
+        file_path = (*page_requested).location_path + req.get_location();
+        if ( file_path.find("//") != std::string::npos )
+            file_path.replace(file_path.find("//"),2,"/");
+        std::cout << file_path << std::endl;
+        std::cout << (*page_requested).location_path << std::endl;
+        if (isAfileInFolder(pwd + _server->getServerRoot() + file_path))
+            fileInFolder = 1;
         if ( req.get_location().compare((*page_requested).location_path) == 0                  // if the page required is exactly as in config
-             || fileInFolder == 0 )                                                          // or if it is found in a config folder                     
+             || fileInFolder )                                                                  // or if it is found in a config folder                     
         {                                                                                                       
             if ( invalidMethod(*page_requested, "GET") )                                        // check for method
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
-            if ( fileInFolder == -1 && (*page_requested).redirect.size() )                      // check for redirection
+            if ( (*page_requested).redirect.size() )                      // check for redirection
                 redirect = 1;
             break ;
         }
     }
-    if ( fileInFolder < 0 && page_requested == pages.end() )                                    // if nothing is found 
+    if ( !fileInFolder && page_requested == pages.end() )                                    // if nothing is found 
     {   
         if (req.get_location().find("py") != std::string::npos )  {                             // we check if it is a CGI request   
             if (cgi.isCGI_request(c)) {   std::cout << "GET request for CGI!" << std::endl;                 return ;        }
@@ -379,7 +382,7 @@ void Webserv::GETmethod(Client *c)  const
         c->setResponseString(NOT_FOUND, "", "");  return ;        
     }
     if ( redirect )         {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");      return  ;       }
-    if ( !fileInFolder )    {
+    if ( fileInFolder )     {
         file_path = pwd + _server->getServerRoot() + file_path;
         if (open((file_path).c_str(), O_RDONLY) < 0)            {    c->setResponseString(UNAUTHORIZED, "", "");  return ;  }
         c->setResponseString(OK, "", file_path); return ;
@@ -429,22 +432,24 @@ void Webserv::DELETEmethod(Client *c) const
     Request             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
-    int                 fileInFolder;
+    int                 fileInFolder = 0;
 
-    for ( ; page_requested != pages.end(); page_requested++ )                               
+    for ( ; page_requested != pages.end(); page_requested++ )                                   // check for location in config
     {
-        if ((*page_requested).location_path.back() == '/')
-            file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
-        fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK);
-        if ( req.get_location().compare((*page_requested).location_path) == 0                   // if the page required is exactly as in config
-                || fileInFolder > -1 )                                                          // or if it is found in a config folder                     
+        file_path = (*page_requested).location_path + req.get_location();
+        if ( file_path.find("//") != std::string::npos )
+            file_path.replace(file_path.find("//"),2,"/");
+        if (isAfileInFolder(pwd + _server->getServerRoot() + file_path))
+            fileInFolder = 1;
+        if ( req.get_location().compare((*page_requested).location_path) == 0                  // if the page required is exactly as in config
+             || fileInFolder )                                                         // or if it is found in a config folder                     
         {                                                                                                       
             if ( invalidMethod(*page_requested, "DELETE") )                                     // check for method
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             break ;
         }
     }
-    if ( fileInFolder < 0 && page_requested == pages.end() )
+    if ( !fileInFolder && page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");  return ;           }
     if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
@@ -475,8 +480,18 @@ int     Webserv::isDirectory( std::string path2file )    const
 {
     struct stat         check_file;
 
-    if ( !stat(path2file.c_str(), &check_file)   // if path exists
-                && (check_file.st_mode & S_IFDIR )      )
+    if ( !stat(path2file.c_str(), &check_file)                  // if path exists
+                && S_ISDIR(check_file.st_mode)      )
+        return 1;    
+    return 0;
+}
+
+int     Webserv::isAfileInFolder( std::string path2file ) const
+{
+    struct stat         check_file;
+
+    if ( !stat(path2file.c_str(), &check_file)                  // if path exists
+                && S_ISREG(check_file.st_mode)   )
         return 1;    
     return 0;
 }

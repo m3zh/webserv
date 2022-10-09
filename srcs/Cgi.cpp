@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 20:02:16 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/09 19:32:51 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,8 +299,7 @@ std::string     Cgi::getFromQueryString(std::string uri)    const
 {
     std::cout << "QUERY\n";
     size_t pos = uri.find("?");
-    if ( pos != std::string::npos )  
-        std::cout << uri.substr(pos + 1, uri.size() - pos + 1) << std::endl; 
+    if ( pos != std::string::npos )   
         return uri.substr(pos + 1, uri.size() - pos + 1);
     std::cout << "QUERY2\n";
     return "";
