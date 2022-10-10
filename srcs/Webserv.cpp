@@ -545,6 +545,6 @@ void     Webserv::checkAutoindex( page page, std::string file, Client *c, Server
         c->setResponseString(OK, response, ""); std::cout << file << std::endl; return ;
     }
     else
-        c->setResponseString(OK, "", _server->getServerRoot() + _server->getServerIndex()); return ;
+        c->setResponseString(OK, "", getenv("PWD") + _server->getServerRoot() + "/" + _server->getServerIndex()); return ;
 }
 
