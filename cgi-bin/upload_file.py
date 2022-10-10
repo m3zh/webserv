@@ -23,30 +23,27 @@ def cgi_script():
     filename = body[body.find("filename") + 10:]
     filename = filename[:filename.find("\"")].strip()
 
-    message += boundary
-    message += "\n"
-    message += filename
+    # message += boundary
+    # message += "\n"
+    # message += filename
 
     content = body[body.find("\n"):]
     content = content[:content.find(boundary)].strip()
 
-    message += "***"
-    message += content
-    message += "***"
-    message += directory
+    # message += "***"
+    # message += content
+    # message += "***"
+    # message += directory
 
     if not os.path.exists(os.getcwd() + directory):
         os.umask(0)
         os.makedirs(os.getcwd() + directory, mode=0o777)
-    
     try:
-        # strip leading path from file name
-        # to avoid directory traversal attacks
-        fn = os.path.basename(filename)
-        with open(fn,'rb') as source, open(directory + '/' + fileitem, 'wb') as target:
-            for line in source:
-                target.write(line)
-        message = 'The file "' + fn + '" was uploaded successfully to directory ' + directory
+        target_dir = os.path.dirname(directory)[1:]
+        with open(target_dir + directory[1:] + "/" + filename, 'wb') as target:
+                for line in content:
+                    target.write(line)
+        message = 'The file "' + filename + '" was uploaded successfully to directory ' + directory
     except:
         message = 'The file could not be uploaded to directory ' + directory
 
@@ -56,7 +53,6 @@ def cgi_script():
     <p>%s</p>
     </body></html>
     """%(content_type,message))
-
 if __name__ == "__main__":
     os.write(2, b"Executing python script...\n")
     cgi_script()

@@ -191,32 +191,39 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 {
     if (_request.upload_store != "")
         _env["DIR_UPLOAD"] = _request.upload_store;
-    _env["AUTH_TYPE"] = "";
+    if ( header.find("Auth-Type") != header.end() )  
+        _env["AUTH_TYPE"] = header["Auth-Type"];
     _env["DOCUMENT_ROOT"] = "~/webserv";
     if ( header.find("Content-Length") != header.end() )                                                                                          
 	    _env["CONTENT_LENGTH"] = header["Content-Length"];
     if ( header.find("Content-Type") != header.end() )                                                                                          
-	    _env["CONTENT_TYPE"] = header["Content-Type"];                                          
+	    _env["CONTENT_TYPE"] = header["Content-Type"];                                       
     if (header.find("Cookies") != header.end())                                                 
 	    _env["HTTP_COOKIE"] = header["Cookies"];
-    _env["HTTP_HOST"] = header["Host"];
-    _env["HTTP_REFERER"] = header["Referer"];
-    _env["HTTP_USER_AGENT"] = header["User-Agent"]; 
+    if ( header.find("Host") != header.end() ) 
+        _env["HTTP_HOST"] = header["Host"];
+    if ( header.find("Referer") != header.end() ) 
+        _env["HTTP_REFERER"] = header["Referer"];
+    if ( header.find("User-Agent") != header.end() ) 
+        _env["HTTP_USER_AGENT"] = header["User-Agent"];
     _env["HTTPS"] = "off";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["PATH_INFO"] = req.get_location().substr(req.get_location().find("?"), req.get_location().size());         // the path as requested by the client, eg. www.xxx.com/app
-	_env["PATH_TRANSLATED"] = _request.path_to_script + _request.action;                                            // the actual path to the script
-	_env["QUERY_STRING"] = getFromQueryString(req.get_location());            
-	_env["REMOTE_HOST"] = getEnvValue("HTTP_HOST");
-	_env["REMOTE_ADDR"] = "127.0.0.1";                                                     
-	_env["REMOTE_USER"] = "";
-	_env["REMOTE_IDENT"] = "";
+	_env["PATH_INFO"] = req.get_location();                                                         // the path as requested by the client, eg. www.xxx.com/app
+	_env["PATH_TRANSLATED"] = _request.path_to_script + _request.action;                            // the actual path to the script
+	_env["QUERY_STRING"] = getFromQueryString(req.get_location());
+    if ( header.find("Host") != header.end() )
+	    _env["REMOTE_HOST"] = header["Host"];
+	_env["REMOTE_ADDR"] = "127.0.0.1";
+    if ( header.find("Remote-User") != header.end() )                                                      
+	    _env["REMOTE_USER"] = header["Remote-User"];
+    if ( header.find("Remote-Ident") != header.end() )  
+	    _env["REMOTE_IDENT"] = header["Remote-Ident"];
 	_env["REQUEST_METHOD"] = _request.method;
 	_env["REQUEST_URI"] = req.get_location();                                                           
 	_env["SCRIPT_NAME"] = _request.action;
 	_env["SCRIPT_FILENAME"] = _request.path_to_script + _request.action;
 	_env["SERVER_NAME"] = server->getServerName();                                                  // getEnvValue("HTTP_HOST");
-	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
+	_env["SERVER_PROTOCOL"] = req.get_http_version();
     std::string port = std::to_string(server->getPort());
 	_env["SERVER_PORT"] = port;                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
@@ -286,8 +293,10 @@ bool            Cgi::get_CGIparam(std::string param, std::string html_content, s
 
 std::string     Cgi::getFromQueryString(std::string uri)    const
 {
-    size_t pos = uri.find("?") + 1;   
-    return uri.substr(pos, uri.size() - pos);
+    size_t pos = uri.find("?");
+    if ( pos != std::string::npos )   
+        return uri.substr(pos + 1, uri.size() - pos + 1);
+    return "";
 }
 
 CGIrequest&     Cgi::get_CGIrequest()                           {   return _request;                            }           
