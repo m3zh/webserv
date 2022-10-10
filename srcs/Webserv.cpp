@@ -330,12 +330,11 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
                                                         if ( !method.size() || !uri.size() || !version.size() )
-                                                            c->setResponseString(BAD_REQUEST, "", "");
+                                                        {    c->setResponseString(BAD_REQUEST, "", "");                 return;     }
                                                         if ( uri.size() > MAX_URI )
-                                                            c->setResponseString(REQUEST_URI_TOO_LONG, "", "");
+                                                        {    c->setResponseString(REQUEST_URI_TOO_LONG, "", "");        return;     }
                                                         if ( version != "HTTP/1.1" )
-                                                            c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", "");
-                                                            // 
+                                                        {     c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", ""); return ;    }
                                                         if (method == "GET")            GETmethod(c);
                                                         else if (method == "POST")      POSTmethod(c);
                                                         else if (method == "DELETE")    DELETEmethod(c);
@@ -395,7 +394,7 @@ void Webserv::GETmethod(Client *c)  const
     std::ifstream   file(file_path.c_str());
     if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  return ;          }
     if ( type == LOCATION || type == SUBFOLDER )                                                        // if it is a directory, check for autoindex              
-    {    checkAutoindex( *page_requested, file_path, c, _server );  return;                     }
+    {    checkAutoindex( *page_requested, file_path, c, _server, type );  return;                     }
 };
 
 void Webserv::POSTmethod(Client *c) const
@@ -508,9 +507,9 @@ int     Webserv::isFileinFolder( std::string path2file ) const
     return 0;
 }
 
-void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, ServerInfo* _server ) const
+void     Webserv::checkAutoindex( page page, std::string file, Client *c, ServerInfo* _server, int type ) const
 {
-    if ( page.autoindex == "on" )
+    if ( type == SUBFOLDER || page.autoindex == "on" )
     {
         std::cout << "Autoindex is on for " << page.location_path << std::endl;
         struct dirent *dir_list;
@@ -520,21 +519,23 @@ void     Webserv::checkAutoindex( page page, std::string path2file, Client *c, S
                     <title> Index of" + page.location_path + "</title></head><body>"; 
         response += "<h1>Index of " + page.location_path + "</h1><hr><div><ul style=\"list-style: none;padding: 0;\">";
 
-        DIR *dir = opendir(path2file.c_str());
+        DIR *dir = opendir(file.c_str());
         if ( dir == NULL )
         {   c->setResponseString(UNAUTHORIZED, "", "");  return ;   }
         while ( (dir_list = readdir(dir)) )    {
             std::string item(dir_list->d_name);
             std::string href = item;
-            if ( item == "." )          {   href = path2file.substr(path2file.find_last_of("\\/"), path2file.size());  }
-            else if ( item == ".." )    {   href = path2file.substr(0, path2file.find_last_of("\\/"));  }
+            if ( item == "." )          {   href = file.substr(file.find_last_of("\\/"), file.size());  }
+            else if ( item == ".." )    {   href = file.substr(0, file.find_last_of("\\/"));  }
             else if ( item[0] != '/' )  {   href.insert(0, "/");     }
             response += HREF_BEGIN + href + "\">" + item + HREF_END;
         }
         response += "</ul></div></body></html>";
+        closedir(dir);
         c->setNoFileToSend(true);
         c->setResponseString(OK, response, ""); return ;
     }
-    c->setResponseString(OK, _server->getServerIndex(), _server->getServerRoot());  return ;
+    else
+        c->setResponseString(OK, "", _server->getServerRoot() + _server->getServerIndex());  return ;
 }
 

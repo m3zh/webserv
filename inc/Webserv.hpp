@@ -70,11 +70,11 @@ class Webserv
         std::list<Client *>         _clients_list;
 
         // for each page requested, check if method GET POST DEL is allowed
-        int                         invalidMethod(page page, std::string method)                                         const;
-        int                         isItFileLocationOrSubfolder( Request const& req, page page, std::string file )       const;
-        int                         isDirectory( std::string path2file )                                                 const;
-        int                         isFileinFolder( std::string path2file )                                              const;
-        void                        checkAutoindex(page page, std::string path2file, Client *c, ServerInfo* _server)     const;
+        int                         invalidMethod(page page, std::string method)                                            const;
+        int                         isItFileLocationOrSubfolder( Request const& req, page page, std::string file )          const;
+        int                         isDirectory( std::string path2file )                                                    const;
+        int                         isFileinFolder( std::string path2file )                                                 const;
+        void                        checkAutoindex(page page, std::string file, Client *c, ServerInfo* _server, int type)   const;
 
         Webserv();
         Webserv(Webserv const & x);
