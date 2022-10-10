@@ -356,7 +356,10 @@ void Webserv::GETmethod(Client *c)  const
 
     for ( ; page_requested != pages.end(); page_requested++ )                                   // check for location in config
     {
-        file_path = (*page_requested).location_path + req.get_location();
+        if ((*page_requested).root.size())
+            file_path = (*page_requested).root + req.get_location();
+        else
+            file_path = (*page_requested).location_path + req.get_location();
         if ( file_path.find("//") != std::string::npos )
             file_path.replace(file_path.find("//"),2,"/");
         std::cout << file_path << std::endl;
@@ -367,10 +370,10 @@ void Webserv::GETmethod(Client *c)  const
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             if ( type == LOCATION )
             {
-                if ( (*page_requested).redirect.size() )                                        // check for redirection
+                if ((*page_requested).redirect.size())                                        // check for redirection
                     redirect = 1;
                 else if ((*page_requested).root.size())
-                    file_path = (*page_requested).root;
+                    file_path = pwd + _server->getServerRoot() + (*page_requested).root;
                 else
                     file_path = pwd + _server->getServerRoot() + page_requested->location_path;
             }
@@ -384,7 +387,8 @@ void Webserv::GETmethod(Client *c)  const
         if (req.get_location().find("py") != std::string::npos )  {                             // we check if it is a CGI request   
             if (cgi.isCGI_request(c)) {   std::cout << "GET request for CGI!" << std::endl;                 return ;        }
         }
-        c->setResponseString(NOT_FOUND, "", "");  return ;        
+        if (!type)
+            c->setResponseString(NOT_FOUND, "", "");  return ;        
     }
     if ( redirect )         {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");      return  ;       }
     if ( type == FILE_IN_FOLDER )    {
