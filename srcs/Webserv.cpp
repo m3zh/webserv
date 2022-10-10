@@ -153,7 +153,7 @@ void    Webserv::looping_through_read_set()
             if ((*it)->headerIsReadComplete() == false) 
             {
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
-                    throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);
+                    throw WebException<int>(BLUE, "WebServ error: XXXreceiving failed on client socket ", client_socket);
                 buffer[bytes_recv] = 0;
                 std::string buf(buffer);
                 (*it)->setRequestString(buf);
@@ -330,12 +330,11 @@ void    Webserv::handleRequest(Client *c)   const   {
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
                                                         if ( !method.size() || !uri.size() || !version.size() )
-                                                            c->setResponseString(BAD_REQUEST, "", "");
+                                                        {    c->setResponseString(BAD_REQUEST, "", "");                 return;     }
                                                         if ( uri.size() > MAX_URI )
-                                                            c->setResponseString(REQUEST_URI_TOO_LONG, "", "");
+                                                        {    c->setResponseString(REQUEST_URI_TOO_LONG, "", "");        return;     }
                                                         if ( version != "HTTP/1.1" )
-                                                            c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", "");
-                                                            // 
+                                                        {     c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", ""); return ;    }
                                                         if (method == "GET")            GETmethod(c);
                                                         else if (method == "POST")      POSTmethod(c);
                                                         else if (method == "DELETE")    DELETEmethod(c);
