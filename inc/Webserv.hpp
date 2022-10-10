@@ -23,6 +23,10 @@ extern bool keep_alive;
 # define READ_WRITE_BUFFER 16384 // 2^14
 # define MAX_URI 1024
 # define MAX_UPLOAD_FILE 2048
+
+# define LOCATION           1
+# define FILE_IN_FOLDER     2
+# define SUBFOLDER          3
 //# define log(c, msg, x) std::cout << c << msg << x << "\n" << RESET;
 
 # include <stdio.h>
@@ -67,7 +71,9 @@ class Webserv
 
         // for each page requested, check if method GET POST DEL is allowed
         int                         invalidMethod(page page, std::string method)                                         const;
+        int                         isItFileLocationOrSubfolder( Request const& req, page page, std::string file )       const;
         int                         isDirectory( std::string path2file )                                                 const;
+        int                         isFileinFolder( std::string path2file )                                              const;
         void                        checkAutoindex(page page, std::string path2file, Client *c, ServerInfo* _server)     const;
 
         Webserv();

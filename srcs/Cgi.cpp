@@ -65,6 +65,8 @@ bool        Cgi::isCGI_request(Client *c)
         size_t content_length = std::stoi(header["Content-Length"]);
         if (content_length <= 0)
         {   std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");    return false;              };
+        if (header.find("Content-Type") != header.end())
+        {   if (header["Content-Type"].find("text/plain") != std::string::npos)  c->setResponseString(UNSUPPORTED_MEDIA_TYPE,"","");    return false;               };
     }
     // ------
     // SCRIPT -> root + action

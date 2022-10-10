@@ -352,26 +352,35 @@ void Webserv::GETmethod(Client *c)  const
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 redirect = 0;
-    int                 fileInFolder = -1;
+    int                 type = 0;
     Cgi                 cgi;
 
     for ( ; page_requested != pages.end(); page_requested++ )                                   // check for location in config
     {
-        if ((*page_requested).location_path.back() == '/')
-            file_path = (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
-        if ( file_path.back() != '/')                                                           // if it is not a folder, check file path
-            fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK );
-        if ( req.get_location().compare((*page_requested).location_path) == 0                  // if the page required is exactly as in config
-             || fileInFolder == 0 )                                                          // or if it is found in a config folder                     
-        {                                                                                                       
+        file_path = (*page_requested).location_path + req.get_location();
+        if ( file_path.find("//") != std::string::npos )
+            file_path.replace(file_path.find("//"),2,"/");
+        std::cout << file_path << std::endl;
+        type = isItFileLocationOrSubfolder(req, *page_requested, pwd + _server->getServerRoot() + file_path);
+        if ( type )
+        {
             if ( invalidMethod(*page_requested, "GET") )                                        // check for method
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
-            if ( fileInFolder == -1 && (*page_requested).redirect.size() )                      // check for redirection
-                redirect = 1;
+            if ( type == LOCATION )
+            {
+                if ( (*page_requested).redirect.size() )                                        // check for redirection
+                    redirect = 1;
+                else if ((*page_requested).root.size())
+                    file_path = (*page_requested).root;
+                else
+                    file_path = pwd + _server->getServerRoot() + page_requested->location_path;
+            }
+            else
+                file_path = pwd + _server->getServerRoot() + file_path;
             break ;
         }
     }
-    if ( fileInFolder < 0 && page_requested == pages.end() )                                    // if nothing is found 
+    if ( !type && page_requested == pages.end() )                                               // if nothing is found 
     {   
         if (req.get_location().find("py") != std::string::npos )  {                             // we check if it is a CGI request   
             if (cgi.isCGI_request(c)) {   std::cout << "GET request for CGI!" << std::endl;                 return ;        }
@@ -379,15 +388,13 @@ void Webserv::GETmethod(Client *c)  const
         c->setResponseString(NOT_FOUND, "", "");  return ;        
     }
     if ( redirect )         {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");      return  ;       }
-    if ( !fileInFolder )    {
-        file_path = pwd + _server->getServerRoot() + file_path;
+    if ( type == FILE_IN_FOLDER )    {
         if (open((file_path).c_str(), O_RDONLY) < 0)            {    c->setResponseString(UNAUTHORIZED, "", "");  return ;  }
         c->setResponseString(OK, "", file_path); return ;
     }
-    file_path = pwd + _server->getServerRoot() + page_requested->location_path;
     std::ifstream   file(file_path.c_str());
     if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  return ;          }
-    if ( isDirectory(  file_path ) )                                                        // if it is a directory, check for autoindex              
+    if ( type == LOCATION || type == SUBFOLDER )                                                        // if it is a directory, check for autoindex              
     {    checkAutoindex( *page_requested, file_path, c, _server );  return;                     }
 };
 
@@ -433,8 +440,9 @@ void Webserv::DELETEmethod(Client *c) const
 
     for ( ; page_requested != pages.end(); page_requested++ )                               
     {
-        if ((*page_requested).location_path.back() == '/')
-            file_path += (*page_requested).location_path.substr(0, (*page_requested).location_path.find_last_of("\\/")) + req.get_location();
+        file_path = (*page_requested).location_path + req.get_location();
+        if ( file_path.find("//") != std::string::npos )
+            file_path.replace(file_path.find("//"),2,"/");
         fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK);
         if ( req.get_location().compare((*page_requested).location_path) == 0                   // if the page required is exactly as in config
                 || fileInFolder > -1 )                                                          // or if it is found in a config folder                     
@@ -471,12 +479,31 @@ int     Webserv::invalidMethod(page page, std::string method)   const
     return 0;
 }
 
+int     Webserv::isItFileLocationOrSubfolder( Request const& req, page page, std::string file )       const
+{
+    if ( req.get_location().compare(page.location_path) == 0 )                     // if it matches a location in config 
+        return 1;
+    if (isFileinFolder( file ))   return 2;                                                       // if it's a file in folder             
+    if (isDirectory( file ))      return 3;                                                       // if it's a subfolder of a location   
+    return 0;
+}
+
 int     Webserv::isDirectory( std::string path2file )    const
 {
     struct stat         check_file;
 
-    if ( !stat(path2file.c_str(), &check_file)   // if path exists
-                && (check_file.st_mode & S_IFDIR )      )
+    stat(path2file.c_str(), &check_file);                 // if path exists
+    if (S_ISDIR(check_file.st_mode)      )
+        return 1;    
+    return 0;
+}
+
+int     Webserv::isFileinFolder( std::string path2file ) const
+{
+    struct stat         check_file;
+
+    stat(path2file.c_str(), &check_file);                  // if path exists
+    if( S_ISREG(check_file.st_mode)   )
         return 1;    
     return 0;
 }
