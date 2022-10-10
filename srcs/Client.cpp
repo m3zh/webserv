@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/05 11:01:20 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/10 17:08:27 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@ Client::Client( int client_socket,
                 ServerInfo *associated_server)  :   client_socket(client_socket),
                                                     client_addrs(client_addrs),
                                                     associated_server(associated_server),
-                                                    request_str(""),
+                                                    //request_str(""),
+                                                    request(request_str),
                                                     FileToSend(false)           {
                                                                                     setReadAsComplete(false);
                                                                                     setHeaderReadAsComplete(false);
@@ -27,12 +28,19 @@ Client::Client( int client_socket,
                                                                                 };
 Client::~Client()                                                               {};
 
+
+void                    Client::parseHeader()
+{
+    // CALL PARSE REQUEST FCT FROM REQUEST CLASS
+    request.parse_raw_request();
+}
+
 // GETTERS
 int                     Client::getClientSocket()                       const   {   return  client_socket;          };
 struct sockaddr_in      Client::getClientAddress()                      const   {   return  client_addrs;           };
 ServerInfo *            Client::getServerInfo()                         const   {   return  associated_server;      };
-std::string             Client::getRequestString()                      const   {   return  request_str;            };
-Request                 Client::getRequest()                            const   {   return  request;                };
+std::string const &             Client::getRequestString()                      const   {   return  request_str;            };
+Request const &                 Client::getRequest()                            const   {   return  request;                };
 std::string             Client::getResponseString()                     const   {   return  response_str;           };
 std::string             Client::getResponseFile()                       const   {   return  response_file;          };
 
@@ -42,8 +50,8 @@ std::string &           Client::getRemainingBufferToSend()                      
 
 
 // SETTERS
-void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
-void                    Client::setRequestString(std::string s)                 {   request_str.append(s);      };
+//void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
+void                    Client::appendToRequestString(char *str, ssize_t size)                 {   request_str.append(str, size);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
 void                    Client::setResponseString(std::string code, std::string content, std::string file_path)
 {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 16:06:48 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/10 15:40:05 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 class Request
 {
     private:
-        std::string                         _raw_request; // this points to the request untouched
+        std::string const &                 _raw_request; // this points to the request untouched
         std::string                         _method;
         std::string                         _location;
         std::string                         _http_version;
@@ -32,10 +32,12 @@ class Request
         void    _get_method_location_version(std::string raw_request)   ;
         void    _fill_header_map(std::string raw_request)               ;  
 
-    public:
+
         Request();
         Request(Request const & x);
         Request &operator=(Request const & x);
+    public:
+
         Request(std::string const &raw_request);
         ~Request();
 

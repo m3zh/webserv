@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:42 by vmasse            #+#    #+#             */
-/*   Updated: 2022/10/04 13:16:29 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/10 17:16:14 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ class Cgi
         std::string                 getEnvValue(std::string key)                        ;                                   
         std::string                 getFromQueryString(std::string uri)                 const;            
 
-        void            set_CGIrequest(Request req, std::map<std::string, std::string> header,
+        void            set_CGIrequest(Request const & req, std::map<std::string, std::string> header,
                                         std::string path_to_script, std::string upload_store, ServerInfo *server); // size_t -> content length is never negative
         void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
         

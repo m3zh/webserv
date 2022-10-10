@@ -3,34 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/09/26 16:22:31 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/10 15:40:30 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Request.hpp"
 
-Request::Request()                                  {};
+//Request::Request()                                  {};
 Request::Request(std::string const& raw_request)    :   _raw_request(raw_request) {};
-Request &Request::operator=(Request const & r)      {
-                                                        _raw_request = r.get_raw_request(); // this points to the request untouched
-                                                        _method = r._method;
-                                                        _location = r._location;
-                                                        _http_version = r._http_version;
-                                                        _header_map.insert(r._header_map.begin(), r._header_map.end());
-                                                        _index_beginning_body = r._index_beginning_body;
-                                                        return *this;
-                                                    };
-Request::Request(Request const & r)                 {
-                                                        _raw_request = r.get_raw_request(); // this points to the request untouched
-                                                        _method = r._method;
-                                                        _location = r._location;
-                                                        _http_version = r._http_version;
-                                                        _header_map.insert(r._header_map.begin(), r._header_map.end());
-                                                        _index_beginning_body = r._index_beginning_body;
-                                                    };
+//Request &Request::operator=(Request const & r)      {
+//                                                        _raw_request = r.get_raw_request(); // this points to the request untouched
+//                                                        _method = r._method;
+//                                                        _location = r._location;
+//                                                        _http_version = r._http_version;
+//                                                        _header_map.insert(r._header_map.begin(), r._header_map.end());
+//                                                        _index_beginning_body = r._index_beginning_body;
+//                                                        return *this;
+//                                                    };
+//Request::Request(Request const & r)                 {
+//                                                        _raw_request = r.get_raw_request(); // this points to the request untouched
+//                                                        _method = r._method;
+//                                                        _location = r._location;
+//                                                        _http_version = r._http_version;
+//                                                        _header_map.insert(r._header_map.begin(), r._header_map.end());
+//                                                        _index_beginning_body = r._index_beginning_body;
+//                                                    };
 Request::~Request()                                 {};
 
 
