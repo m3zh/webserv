@@ -10,14 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+# pragma once
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include "Request.hpp"
-#include "Response.hpp"
-#include "ServerInfo.hpp"
+# include <iostream>
+# include <fstream>
+# include <string>
+# include <sys/stat.h>
+# include "Request.hpp"
+# include "Response.hpp"
+# include "ServerInfo.hpp"
 
 class Client
 {
@@ -70,6 +71,7 @@ class Client
         std::ifstream &         getResponseFileStream(); // probably not const as reading will affect the state of the stream
         std::string &           getRemainingBufferToSend();
         std::string             getContentType(std::string file);
+        std::string             getFileSize(std::string file);
 
         // SETTERS
         void                    setRequest(std::string const &s);

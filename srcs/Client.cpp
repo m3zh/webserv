@@ -88,26 +88,12 @@ void                    Client::setResponseString(std::string code, std::string 
     else if( code == "200" )
         file = file_path;
     response_str += "Content-Type: " + getContentType(file) + "; charset=utf-8;\r\n";
-    response_str += "Content-Length: " + std::to_string(file.size()) + ";\r\n\r\n";             // file size !!!
+    response_str += "Content-Length: " + getFileSize(file) + ";\r\n\r\n";             // file size !!!
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);
     getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
     setThereIsAFileToSend(true); 
-};
-
-std::string           Client::getContentType(std::string file)
-{
-    std::string ret;
-    std::string extension = file.substr(file.find_last_of(".") + 1, file.size());
-    if ( extension == "html" || extension == "css" 
-        || extension == "xml" || extension == "csv" )
-    {    ret = "text/" + extension; return ret;     }
-    if ( extension == "jpeg" || extension == "png" || extension == "gif" 
-        || extension == "svg" || extension == "webp" || extension == "jpg" )
-    {    ret = "image/" + extension; return ret;     }
-    ret = "text/plain";
-    return ret;
 };
 
 void                    Client::setResponseFile(std::string file)       {   response_file = file;               };
@@ -128,3 +114,27 @@ void                    Client::setThereIsAFileToSend(bool state)       {   ther
 bool                    Client::isNotCgi()                              {   return is_not_cgi;      };
 void                    Client::setIsNotCgi(bool state)                 {   is_not_cgi = state;     };
 
+// UTILS
+
+
+std::string           Client::getContentType(std::string file)
+{
+    std::string ret;
+    std::string extension = file.substr(file.find_last_of(".") + 1, file.size());
+    if ( extension == "html" || extension == "css" 
+        || extension == "xml" || extension == "csv" )
+    {    ret = "text/" + extension; return ret;     }
+    if ( extension == "jpeg" || extension == "png" || extension == "gif" 
+        || extension == "svg" || extension == "webp" || extension == "jpg" )
+    {    ret = "image/" + extension; return ret;     }
+    ret = "text/plain";
+    return ret;
+};
+
+std::string           Client::getFileSize(std::string file)
+{
+    struct stat st;
+    stat(file.c_str(), &st);
+    off_t size = st.st_size; 
+    return std::to_string(size);
+}

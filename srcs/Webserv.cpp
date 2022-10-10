@@ -325,6 +325,7 @@ void    Webserv::parseHeader(Client *c)         {
                                                 };
 
 void    Webserv::handleRequest(Client *c)   const   {
+                                                        c->getRequest().parse_raw_request();                        // body not present sometimes, BUG to fix
                                                         std::string method = c->getRequest().get_method();
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
