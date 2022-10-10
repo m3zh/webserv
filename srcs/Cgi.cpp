@@ -130,7 +130,7 @@ void    Cgi::parent_process(int status) const
         return ;
     if WIFEXITED(status)
         if (WEXITSTATUS(status) != 0)
-            {         perror("cgi runtime error"); exit(1);        }
+            {         perror("cgi parent error"); exit(1);        }
 }
 
 void    Cgi::exec_CGI(Request const& req, Client *c)
@@ -140,7 +140,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     _fds[READ] = fileno(_stdin);
     _fds[WRITE] = fileno(_stdout);
 
-    std::cerr << "MY BODY MY RULES :\n";
+    std::cerr << "MY BODY :\n";
     std::cerr << req.get_body() << std::endl; 
     write(_fds[READ], req.get_body().c_str(), req.get_body().size());
     lseek(_fds[READ], 0, SEEK_SET);

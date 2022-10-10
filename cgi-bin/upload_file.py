@@ -53,6 +53,7 @@ def cgi_script():
     <p>%s</p>
     </body></html>
     """%(content_type,message))
+    
 if __name__ == "__main__":
     os.write(2, b"Executing python script...\n")
     cgi_script()
