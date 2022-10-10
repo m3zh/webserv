@@ -68,17 +68,21 @@ void                    Client::setResponseString(std::string code, std::string 
     std::cout << content;
     std::string error_file(ERROR_FILE_PATH);
     response_str = "HTTP/1.1 " + code + " " + status[code] + "\r\n";        // start of header
-    if ( code == "301" )                                                    // if it is a redirection
-        response_str += "\nLocation: " + content + "\r\n";
+    if ( code == "301" )
+    {                                                    // if it is a redirection
+        response_str += "Location: " + content + "\r\n\r\n";
+        file = "";                                              // we set the file to "" ( there is no file to send )
+        std::cout << "STR RES: " << response_str; 
+        setResponseFile(file); 
+        setThereIsAFileToSend(false);  return ;     
+    }
     else if ( code > "301" )
         file += error_file + "/HTTP" + code + ".html";
     else if ( noFileToSend() )
     {
-        if ( isNotCgi() )
-            response_str += "Content-Type: text/html; charset=utf-8;\r\n";
+        response_str += "Content-Type: text/html; charset=utf-8;\r\n";
         response_str += "Content-Length: " + std::to_string(content.size()) + "\r\n";
-        if ( isNotCgi() )
-            response_str += "\r\n\r\n";
+        response_str += "\r\n\r\n";
         response_str += content;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
         std::cout << "STR RES: " << response_str; 

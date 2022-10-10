@@ -48,11 +48,10 @@ def cgi_script():
         message = 'The file could not be uploaded to directory ' + directory
 
     print ("""\
-    Content-Type: %s; charset=utf-8;\r\n\r\n
     <html><body>
     <p>%s</p>
     </body></html>
-    """%(content_type,message))
+    """%message)
     
 if __name__ == "__main__":
     os.write(2, b"Executing python script...\n")
