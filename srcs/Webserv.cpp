@@ -391,8 +391,6 @@ void Webserv::GETmethod(Client *c)  const
         if (open((file_path).c_str(), O_RDONLY) < 0)            {    c->setResponseString(UNAUTHORIZED, "", "");  return ;  }
         c->setResponseString(OK, "", file_path); return ;
     }
-    std::ifstream   file(file_path.c_str());
-    if ( !file.good() )     {    c->setResponseString(UNAUTHORIZED, "", "");  return ;          }
     if ( type == LOCATION || type == SUBFOLDER )                                                        // if it is a directory, check for autoindex              
     {    checkAutoindex( *page_requested, file_path, c, _server, type );  return;                     }
 };
@@ -516,26 +514,33 @@ void     Webserv::checkAutoindex( page page, std::string file, Client *c, Server
         std::string response;
 
         response = "<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'> \
-                    <title> Index of" + page.location_path + "</title></head><body>"; 
-        response += "<h1>Index of " + page.location_path + "</h1><hr><div><ul style=\"list-style: none;padding: 0;\">";
-
+                    <title> Index of" + c->getRequest().get_location() + "</title></head><body>"; 
+        response += "<h1>Index of " + c->getRequest().get_location() + "</h1><hr><div><ul style=\"list-style: none;padding: 0;\">";
+        
         DIR *dir = opendir(file.c_str());
         if ( dir == NULL )
         {   c->setResponseString(UNAUTHORIZED, "", "");  return ;   }
         while ( (dir_list = readdir(dir)) )    {
             std::string item(dir_list->d_name);
             std::string href = item;
-            if ( item == "." )          {   href = file.substr(file.find_last_of("\\/"), file.size());  }
-            else if ( item == ".." )    {   href = file.substr(0, file.find_last_of("\\/"));  }
+            if ( item == "." )          {   href = c->getRequest().get_location();  }
+            else if ( item == ".." )    {   
+                if ( page.location_path == "/" )
+                    href = page.location_path;
+                else    {
+                    href = file.erase(file.find(c->getRequest().get_location()), file.size()); 
+                    href = file.substr(file.find_last_of("\\/", file.size()));
+                } 
+            }
             else if ( item[0] != '/' )  {   href.insert(0, "/");     }
             response += HREF_BEGIN + href + "\">" + item + HREF_END;
         }
         response += "</ul></div></body></html>";
         closedir(dir);
         c->setNoFileToSend(true);
-        c->setResponseString(OK, response, ""); return ;
+        c->setResponseString(OK, response, ""); std::cout << file << std::endl; return ;
     }
     else
-        c->setResponseString(OK, "", _server->getServerRoot() + _server->getServerIndex());  return ;
+        c->setResponseString(OK, "", _server->getServerRoot() + _server->getServerIndex()); return ;
 }
 

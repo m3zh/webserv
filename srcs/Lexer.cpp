@@ -128,7 +128,7 @@ bool            Lexer::tokenize(std::vector<std::string> current_line)
 
 bool    Lexer::setPathParams(Token& token)
 {
-    int     fd;
+    // int     fd;
     Token   last;
     token.setType("Path");
     
@@ -136,18 +136,18 @@ bool    Lexer::setPathParams(Token& token)
     if (last.getContent().compare("location") == 0
         || last.getContent().compare("upload_store") == 0)                                  // location and upload must start with '/' ONLY
         if (token.getContent().compare(0, 1, ".") == 0) return false;
-    if (token.getContent().compare(0, 1, ".") == 0)                                         // remove . is path starts with .
+    if (token.getContent().compare(0, 1, ".") == 0)                                         // remove . if path starts with .
         token.setContent(token.getContent().substr(1, token.getContent().size() - 1));
-    if (last.getContent().compare("root") == 0)                                             // root must be followed by an EXISTING path
-    {
-        fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);               // check if absolute path exists
-        if (fd < 0)
-        {
-            std::cout << "Invalid path in config" << std::endl;
-            return false;
-        }
-        close(fd);
-    }
+    // if (last.getContent().compare("root") == 0)                                             // root must be followed by an EXISTING path
+    // {
+    //     fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);               // check if absolute path exists
+    //     if (fd < 0)
+    //     {
+    //         std::cout << "Invalid path in config" << std::endl;
+    //         return false;
+    //     }
+    //     close(fd);
+    // }
     if (token.getContent()[token.getContent().size() - 1] != '/')                           // add a / at the end of the path if not present already
         token.getContent() += '/';
     return true;    
