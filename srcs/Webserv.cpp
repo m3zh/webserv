@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/10 17:26:13 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/11 10:26:35 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,9 +160,11 @@ void    Webserv::looping_through_read_set()
                 parseHeader(*it);
                 std::cout << bytes_recv << " bytes of the header have been read.\n";
                 std::cout << "index beginning body is : " << (*it)->getRequest().get_index_beginning_body() << std::endl;
-                //write(1, "raw request : \n-------------------\n", 35);
-                //write(1, buffer, sizeof(buffer));
-                //write(1, "\n-------------------------\n", 27);
+                /////////////////////////////////////////
+                write(1, "raw request : \n-------------------\n", 35);
+                write(1, buffer, sizeof(buffer));
+                write(1, "\n-------------------------\n", 27);
+                ////////////////////////////////////////
                 // // means we don't have a body
                 if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) // in case there is no body in the request, we just execute it directly
                     (*it)->setReadAsComplete(true);
