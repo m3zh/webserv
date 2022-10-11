@@ -33,7 +33,7 @@
 # define READ 0
 # define WRITE 1
 # define MAX_SIZE 2000
-# define CGI_PATH "/app"
+# define CGI_PATH "/cgi-bin"
 # define TMPFILE  "tmp.XXXXXX"
 
 // ****************************

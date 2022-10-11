@@ -22,18 +22,11 @@ bool        Cgi::isCGI_request(Client *c)
 {
     std::string         pwd(getenv("PWD"));
     std::string         path_to_script;
-    std::string         upload_store;
+    std::string         upload_store = "dump";
     ServerInfo*         _server = c->getServerInfo();
     Request             req = c->getRequest();
-    std::vector<page>   pages = _server->getPages();
-    std::vector<page>::iterator cgi_page = pages.begin();
-        
-    for ( ; cgi_page != pages.end(); cgi_page++ )
-    {                                                                     // check for cgi location in config
-        if ( (*cgi_page).location_path == CGI_PATH )                                                
-        {   path_to_script = pwd + (*cgi_page).root;                        // set path to script                                                      
-            upload_store = (*cgi_page).upload_store;  break ;     }                                 // set path to upload_store
-    }                                                      
+
+    path_to_script = "cgi-bin";                                                          
     std::map<std::string, std::string> header = req.get_header_map();
     // ------
     // ACTION
@@ -47,7 +40,7 @@ bool        Cgi::isCGI_request(Client *c)
         action = action.substr(check4querystring, action.size() );
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
-        return false;
+    {   std::cout << "Invalid action for CGI\n"; c->setResponseString(BAD_GATEWAY,"","");                return false;              };
     // ------
     // METHOD
     // ------                              
@@ -66,14 +59,16 @@ bool        Cgi::isCGI_request(Client *c)
         if (content_length <= 0)
         {   std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");    return false;              };
         if (header.find("Content-Type") != header.end())
-        {   if (header["Content-Type"].find("text/plain") != std::string::npos)  c->setResponseString(UNSUPPORTED_MEDIA_TYPE,"","");    return false;               };
+        {   if (header["Content-Type"].find("text/plain") != std::string::npos)
+            {    c->setResponseString(UNSUPPORTED_MEDIA_TYPE,"","");    return false;               };
+        }
     }
     // ------
     // SCRIPT -> root + action
     // ------
-    std::string script = path_to_script + action;
+    std::string script = pwd.append("/") + path_to_script + action;
     if (access(script.c_str(), X_OK) < 0)                                        // if executable exists and it's executable
-    {   std::cout << "Script " << script << " not executable by CGI\n"; c->setResponseString(BAD_GATEWAY,"","");    return false;            };
+    {   std::cout << "Script " << script << " not executable by CGI\n"; c->setResponseString(BAD_GATEWAY,"","");  return false;            };
     _request.action = action;
     c->setNoFileToSend(true);
     c->setIsNotCgi(false);

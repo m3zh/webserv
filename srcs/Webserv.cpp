@@ -387,8 +387,7 @@ void Webserv::GETmethod(Client *c)  const
         if (req.get_location().find("py") != std::string::npos )  {                             // we check if it is a CGI request   
             if (cgi.isCGI_request(c)) {   std::cout << "GET request for CGI!" << std::endl;                 return ;        }
         }
-        if (!type)
-            c->setResponseString(NOT_FOUND, "", "");  return ;        
+        c->setResponseString(NOT_FOUND, "", "");  return ;        
     }
     if ( redirect )         {	c->setResponseString(MOVED_PERMANENTLY, page_requested->redirect, "");      return  ;       }
     if ( type == FILE_IN_FOLDER )    {
@@ -403,18 +402,22 @@ void Webserv::POSTmethod(Client *c) const
 {
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
+    std::string         req_location;
     ServerInfo*         _server = c->getServerInfo();
     Request             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     Cgi                 cgi;
 
+    req_location = req.get_location().substr(req.get_location().find_last_of("/"), req.get_location().size());
     for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
     {
         if ((*page_requested).root.size())                                                                      // we look for the cgi root folder
         {
-            file_path = pwd + (*page_requested).root;                                                             
-            if ( access((file_path + req.get_location()).c_str(), F_OK) != -1 )                                 // if the location required exists
+            file_path = pwd + (*page_requested).root;
+            std::cout << file_path << std::endl;
+            std::cout << req_location << std::endl;                                                             
+            if ( access((file_path + req_location ).c_str(), F_OK) != -1 )                                 // if the location required exists
             {                                                                                                   
                 if ( invalidMethod(*page_requested, "POST") ) 
                 {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
@@ -426,7 +429,6 @@ void Webserv::POSTmethod(Client *c) const
     {    c->setResponseString(NOT_FOUND, "", "");  return ;       }  
     if (cgi.isCGI_request(c))
 	{   std::cout << "POST request for CGI!" << std::endl; c->setNoFileToSend(true); return ;        }
-    c->setResponseString(BAD_GATEWAY, "", "");
 };
 
 void Webserv::DELETEmethod(Client *c) const
