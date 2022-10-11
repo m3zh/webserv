@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:04:46 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/10 15:40:05 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/11 16:29:00 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,9 @@ class Request
         std::string                             get_method() const;
         std::string                             get_location() const;
         std::string                             get_http_version() const;
-        std::map<std::string, std::string>      get_header_map() const;
+        std::map<std::string, std::string> const &      get_header_map() const;
         size_t                                  get_index_beginning_body() const;
         std::string                             get_body() const;
+
+        void                                    set_index_beginning_body(size_t index);
 };

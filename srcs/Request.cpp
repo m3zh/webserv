@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/24 16:10:50 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/10 15:40:30 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/11 16:29:05 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 //Request::Request()                                  {};
 Request::Request(std::string const& raw_request)    :   _raw_request(raw_request) {};
+
 //Request &Request::operator=(Request const & r)      {
 //                                                        _raw_request = r.get_raw_request(); // this points to the request untouched
 //                                                        _method = r._method;
@@ -78,8 +79,8 @@ void    Request::parse_raw_request()
 {
     _get_method_location_version(_raw_request.substr(0, _raw_request.find('\n')));
 
-    _index_beginning_body = std::string::npos;
-    if (4 + _raw_request.find("\r\n\r\n") < _raw_request.size())
+    //_index_beginning_body = std::string::npos;
+    //if (4 + _raw_request.find("\r\n\r\n") < _raw_request.size()) // for now we let it generate a number, then after request has been fully read, we can check if it's out of bound
         _index_beginning_body =  4 + _raw_request.find("\r\n\r\n");
 
     size_t  index_beginning_header = 1 + _raw_request.find('\n');
@@ -91,11 +92,16 @@ std::string     Request::get_raw_request()                          const   {   
 std::string     Request::get_method()                               const   {    return _method;                };
 std::string     Request::get_location()                             const   {    return _location;              };
 std::string     Request::get_http_version()                         const   {    return _http_version;          };
-std::map<std::string, std::string>     Request::get_header_map()    const   {    return _header_map;            };
+std::map<std::string, std::string> const &     Request::get_header_map()    const   {    return _header_map;            };
 size_t          Request::get_index_beginning_body()                 const   {    return _index_beginning_body;  };
 std::string     Request::get_body()                                 const
 {    
     if (_index_beginning_body != std::string::npos) // it means there is a body
     {   std::string char2string(&_raw_request.c_str()[_index_beginning_body]); return char2string;   }
     return "";
+}
+
+void            Request::set_index_beginning_body(size_t index)
+{
+    this->_index_beginning_body = index;
 }

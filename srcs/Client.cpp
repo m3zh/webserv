@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/10 17:08:27 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/11 15:58:58 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ std::string &           Client::getRemainingBufferToSend()                      
 
 // SETTERS
 //void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
+void                    Client::setIndexBeginningBodyInRequest(size_t index)    {this->request.set_index_beginning_body(index);}
 void                    Client::appendToRequestString(char *str, ssize_t size)                 {   request_str.append(str, size);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
 void                    Client::setResponseString(std::string code, std::string content, std::string file_path)

@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/11 10:26:35 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/11 16:36:25 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,12 @@ void    Webserv::looping_through_read_set()
         // and compare its index with the request size to mark the read as completed or not (and mark the header as read)
         // if \r\n\r\n cannot be found, we have a request error. can be header too long, can be something else
 
+
+//  need to modify looping_through_read_set()
+// header can be read in more than one recv(). make the header has been read bool true only when \r\n\r\n has been received
+// after header has been received, look at the content length field. If no content length field, put index beginning header to str::string::npos
+
+
     for (std::list<Client*>::iterator it = _clients_list.begin(); it != _clients_list.end(); ++it)
     {
         int client_socket = (*it)->getClientSocket();
@@ -157,28 +163,17 @@ void    Webserv::looping_through_read_set()
                 //buffer[bytes_recv] = 0;
                 //std::string buf(buffer);
                 (*it)->appendToRequestString(buffer, bytes_recv);
-                parseHeader(*it);
+                if ((*it)->getRequestString().find("\r\n\r\n") != std::string::npos)
+                    parseHeader(*it); // only do this if \r\n\r\n is found in request string
+
                 std::cout << bytes_recv << " bytes of the header have been read.\n";
-                std::cout << "index beginning body is : " << (*it)->getRequest().get_index_beginning_body() << std::endl;
-                /////////////////////////////////////////
-                write(1, "raw request : \n-------------------\n", 35);
-                write(1, buffer, sizeof(buffer));
-                write(1, "\n-------------------------\n", 27);
-                ////////////////////////////////////////
-                // // means we don't have a body
-                if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) // in case there is no body in the request, we just execute it directly
-                    (*it)->setReadAsComplete(true);
-                else // there is a body. We have to compare content_length with what we received
+
+                // need a function to check if there is a content length and to check if all of it has been read yet
+                if ((*it)->headerIsReadComplete() == true && (*it)->getRequest().get_header_map().find("Content-Length") == (*it)->getRequest().get_header_map().end())
                 {
-                    std::cout << "Reading the body.\n";
-                    std::cout << "Body index " << (*it)->getRequest().get_index_beginning_body() << "\n";
-                    std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
-                    std::map<std::string, std::string>::iterator    content_length_it = header_map.find("Content-Length");
-                    if (content_length_it == (*it)->getRequest().get_header_map().end())
-                    {    throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);    return;     }
-                    else if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
-                        >= (unsigned long)(atoi((content_length_it->second).c_str())) )
-                        (*it)->setReadAsComplete(true);
+                    // that would mean there is nothing more to read from that client
+                    (*it)->setReadAsComplete(true);
+                    (*it)->setIndexBeginningBodyInRequest(std::string::npos);
                 }
             }
             else // header has been read and parsed and there is more data to read (we have to check content-length)
@@ -197,6 +192,7 @@ void    Webserv::looping_through_read_set()
             }
             if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
+
                 handleRequest(*it); // we handle the request and create a response to send
             }
         }
