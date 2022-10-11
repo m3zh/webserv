@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/05 10:48:24 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/10 16:56:19 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class Client
         std::ifstream               response_file_stream; // stream open on the file to send (if there is one)
         std::string                 response_file;
         std::string                 remaining_buffer_to_send; // In case send() couldn't transmit the full buffer
-        bool                        there_is_a_file_to_send;
+        bool                        there_is_a_file_to_send; /////////////////// DUPLICATE !!
         bool                        header_has_been_sent;
 
         bool                        header_is_read_complete;
@@ -64,8 +64,8 @@ class Client
         int                     getClientSocket()   const;
         struct sockaddr_in      getClientAddress()  const;
         ServerInfo *            getServerInfo()     const;
-        std::string             getRequestString()  const;
-        Request                 getRequest()        const;
+        std::string const &     getRequestString()  const; // make it a non const reference
+        Request const &         getRequest()        const; // non const reference
         std::string             getResponseString() const;
         std::string             getResponseFile()   const;
         std::ifstream &         getResponseFileStream(); // probably not const as reading will affect the state of the stream
@@ -75,7 +75,7 @@ class Client
 
         // SETTERS
         void                    setRequest(std::string const &s);
-        void                    setRequestString(std::string s);
+        void                    appendToRequestString(char *str, ssize_t size);
         // code is response code
         // msg is page URI as requested, or redirection, or "" if code is error code
         // root is path to website root folder ( as in config )

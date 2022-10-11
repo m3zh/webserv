@@ -22,7 +22,7 @@ this constructor can be used : from sequence (5)	std::string (const char* s, siz
 	Will this work with getRequestString() being const ? probably not
 	Especially it returns a copy of the string stored in the class
 	We should create an appender function
-	Client::setRequestString() already does that. Should we specify the length to be appended ?
+	Client::appendToRequestString() already does that. Should we specify the length to be appended ?
 
 
 Client     *Webserv::accept_new_client(int listening_socket)

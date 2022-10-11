@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/04 20:02:16 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/10 17:32:11 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@ bool        Cgi::isCGI_request(Client *c)
     std::string         path_to_script;
     std::string         upload_store = "dump";
     ServerInfo*         _server = c->getServerInfo();
-    Request             req = c->getRequest();
+    Request const&      req = c->getRequest();
 
-    path_to_script = "cgi-bin";                                                          
+    path_to_script = CGI_PATH;                                                          
     std::map<std::string, std::string> header = req.get_header_map();
     // ------
     // ACTION
@@ -38,9 +38,12 @@ bool        Cgi::isCGI_request(Client *c)
     check4querystring = req.get_location().find_last_of("/");
     if ( check4querystring != 0 )
         action = action.substr(check4querystring, action.size() );
+
     size_t extension = action.size() - 3;
     if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
     {   std::cout << "Invalid action for CGI\n"; c->setResponseString(BAD_GATEWAY,"","");                return false;              };
+    if (extension >= action.size() || action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
+        return false;
     // ------
     // METHOD
     // ------                              
@@ -226,7 +229,7 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
 }
 
-void    Cgi::set_CGIrequest(Request req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
+void    Cgi::set_CGIrequest(Request const & req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
 {
     _request.method = req.get_method();
     if ( header.find("Content-Length") != header.end() )

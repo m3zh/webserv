@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
+/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/05 10:01:02 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/11 10:26:35 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,21 +147,26 @@ void    Webserv::looping_through_read_set()
             std::cout << "Reading...\n" << std::endl;
             char buffer[READ_WRITE_BUFFER];
             bzero(&buffer, sizeof(buffer));
-            int bytes_recv;
+            ssize_t bytes_recv;
             // we can call parse_request as soon as the header is read. 
             // The beginning of the body will be there at the first call to recv()
             if ((*it)->headerIsReadComplete() == false) 
             {
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
-                    throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);
-                buffer[bytes_recv] = 0;
-                std::string buf(buffer);
-                (*it)->setRequestString(buf);
+                    throw WebException<int>(BLUE, "WebServ error: XXXreceiving failed on client socket ", client_socket);
+                //buffer[bytes_recv] = 0;
+                //std::string buf(buffer);
+                (*it)->appendToRequestString(buffer, bytes_recv);
                 parseHeader(*it);
                 std::cout << bytes_recv << " bytes of the header have been read.\n";
-                
+                std::cout << "index beginning body is : " << (*it)->getRequest().get_index_beginning_body() << std::endl;
+                /////////////////////////////////////////
+                write(1, "raw request : \n-------------------\n", 35);
+                write(1, buffer, sizeof(buffer));
+                write(1, "\n-------------------------\n", 27);
+                ////////////////////////////////////////
                 // // means we don't have a body
-                if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) 
+                if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) // in case there is no body in the request, we just execute it directly
                     (*it)->setReadAsComplete(true);
                 else // there is a body. We have to compare content_length with what we received
                 {
@@ -180,11 +185,12 @@ void    Webserv::looping_through_read_set()
             {
                 std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
                 std::map<std::string, std::string>::const_iterator    content_length_it = header_map.find("Content-Length");
-                if (content_length_it == (*it)->getRequest().get_header_map().end())
+                if (content_length_it == header_map.end())
                 {    throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);    return;     }
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
                 {    throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);     return;     }
-                (*it)->getRequestString().append(buffer, bytes_recv); // append() method will include \0 if some are present in the buffer
+                //(*it)->getRequestString().append(buffer, bytes_recv); // append() method will include \0 if some are present in the buffer
+                (*it)->appendToRequestString(buffer, bytes_recv);
                 if (((*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body())
                         >= (unsigned long)(atoi((content_length_it->second).c_str())) ) // bytes received match content-length bytes of the body
                     (*it)->setReadAsComplete(true);
@@ -320,12 +326,14 @@ ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_s
 
 // EXECUTING REQUEST AND CREATE RESPONSE
 void    Webserv::parseHeader(Client *c)         {
-                                                    c->setRequest(c->getRequestString());
+                                                    // CALL PARSE REQUEST FCT FROM CLIENT
+                                                    c->parseHeader();
+                                                    //c->setRequest(c->getRequestString());
                                                     c->setHeaderReadAsComplete(true);
                                                 };
 
 void    Webserv::handleRequest(Client *c)   const   {
-                                                        c->getRequest().parse_raw_request();                        // body not present sometimes, BUG to fix
+                                                        //c->getRequest().parse_raw_request();                        // body not present sometimes, BUG to fix
                                                         std::string method = c->getRequest().get_method();
                                                         std::string uri = c->getRequest().get_location();
                                                         std::string version = c->getRequest().get_http_version();
@@ -347,7 +355,7 @@ void Webserv::GETmethod(Client *c)  const
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
     ServerInfo*         _server = c->getServerInfo();
-    Request             req = c->getRequest();
+    Request const &             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 redirect = 0;
@@ -400,11 +408,12 @@ void Webserv::GETmethod(Client *c)  const
 
 void Webserv::POSTmethod(Client *c) const
 {
+
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
     std::string         req_location;
     ServerInfo*         _server = c->getServerInfo();
-    Request             req = c->getRequest();
+    Request const &             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     Cgi                 cgi;
@@ -412,6 +421,7 @@ void Webserv::POSTmethod(Client *c) const
     req_location = req.get_location().substr(req.get_location().find_last_of("/"), req.get_location().size());
     for ( ; page_requested != pages.end(); page_requested++ )                                                   // check for location in config
     {
+                
         if ((*page_requested).root.size())                                                                      // we look for the cgi root folder
         {
             file_path = pwd + (*page_requested).root;
@@ -425,8 +435,10 @@ void Webserv::POSTmethod(Client *c) const
             }
         }
     }
+
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");  return ;       }  
+
     if (cgi.isCGI_request(c))
 	{   std::cout << "POST request for CGI!" << std::endl; c->setNoFileToSend(true); return ;        }
 };
@@ -436,7 +448,7 @@ void Webserv::DELETEmethod(Client *c) const
     std::string         pwd(getenv("PWD"));
     std::string         file_path;
     ServerInfo*         _server = c->getServerInfo();
-    Request             req = c->getRequest();
+    Request const &             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
     int                 fileInFolder;
