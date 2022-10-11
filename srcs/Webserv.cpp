@@ -471,8 +471,8 @@ void Webserv::DELETEmethod(Client *c) const
     {    c->setResponseString(NOT_FOUND, "", "");  return ;           }
     if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
-    c->setResponseString(OK, "File successfully deleted\n", "");
     c->setNoFileToSend(true);
+    c->setResponseString(OK, "File successfully deleted\n", "");    
 };
 
 // SIGNALS

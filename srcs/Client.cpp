@@ -95,7 +95,7 @@ void                    Client::setResponseString(std::string code, std::string 
         file = "";                                              // we set the file to "" ( there is no file to send )
         std::cout << "STR RES: " << response_str; 
         setResponseFile(file); 
-        setThereIsAFileToSend(false);  return ;                                           
+        setThereIsAFileToSend(false); return ;                                           
     }
     else if( code == "200" )
         file = file_path;
