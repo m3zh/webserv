@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys, os
+import binascii
 
 def cgi_script():
     message = ""
@@ -15,7 +16,7 @@ def cgi_script():
     filename = body[body.find("filename=") + 10:]
     filename = filename[:filename.find("\"")].strip()
 
-    content = body[body.find("\n"):]
+    content = body[body.find("\r\n\r\n"):]
     content = content[:content.find(boundary)].strip()
 
     # message += "***"
