@@ -61,6 +61,8 @@ bool        Cgi::isCGI_request(Client *c)
         size_t content_length = std::stoi(header["Content-Length"]);
         if (content_length <= 0)
         {   std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");    return false;              };
+        if ((int)content_length > _server->getClientMaxBodySize())
+        {   std::cout << "Uploaded file too large for CGI\n"; c->setResponseString(PAYLOAD_TOO_LARGE,"","");    return false;              };
         if (header.find("Content-Type") != header.end())
         {   if (header["Content-Type"].find("text/plain") != std::string::npos)
             {    c->setResponseString(UNSUPPORTED_MEDIA_TYPE,"","");    return false;               };
@@ -142,7 +144,7 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
 
     std::cerr << "MY BODY :\n";
     std::cerr << req.get_body() << std::endl; 
-    write(_fds[READ], req.get_body().c_str(), req.get_body().size());
+    write(_fds[READ], req.get_body(), req.get_raw_request().size() - req.get_index_beginning_body());
     lseek(_fds[READ], 0, SEEK_SET);
     
     _pid = fork();

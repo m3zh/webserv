@@ -50,7 +50,7 @@ class Request
         std::string                             get_http_version() const;
         std::map<std::string, std::string> const &      get_header_map() const;
         size_t                                  get_index_beginning_body() const;
-        std::string                             get_body() const;
+        const char *                            get_body() const;
 
         void                                    set_index_beginning_body(size_t index);
 };

@@ -2,13 +2,13 @@
 
 import sys, os
 
-chunk_size = 1024
-
 def cgi_script():
     message = ""
     directory = os.environ["DIR_UPLOAD"].strip()
 
-    body = sys.stdin.read()
+    body = ''
+    for line in sys.stdin.read():
+        body += line
 
     boundary = body[:body.find("\n")]
     boundary = boundary.strip()

@@ -14,7 +14,7 @@
 
 ServerInfo::ServerInfo()    :   _server_name("localhost"),                      // by default set to localhost
                                 _port(-1),                                      // port MUST be set in config
-                                _client_max_body_size(500)                      // by default set to 500
+                                _client_max_body_size(1000000)                      // by default set to 500
                                 {};
 ServerInfo::~ServerInfo()       {};
 
