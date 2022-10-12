@@ -532,6 +532,7 @@ void     Webserv::checkAutoindex( page page, std::string file, Client *c, Server
                 } 
             }
             else if ( item[0] != '/' )  {   href.insert(0, "/");     }
+            // check file or dir
             response += HREF_BEGIN + href + "\">" + item + HREF_END;
         }
         response += "</ul></div></body></html>";

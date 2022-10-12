@@ -226,8 +226,9 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 	_env["SCRIPT_FILENAME"] = _request.path_to_script + _request.action;
 	_env["SERVER_NAME"] = server->getServerName();                                                  // getEnvValue("HTTP_HOST");
 	_env["SERVER_PROTOCOL"] = req.get_http_version();
-    std::string port = std::to_string(server->getPort());
-	_env["SERVER_PORT"] = port;                                                             
+    std::stringstream port;
+    port << server->getPort();
+	_env["SERVER_PORT"] = port.str();                                                             
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
 }
 

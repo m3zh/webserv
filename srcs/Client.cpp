@@ -109,8 +109,10 @@ void                    Client::setResponseString(std::string code, std::string 
         file += error_file + "/HTTP" + code + ".html";
     else if ( noFileToSend() )
     {
+        std::stringstream ss;
+        ss << content.size();
         response_str += "Content-Type: text/html; charset=utf-8;\r\n";
-        response_str += "Content-Length: " + std::to_string(content.size()) + "\r\n";
+        response_str += "Content-Length: " + ss.str() + "\r\n";       // NEWLY ADDED, TO CHECK !!
         response_str += "\r\n\r\n";
         response_str += content;                               // we append the message we got from the python script
         file = "";                                              // we set the file to "" ( there is no file to send )
@@ -121,7 +123,7 @@ void                    Client::setResponseString(std::string code, std::string 
     else if( code == "200" )
         file = file_path;
     response_str += "Content-Type: " + getContentType(file) + "; charset=utf-8;\r\n";
-    response_str += "Content-Length: " + getFileSize(file) + ";\r\n\r\n";             // file size !!!
+    response_str += "Content-Length: " + getFileSize(file) + ";\r\n\r\n";             // NEWLY ADDED, TO CHECK !!
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);
@@ -166,8 +168,16 @@ std::string           Client::getContentType(std::string file)
 
 std::string           Client::getFileSize(std::string file)
 {
-    struct stat st;
-    stat(file.c_str(), &st);
-    off_t size = st.st_size; 
-    return std::to_string(size);
+    long size;
+    FILE *f;
+    std::stringstream ss;
+ 
+    f = fopen(file.c_str(), "rb");
+    if (f == NULL) return "0";
+    fseek(f, 0, SEEK_END);
+    size = ftell(f);
+    ss << size;
+    fclose(f);
+ 
+    return ss.str();
 }
