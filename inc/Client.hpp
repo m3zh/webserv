@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:29:14 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/10 16:56:19 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/12 13:02:43 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,8 @@ class Client
         std::string             getFileSize(std::string file);
 
         // SETTERS
-        void                    setRequest(std::string const &s);
+        //void                    setRequest(std::string const &s);
+        void                    setIndexBeginningBodyInRequest(size_t index);
         void                    appendToRequestString(char *str, ssize_t size);
         // code is response code
         // msg is page URI as requested, or redirection, or "" if code is error code

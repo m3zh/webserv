@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/11 10:26:35 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/12 13:22:34 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,11 +133,14 @@ Client     *Webserv::accept_new_client(int listening_socket)
 // READING AND WRITING
 void    Webserv::looping_through_read_set()
 {
-    // for each client(in the read set), check if header has been read yet.
-        // if header has been read already (there is a body), read a buffer, if content length match, mark read as completed
-        // if header has not been read yet, read a buffer, then find the first occurence of \r\n\r\n
-        // and compare its index with the request size to mark the read as completed or not (and mark the header as read)
-        // if \r\n\r\n cannot be found, we have a request error. can be header too long, can be something else
+    // what if client still send something after request has been marked as fully read ?
+
+    // This function loop through all clients that have been selected by select() for reading. There is only one call to recv() per call to select().
+    // At each loop, we call recv() and append the data received to a request std::string that is inside of the Client class.
+    // First we have to read the header, we know that the header has been fully read once there is "\r\n\r\n" in the request string.
+    // Once the header has been fully read, we have to parse it. Specifically here we look for "Content-Length" in the header.
+    // If it is there, it means the request fromt that client has a body . We then know how long that body is and we can keep calling recv() until we get all of it.
+    // If there is no "Content-Length" in the header, the whole request consists of just the header.
 
     for (std::list<Client*>::iterator it = _clients_list.begin(); it != _clients_list.end(); ++it)
     {
@@ -148,38 +151,16 @@ void    Webserv::looping_through_read_set()
             char buffer[READ_WRITE_BUFFER];
             bzero(&buffer, sizeof(buffer));
             ssize_t bytes_recv;
-            // we can call parse_request as soon as the header is read. 
-            // The beginning of the body will be there at the first call to recv()
             if ((*it)->headerIsReadComplete() == false) 
             {
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
                     throw WebException<int>(BLUE, "WebServ error: XXXreceiving failed on client socket ", client_socket);
-                //buffer[bytes_recv] = 0;
-                //std::string buf(buffer);
                 (*it)->appendToRequestString(buffer, bytes_recv);
-                parseHeader(*it);
+                if ((*it)->getRequestString().find("\r\n\r\n") != std::string::npos)
+                    parseHeader(*it); // only do this if \r\n\r\n is found in request string
+
                 std::cout << bytes_recv << " bytes of the header have been read.\n";
-                std::cout << "index beginning body is : " << (*it)->getRequest().get_index_beginning_body() << std::endl;
-                /////////////////////////////////////////
-                write(1, "raw request : \n-------------------\n", 35);
-                write(1, buffer, sizeof(buffer));
-                write(1, "\n-------------------------\n", 27);
-                ////////////////////////////////////////
-                // // means we don't have a body
-                if ((*it)->getRequest().get_index_beginning_body() == std::string::npos) // in case there is no body in the request, we just execute it directly
-                    (*it)->setReadAsComplete(true);
-                else // there is a body. We have to compare content_length with what we received
-                {
-                    std::cout << "Reading the body.\n";
-                    std::cout << "Body index " << (*it)->getRequest().get_index_beginning_body() << "\n";
-                    std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
-                    std::map<std::string, std::string>::iterator    content_length_it = header_map.find("Content-Length");
-                    if (content_length_it == (*it)->getRequest().get_header_map().end())
-                    {    throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);    return;     }
-                    else if (( (*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body()) 
-                        >= (unsigned long)(atoi((content_length_it->second).c_str())) )
-                        (*it)->setReadAsComplete(true);
-                }
+
             }
             else // header has been read and parsed and there is more data to read (we have to check content-length)
             {
@@ -189,7 +170,6 @@ void    Webserv::looping_through_read_set()
                 {    throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);    return;     }
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
                 {    throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);     return;     }
-                //(*it)->getRequestString().append(buffer, bytes_recv); // append() method will include \0 if some are present in the buffer
                 (*it)->appendToRequestString(buffer, bytes_recv);
                 if (((*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body())
                         >= (unsigned long)(atoi((content_length_it->second).c_str())) ) // bytes received match content-length bytes of the body
@@ -197,6 +177,7 @@ void    Webserv::looping_through_read_set()
             }
             if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
+
                 handleRequest(*it); // we handle the request and create a response to send
             }
         }

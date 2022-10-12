@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/09/13 19:30:29 by artmende          #+#    #+#             */
-/*   Updated: 2022/10/10 17:08:27 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/12 13:16:35 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,27 @@ Client::~Client()                                                               
 
 void                    Client::parseHeader()
 {
-    // CALL PARSE REQUEST FCT FROM REQUEST CLASS
     request.parse_raw_request();
+    // if ((*it)->headerIsReadComplete() == true && (*it)->getRequest().get_header_map().find("Content-Length") == (*it)->getRequest().get_header_map().end())
+
+    std::map<std::string, std::string>::const_iterator    content_length_it = request.get_header_map().find("Content-Length");
+
+    if (content_length_it == request.get_header_map().end()) // there is no body in the request
+    {
+        setReadAsComplete(true);
+        request.set_index_beginning_body(std::string::npos);
+    }
+    else // there is a body in the request. Need to see if we got all of it yet
+    {
+        if (request_str.size() - request.get_index_beginning_body() >= (unsigned long)(atoi((content_length_it->second).c_str()))) // means all the body is there already
+            setReadAsComplete(true);
+    }
+                // issue : We might have both header and full body in the first call to recv(). In that case, we need to mark the reading as finished here directly, because select() won't give us that same client again
+                // need a function to check if there is a content length and to check if all of it has been read yet
+                // condition to mark as read complete here : 
+                //  - There is no body (we can know that by the absence of Content-Length in the header map)
+                //  - There is a body that has been fully read in the first call to recv() (There is a Content-Length in the header map, and it matches what we actually received)
+                // important : If there is no body, we need to set the index beginning body to npos
 }
 
 // GETTERS
@@ -51,6 +70,7 @@ std::string &           Client::getRemainingBufferToSend()                      
 
 // SETTERS
 //void                    Client::setRequest(std::string const &s)                {   request = Request(s); request.parse_raw_request();       };
+void                    Client::setIndexBeginningBodyInRequest(size_t index)    {this->request.set_index_beginning_body(index);}
 void                    Client::appendToRequestString(char *str, ssize_t size)                 {   request_str.append(str, size);      };
 // sets the right header for the response and set the right file to open ( as requested by Client )
 void                    Client::setResponseString(std::string code, std::string content, std::string file_path)
@@ -65,6 +85,7 @@ void                    Client::setResponseString(std::string code, std::string 
     status["404"] = "Not Found";
     status["405"] = "Method Not Allowed";
     status["411"] = "Length Required";
+    status["413"] = "Pay Load Too Large";
     status["414"] = "Request URI Too Long";
     status["501"] = "Not Implemented";
     status["504"] = "Gateway Timeout";

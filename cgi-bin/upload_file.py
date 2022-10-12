@@ -2,6 +2,8 @@
 
 import sys, os
 
+chunk_size = 1024
+
 def cgi_script():
     message = ""
     # for param in os.environ.keys():
@@ -10,7 +12,12 @@ def cgi_script():
     #    message += os.environ[param]
     #    message += "\n"
     directory = os.environ["DIR_UPLOAD"].strip()
-    content_type = os.environ["CONTENT_TYPE"]
+
+    # with sys.stdin as _in:
+    #     body = _in.read(chunk_size)
+    #     while body != b'':
+    #         body += _in.read(chunk_size)
+    #         handler(buffer)
 
     body = ""
     for line in sys.stdin:              # read in chunks          
@@ -20,7 +27,7 @@ def cgi_script():
 
     boundary = body[:body.find("\n")]
     boundary = boundary.strip()
-    filename = body[body.find("filename") + 10:]
+    filename = body[body.find("filename=") + 10:]
     filename = filename[:filename.find("\"")].strip()
 
     # message += boundary
@@ -35,17 +42,17 @@ def cgi_script():
     # message += "***"
     # message += directory
 
-    if not os.path.exists(os.getcwd() + directory):
+    if not os.path.exists(os.getcwd() + "/" + directory):
         os.umask(0)
-        os.makedirs(os.getcwd() + directory, mode=0o777)
+        os.makedirs(os.getcwd() + "/" + directory, mode=0o777)
     try:
-        target_dir = os.path.dirname(directory)[1:]
-        with open(target_dir + directory[1:] + "/" + filename, 'wb') as target:
-                for line in content:
-                    target.write(line)
+        target_dir = os.getcwd() + "/" + directory
+        with open(target_dir + "/" + filename, 'wb') as target:
+            for line in content:
+                target.write(line)
         message = 'The file "' + filename + '" was uploaded successfully to directory ' + directory
     except:
-        message = 'The file could not be uploaded to directory ' + directory
+        message = 'The file "' + filename + '" could not be uploaded to directory ' + directory
 
     print ("""\
     <html><body>

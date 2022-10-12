@@ -24,6 +24,7 @@
 # define NOT_FOUND			    "404"
 # define METHOD_NOT_ALLOWED	    "405"
 # define LENGTH_REQUIRED	    "411"
+# define PAYLOAD_TOO_LARGE	    "413"
 # define REQUEST_URI_TOO_LONG   "414"
 # define UNSUPPORTED_MEDIA_TYPE "415"
 # define NOT_IMPLEMENTED		"501"
