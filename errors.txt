@@ -1,0 +1,48 @@
+TESTS SUR UBUNTU
+
+- quand on va sur /hello2 et qu'on envoit une requête sans rentrer d'infos :
+    name=&age=/home/raphiki/Code/webserv/cgi-bin
+    /hello_world.py
+    MY BODY :
+    name=&age=
+    cgi execve: No such file or directory
+
+    + leaks
+
+- meme chose avec /upload sans fichier (et avec aussi) :
+    -----------------------------37564377003370010374639223261--
+    /home/raphiki/Code/webserv/cgi-bin
+    /upload_file.py
+    MY BODY :
+    -----------------------------37564377003370010374639223261
+    Content-Disposition: form-data; name="filename"; filename=""
+    Content-Type: application/octet-stream
+
+
+    -----------------------------37564377003370010374639223261--
+
+    cgi execve: No such file or directory
+
+    + leaks
+
+- quand on refresh la page plusieurs fois d'affilé (genre 20-30x) rapidement :
+    boucle infinie : 
+        0 bytes of the header have been read.
+        Connecting ...
+        Reading...
+
+- /favicon est censé renvoyer le logo 19 ? => renvoit des caractères non affichables
+
+- crash avec siege de temps en temps(quand on le coupe)
+  
+    STR RES: HTTP/1.1 404 Not Found
+    Content-Type: text/html; charset=utf-8;
+    Content-Length: 3702;
+
+    FILE: /home/raphiki/Code/webserv/www/error-pages/HTTP404.html
+    Connecting ...
+    new client ! about to call accept. size of client list now is : 2
+    new client accepted ! socket is 6
+    Reading...
+
+    WebServ error: sending failed on client socket : 7
