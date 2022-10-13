@@ -167,7 +167,7 @@ void    Webserv::looping_through_read_set()
                 std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
                 std::map<std::string, std::string>::const_iterator    content_length_it = header_map.find("Content-Length");
                 if (content_length_it == header_map.end())
-                {    throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);    return;     }
+                {    /*throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);*/    return;     }
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
                 {    throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);     return;     }
                 (*it)->appendToRequestString(buffer, bytes_recv);
