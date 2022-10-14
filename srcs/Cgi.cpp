@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 13:10:34 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/10 17:32:11 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/14 14:12:42 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,8 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
 
     std::cerr << "MY BODY :\n";
     std::cerr << req.get_body() << std::endl;
-    write(_fds[READ], req.get_body(), strlen(req.get_body()));
+    if (req.get_index_beginning_body() != std::string::npos)
+        write(_fds[READ], req.get_body(), req.get_raw_request().size() - req.get_index_beginning_body());
     lseek(_fds[READ], 0, SEEK_SET);
 
     _pid = fork();
