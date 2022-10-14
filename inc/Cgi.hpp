@@ -82,7 +82,7 @@ class Cgi
         std::string     get_CGIaction()                          ;
         std::string     get_CGImethod()                          ;
         size_t          get_CGIcontent_length()                  ;
-        std::string     get_CGIscript()                     const;
+        std::string     get_CGIscript(std::string action)   const;
 
         bool            get_CGIparam(std::string param, std::string html_content, size_t &pos);
         std::string     set_CGIparam(std::string html_content, size_t &pos);

@@ -114,7 +114,7 @@ void    Cgi::child_process() const
     if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
     {    perror("cgi dup2 out"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
-    string2charstar(&cmd[0], get_CGIscript().c_str());                                          // cmd[0] -> /usr/bin/python                
+    string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                                          // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());              // cmd[1] -> cgi-script.py
     cmd[2] = 0;
     close(_fds[WRITE]);
@@ -306,7 +306,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;             }                   
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;             }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;     }   
-std::string     Cgi::get_CGIscript()                    const   {   return "/usr/bin/python";                  } 
+std::string     Cgi::get_CGIscript(std::string action)  const   {   if (action[action.size() - 1] == 'y')  return "/bin/usr/python";   return "/usr/bin/ruby";                  } 
 
 // ************
 // UTILS functions
