@@ -17,7 +17,6 @@ Client::Client( int client_socket,
                 ServerInfo *associated_server)  :   client_socket(client_socket),
                                                     client_addrs(client_addrs),
                                                     associated_server(associated_server),
-                                                    //request_str(""),
                                                     request(request_str),
                                                     FileToSend(false)           {
                                                                                     setReadAsComplete(false);
@@ -55,16 +54,16 @@ void                    Client::parseHeader()
 }
 
 // GETTERS
-int                     Client::getClientSocket()                       const   {   return  client_socket;          };
-struct sockaddr_in      Client::getClientAddress()                      const   {   return  client_addrs;           };
-ServerInfo *            Client::getServerInfo()                         const   {   return  associated_server;      };
-std::string const &             Client::getRequestString()                      const   {   return  request_str;            };
-Request const &                 Client::getRequest()                            const   {   return  request;                };
-std::string             Client::getResponseString()                     const   {   return  response_str;           };
-std::string             Client::getResponseFile()                       const   {   return  response_file;          };
+int                         Client::getClientSocket()                       const   {   return  client_socket;          };
+struct sockaddr_in          Client::getClientAddress()                      const   {   return  client_addrs;           };
+ServerInfo *                Client::getServerInfo()                         const   {   return  associated_server;      };
+std::string const &         Client::getRequestString()                      const   {   return  request_str;            };
+Request const &             Client::getRequest()                            const   {   return  request;                };
+std::string                 Client::getResponseString()                     const   {   return  response_str;           };
+std::string                 Client::getResponseFile()                       const   {   return  response_file;          };
 
-std::ifstream &         Client::getResponseFileStream()                         {    return response_file_stream;   };
-std::string &           Client::getRemainingBufferToSend()                      {    return remaining_buffer_to_send;  };
+std::ifstream &             Client::getResponseFileStream()                         {    return response_file_stream;   };
+std::string &               Client::getRemainingBufferToSend()                      {    return remaining_buffer_to_send;  };
 
 
 

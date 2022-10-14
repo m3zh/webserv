@@ -99,6 +99,7 @@ class Webserv
         Client      *accept_new_client(int listening_socket);       // this calls accept() and store socket and addrs of newly created connection.
         void        looping_through_read_set();
         void        looping_through_write_set();
+        void        remove_client(int client_socket, std::list<Client*>::iterator to_delete);
         void        close_all();
 
         // REQUEST HANDLERS

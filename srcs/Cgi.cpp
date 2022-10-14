@@ -22,7 +22,6 @@ bool        Cgi::isCGI_request(Client *c)
 {
     std::string         pwd(getenv("PWD"));
     std::string         path_to_script;
-    std::string         upload_store = "dump";
     ServerInfo*         _server = c->getServerInfo();
     Request const&      req = c->getRequest();
 
@@ -74,7 +73,7 @@ bool        Cgi::isCGI_request(Client *c)
     _request.action = action;
     c->setNoFileToSend(true);
     c->setIsNotCgi(false);
-    set_CGIrequest(req, req.get_header_map(), path_to_script, upload_store, _server);
+    set_CGIrequest(req, req.get_header_map(), path_to_script, _server);
     exec_CGI(req, c);      
     return true;
 }
@@ -232,13 +231,23 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
 	_env["SERVER_SOFTWARE"] = "webserv/1.9";
 }
 
-void    Cgi::set_CGIrequest(Request const & req, std::map<std::string, std::string> header, std::string path_to_script, std::string upload_store, ServerInfo* server)
+void    Cgi::set_CGIrequest(Request const & req, std::map<std::string, std::string> header, std::string path_to_script, ServerInfo* server)
 {
     _request.method = req.get_method();
     if ( header.find("Content-Length") != header.end() )
         _request.content_length = std::stoi(header["Content-Length"]);
+    std::vector<page>::iterator pages = server->getPages().begin();
+    for (; pages != server->getPages().end(); pages++ )
+    {
+        if (pages->location_path == "/cgi")
+        {
+            if (pages->upload_store != "")
+                _request.upload_store = pages->upload_store;
+            else
+                _request.upload_store = "/dump";
+        }
+    }
     _request.path_to_script = path_to_script;
-    _request.upload_store = upload_store;
     set_CGIenv(req, header, server);  
 };
 
@@ -332,11 +341,9 @@ void Cgi::sendCGI_response(Client *c)
 {
     lseek(_fds[WRITE], 0, SEEK_SET);
     if (!fdopen(_fds[WRITE], "r"))
-    {   write(2, "BAD FD\n", 7);   c->setResponseString(UNAUTHORIZED, "", "");      return;      }                                                                 // to check if file can be opened, else error
+    {   c->setResponseString(UNAUTHORIZED, "", "");      return;      }                                                                 // to check if file can be opened, else error
     std::string     _response = file2string(_fds[WRITE]); 
-    std::cerr << "RES: " << _response;    
     if (_response.size())                                                           // if we have an output, execve has succeded                                        
-    {   write(2, "PARENT OK\n", 10); c->setResponseString(OK, _response,"");       return;      }
-    write(2, "PARENT NOK\n", 11);
+    {   c->setResponseString(OK, _response,"");       return;      }
     c->setResponseString(BAD_GATEWAY, "", "");
 }

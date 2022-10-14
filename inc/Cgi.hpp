@@ -76,7 +76,7 @@ class Cgi
         std::string                 getFromQueryString(std::string uri)                 const;            
 
         void            set_CGIrequest(Request const & req, std::map<std::string, std::string> header,
-                                        std::string path_to_script, std::string upload_store, ServerInfo *server); // size_t -> content length is never negative
+                                        std::string path_to_script, ServerInfo *server); // size_t -> content length is never negative
         void            clear_CGIrequest();                                             // reset CGIrequest fields to ""
         
         std::string     get_CGIaction()                          ;

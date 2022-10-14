@@ -153,8 +153,13 @@ void    Webserv::looping_through_read_set()
             ssize_t bytes_recv;
             if ((*it)->headerIsReadComplete() == false) 
             {
-                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
-                    throw WebException<int>(BLUE, "WebServ error: XXXreceiving failed on client socket ", client_socket);
+                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) <= 0)
+                {
+                    std::list<Client*>::iterator    to_delete = it;
+                    ++it; // ready for next loop cycle
+                    remove_client(client_socket, to_delete);
+                    continue;
+                }
                 (*it)->appendToRequestString(buffer, bytes_recv);
                 if ((*it)->getRequestString().find("\r\n\r\n") != std::string::npos)
                     parseHeader(*it); // only do this if \r\n\r\n is found in request string
@@ -162,7 +167,7 @@ void    Webserv::looping_through_read_set()
                 std::cout << bytes_recv << " bytes of the header have been read.\n";
 
             }
-            else // header has been read and parsed and there is more data to read (we have to check content-length)
+            else if ((*it)->headerIsReadComplete()) // header has been read and parsed and there is more data to read (we have to check content-length)
             {
                 std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
                 std::map<std::string, std::string>::const_iterator    content_length_it = header_map.find("Content-Length");
@@ -201,16 +206,28 @@ void    Webserv::looping_through_write_set()
             {
                 if ((*it)->getRemainingBufferToSend().size() > 0) // in case the whole header could not be sent in 1 time
                 {
-                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) < 0)
-                        throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) <= 0)
+                    {
+                        std::list<Client*>::iterator    to_delete = it;
+                        ++it; // ready for next loop cycle
+                        remove_client(client_socket, to_delete);
+                        continue;    
+                    }
                     (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
                     if ((*it)->getRemainingBufferToSend().size() == 0) // means it was all sent successfully
                         (*it)->setHeaderBeenSent(true);
                     ++it;
                     continue; // not more than 1 send() per select()
                 }
-                if ((bytes_sent = send(client_socket, (*it)->getResponseString().c_str(), (*it)->getResponseString().size(), 0)) < 0)
+                if ((bytes_sent = send(client_socket, (*it)->getResponseString().c_str(), (*it)->getResponseString().size(), 0)) <= 0)
+                {
+                    // std::list<Client*>::iterator    to_delete = it;
+                    // ++it; // ready for next loop cycle
+                    //     remove_client(client_socket, to_delete);
+                    //     continue;    
                     throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                }
+                    
                 if ((std::size_t)bytes_sent < (*it)->getResponseString().size())
                     (*it)->getRemainingBufferToSend().assign((*it)->getResponseString(), bytes_sent, std::string::npos);
                 else
@@ -221,18 +238,17 @@ void    Webserv::looping_through_write_set()
                 // if there is no file to send, close the socket here
                 if ((*it)->thereIsAFileToSend() == false)
                 {
-                    close(client_socket);
-                    FD_CLR(client_socket, &_current_set);
                     std::list<Client*>::iterator    to_delete = it;
                     ++it; // ready for next loop cycle
-                    delete (*to_delete); // Client is allocated
-                    _clients_list.erase(to_delete);
+                    remove_client(client_socket, to_delete);
                     continue;
                 }
                 if ((*it)->getRemainingBufferToSend().size())
                 {
-                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) < 0)
+                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) <= 0)
+                    {
                         throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                    }
                     (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
                     ++it;
                     continue; // not more than 1 send() per select()
@@ -247,7 +263,7 @@ void    Webserv::looping_through_write_set()
                 }
                 if (effective_size_of_buffer != 0) // this could be 0 if EOF is reached or if there is an issue with the stream
                 {
-                    if ((bytes_sent = send(client_socket, buffer, effective_size_of_buffer, 0)) < 0)
+                    if ((bytes_sent = send(client_socket, buffer, effective_size_of_buffer, 0)) <= 0)
                         throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
                     if (bytes_sent < effective_size_of_buffer)
                         (*it)->getRemainingBufferToSend().assign(&buffer[bytes_sent], effective_size_of_buffer - bytes_sent);
@@ -255,18 +271,23 @@ void    Webserv::looping_through_write_set()
                 if ((*it)->getResponseFileStream().eof() == true
                     && (*it)->getRemainingBufferToSend().size() == 0) // the file has been fully transmitted
                 {
-                    close(client_socket);
-                    FD_CLR(client_socket, &_current_set);
                     std::list<Client*>::iterator    to_delete = it;
                     ++it; // ready for next loop cycle
-                    delete (*to_delete); // Client is allocated
-                    _clients_list.erase(to_delete);
+                    remove_client(client_socket, to_delete);
                     continue;
                 }
             }
         }
         ++it; // put it here instead of in the for loop declaration
     }
+}
+
+void    Webserv::remove_client(int client_socket, std::list<Client*>::iterator to_delete)
+{
+    close(client_socket);
+    FD_CLR(client_socket, &_current_set);
+    delete (*to_delete); // Client is allocated
+    _clients_list.erase(to_delete);
 }
 
 void    Webserv::close_all()
@@ -284,8 +305,7 @@ void    Webserv::close_all()
 // GETTERS
 int     Webserv::get_fd_max() const
 {
-    // if there are clients, get the max fd from them. If no clients, get the max listening fd
-    if (_clients_list.size() != 0)
+    if (_clients_list.size() != 0)                                                              // if there are clients, get the max fd from them. If no clients, get the max listening fd
     {
         int fd_max = (*(_clients_list).begin())->getClientSocket();
         for (std::list<Client*>::const_iterator it = _clients_list.begin(); it != _clients_list.end(); ++it)
@@ -294,7 +314,7 @@ int     Webserv::get_fd_max() const
         return fd_max;
     }
     else
-        return (_servers.back().getListeningSocket()); // last added server has the biggest listening socket
+        return (_servers.back().getListeningSocket());                                          // last added server has the biggest listening socket
 }
 
 ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_socket)
@@ -305,31 +325,31 @@ ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_s
     return nullptr;
 }
 
+
 // EXECUTING REQUEST AND CREATE RESPONSE
 void    Webserv::parseHeader(Client *c)         {
-                                                    // CALL PARSE REQUEST FCT FROM CLIENT
-                                                    c->parseHeader();
-                                                    //c->setRequest(c->getRequestString());
-                                                    c->setHeaderReadAsComplete(true);
-                                                };
+    // CALL PARSE REQUEST FCT FROM CLIENT
+    c->parseHeader();
+    //c->setRequest(c->getRequestString());
+    c->setHeaderReadAsComplete(true);
+};
 
 void    Webserv::handleRequest(Client *c)   const   {
-                                                        //c->getRequest().parse_raw_request();                        // body not present sometimes, BUG to fix
-                                                        std::string method = c->getRequest().get_method();
-                                                        std::string uri = c->getRequest().get_location();
-                                                        std::string version = c->getRequest().get_http_version();
-                                                        if ( !method.size() || !uri.size() || !version.size() )
-                                                        {    c->setResponseString(BAD_REQUEST, "", "");                 return;     }
-                                                        if ( uri.size() > MAX_URI )
-                                                        {    c->setResponseString(REQUEST_URI_TOO_LONG, "", "");        return;     }
-                                                        if ( version != "HTTP/1.1" )
-                                                        {     c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", ""); return ;    }
-                                                        if (method == "GET")            GETmethod(c);
-                                                        else if (method == "POST")      POSTmethod(c);
-                                                        else if (method == "DELETE")    DELETEmethod(c);
-                                                        else
-                                                            c->setResponseString(METHOD_NOT_ALLOWED,"", "");
-                                                    };
+    std::string method = c->getRequest().get_method();
+    std::string uri = c->getRequest().get_location();
+    std::string version = c->getRequest().get_http_version();
+    if ( !method.size() || !uri.size() || !version.size() )
+    {    c->setResponseString(BAD_REQUEST, "", "");                 return;     }
+    if ( uri.size() > MAX_URI )
+    {    c->setResponseString(REQUEST_URI_TOO_LONG, "", "");        return;     }
+    if ( version != "HTTP/1.1" )
+    {     c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", ""); return ;    }
+    if (method == "GET")            GETmethod(c);
+    else if (method == "POST")      POSTmethod(c);
+    else if (method == "DELETE")    DELETEmethod(c);
+    else
+        c->setResponseString(METHOD_NOT_ALLOWED,"", "");
+};
 
 void Webserv::GETmethod(Client *c)  const
 {
@@ -351,7 +371,6 @@ void Webserv::GETmethod(Client *c)  const
             file_path = (*page_requested).location_path + req.get_location();
         if ( file_path.find("//") != std::string::npos )
             file_path.replace(file_path.find("//"),2,"/");
-        std::cout << file_path << std::endl;
         type = isItFileLocationOrSubfolder(req, *page_requested, pwd + _server->getServerRoot() + file_path);
         if ( type )
         {
@@ -359,7 +378,7 @@ void Webserv::GETmethod(Client *c)  const
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
             if ( type == LOCATION )
             {
-                if ((*page_requested).redirect.size())                                        // check for redirection
+                if ((*page_requested).redirect.size())                                          // check for redirection
                     redirect = 1;
                 else if ((*page_requested).root.size())
                     file_path = pwd + _server->getServerRoot() + (*page_requested).root;
@@ -371,7 +390,7 @@ void Webserv::GETmethod(Client *c)  const
             break ;
         }
     }
-    if ( !type && page_requested == pages.end() )                                               // if nothing is found 
+    if ( !type && page_requested == pages.end() )                                                   // if nothing is found 
     {   
         if (req.get_location().find("py") != std::string::npos 
             || req.get_location().find(".rb") != std::string::npos )  {                             // we check if it is a CGI request   
@@ -411,7 +430,7 @@ void Webserv::POSTmethod(Client *c) const
             file_path = pwd + (*page_requested).root;
             std::cout << file_path << std::endl;
             std::cout << req_location << std::endl;                                                             
-            if ( access((file_path + req_location ).c_str(), F_OK) != -1 )                                 // if the location required exists
+            if ( access((file_path + req_location ).c_str(), F_OK) != -1 )                                      // if the location required exists
             {                                                                                                   
                 if ( invalidMethod(*page_requested, "POST") ) 
                 {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
@@ -481,8 +500,8 @@ int     Webserv::isItFileLocationOrSubfolder( Request const& req, page page, std
 {
     if ( req.get_location().compare(page.location_path) == 0 )                     // if it matches a location in config 
         return 1;
-    if (isFileinFolder( file ))   return 2;                                                       // if it's a file in folder             
-    if (isDirectory( file ))      return 3;                                                       // if it's a subfolder of a location   
+    if (isFileinFolder( file ))   return 2;                                        // if it's a file in folder             
+    if (isDirectory( file ))      return 3;                                        // if it's a subfolder of a location   
     return 0;
 }
 
@@ -543,6 +562,6 @@ void     Webserv::checkAutoindex( page page, std::string file, Client *c, Server
         c->setResponseString(OK, response, ""); std::cout << file << std::endl; return ;
     }
     else
-        c->setResponseString(OK, "", getenv("PWD") + _server->getServerRoot() + "/" + _server->getServerIndex()); return ;
+        c->setResponseString(OK, "", getenv("PWD") + _server->getServerRoot() + "/" + _server->getServerIndex());
 }
 
