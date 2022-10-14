@@ -26,7 +26,7 @@ bool        Cgi::isCGI_request(Client *c)
     ServerInfo*         _server = c->getServerInfo();
     Request const&      req = c->getRequest();
 
-    path_to_script = CGI_PATH;                                                          
+    path_to_script = CGI_PATH;                                                         
     std::map<std::string, std::string> header = req.get_header_map();
     // ------
     // ACTION
@@ -38,12 +38,9 @@ bool        Cgi::isCGI_request(Client *c)
     check4querystring = req.get_location().find_last_of("/");
     if ( check4querystring != 0 )
         action = action.substr(check4querystring, action.size() );
-
     size_t extension = action.size() - 3;
-    if (action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
+    if (extension >= action.size() || (action.compare(extension, action.size(), ".py") && action.compare(extension, action.size(), ".rb")))                       // check if it's a pyhton script [ our CGI supports only py ]ß
     {   std::cout << "Invalid action for CGI\n"; c->setResponseString(BAD_GATEWAY,"","");                return false;              };
-    if (extension >= action.size() || action.compare(extension, action.size(), ".py"))                       // check if it's a pyhton script [ our CGI supports only py ]ß
-        return false;
     // ------
     // METHOD
     // ------                              
@@ -143,10 +140,10 @@ void    Cgi::exec_CGI(Request const& req, Client *c)
     _fds[WRITE] = fileno(_stdout);
 
     std::cerr << "MY BODY :\n";
-    std::cerr << req.get_body() << std::endl; 
-    write(_fds[READ], req.get_body(), req.get_raw_request().size() - req.get_index_beginning_body());
+    std::cerr << req.get_body() << std::endl;
+    write(_fds[READ], req.get_body(), strlen(req.get_body()));
     lseek(_fds[READ], 0, SEEK_SET);
-    
+
     _pid = fork();
     if (_pid < 0)
     {    perror("cgi fork"); exit(EXIT_FAILURE);  }
@@ -198,6 +195,8 @@ void    Cgi::set_CGIenv(Request const &req, std::map<std::string, std::string> h
     _env["DOCUMENT_ROOT"] = "~/webserv";
     if ( header.find("Content-Length") != header.end() )                                                                                          
 	    _env["CONTENT_LENGTH"] = header["Content-Length"];
+    else
+        _env["CONTENT_LENGTH"] = "0";
     if ( header.find("Content-Type") != header.end() )                                                                                          
 	    _env["CONTENT_TYPE"] = header["Content-Type"];                                       
     if (header.find("Cookies") != header.end())                                                 
@@ -306,7 +305,7 @@ CGIrequest&     Cgi::get_CGIrequest()                           {   return _requ
 std::string     Cgi::get_CGIaction()                            {   return get_CGIrequest().action;             }                   
 std::string     Cgi::get_CGImethod()                            {   return get_CGIrequest().method;             }           
 size_t          Cgi::get_CGIcontent_length()                    {   return get_CGIrequest().content_length;     }   
-std::string     Cgi::get_CGIscript(std::string action)  const   {   if (action[action.size() - 1] == 'y')  return "/bin/usr/python";   return "/usr/bin/ruby";                  } 
+std::string     Cgi::get_CGIscript(std::string action)  const   {   if (action[action.size() - 1] == 'y')  return "/usr/bin/python";   return "/usr/bin/ruby";                  } 
 
 // ************
 // UTILS functions

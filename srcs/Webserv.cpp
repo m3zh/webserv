@@ -373,8 +373,11 @@ void Webserv::GETmethod(Client *c)  const
     }
     if ( !type && page_requested == pages.end() )                                               // if nothing is found 
     {   
-        if (req.get_location().find("py") != std::string::npos )  {                             // we check if it is a CGI request   
-            if (cgi.isCGI_request(c)) {   std::cout << "GET request for CGI!" << std::endl;                 return ;        }
+        if (req.get_location().find("py") != std::string::npos 
+            || req.get_location().find(".rb") != std::string::npos )  {                             // we check if it is a CGI request   
+            if (cgi.isCGI_request(c)) {   std::cout << "GET request for CGI!" << std::endl;   return ;        }
+            else
+                return ;
         }
         c->setResponseString(NOT_FOUND, "", "");  return ;        
     }
@@ -416,7 +419,6 @@ void Webserv::POSTmethod(Client *c) const
             }
         }
     }
-
     if ( page_requested == pages.end() )
     {    c->setResponseString(NOT_FOUND, "", "");  return ;       }  
 
