@@ -46,7 +46,7 @@ int     Config::is_valid(char   *config, char **envp)
 // SETTER functions
 // ************
 
-void    Config::setServers(ServerInfo &server)          {    _servers.push_back(server); };
+void    Config::setServers(ServerInfo &server)          {    _servers.insert(_servers.begin(), server); };
 
 void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
