@@ -21,6 +21,7 @@ std::vector<ServerInfo>         Webserv::getServers()           {   return _serv
 int                             Webserv::set_server()
 {
     int on = 1;
+    int off = 0;
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
     {
         int listening_socket;
@@ -31,8 +32,10 @@ int                             Webserv::set_server()
         if (fcntl(listening_socket, F_SETFL, O_NONBLOCK) < 0)
         {   throw WebException<int>(BLUE, "WebServ error: fcntl failed on listening socket ", listening_socket); close_all();    return -1;      }
         // setting socket options to allow it to reuse local address (even after a client disconnects)
-        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0)
-        {   throw WebException<int>(BLUE, "WebServ error: setsockopt failed on listening socket ", listening_socket); close_all();    return -1;      }
+        if ( setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &off, sizeof(on)) < 0 )
+        {   throw WebException<int>(BLUE, "WebServ error: setsockopt addr failed on listening socket ", listening_socket); close_all();    return -1;      }
+        if ( setsockopt(listening_socket, SOL_SOCKET,  SO_REUSEPORT, &on, sizeof(on)) < 0 )
+        {   throw WebException<int>(BLUE, "WebServ error: setsockopt addr failed on listening socket ", listening_socket); close_all();    return -1;      }
         struct sockaddr_in  listening_addrs;
         // we use memset to initialize a sockaddr_in structure
         memset(&listening_addrs, 0, sizeof(listening_addrs));
