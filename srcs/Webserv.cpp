@@ -604,7 +604,7 @@ void     Webserv::checkAutoindex( page page, std::string file, Client *c, Server
             // check file or dir
             response += HREF_BEGIN + href + "\">" + item + HREF_END;
         }
-        response += "</ul></div></body></html>";
+        response += "</ul></div></body></html>;\n";
         closedir(dir);
         c->setNoFileToSend(true);
         c->setResponseString(OK, response, ""); std::cout << file << std::endl; return ;

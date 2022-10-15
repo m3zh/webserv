@@ -6,6 +6,7 @@ import binascii
 def cgi_script():
     message = ""
     directory = os.environ["DIR_UPLOAD"].strip()
+    website_root = "www/website"
 
     body = ''
     for line in sys.stdin.read():
@@ -19,22 +20,17 @@ def cgi_script():
     content = body[body.find("\r\n\r\n"):]
     content = content[:content.find(boundary)].strip()
 
-    # message += "***"
-    # message += content
-    # message += "***"
-    # message += directory
-
-    if not os.path.exists(os.getcwd() + "/" + directory):
+    if not os.path.exists(os.getcwd() + "/" + website_root + directory):
         os.umask(0)
-        os.makedirs(os.getcwd() + "/" + directory, mode=0o777)
+        os.makedirs(os.getcwd() + "/" + website_root + directory, mode=0o777)
     try:
-        target_dir = os.getcwd() + "/" + directory
+        target_dir = os.getcwd() + "/" + website_root + directory                                           # we save at the website root
         with open(target_dir + "/" + filename, 'wb') as target:
             for line in content:
                 target.write(line)
-        message = 'The file "' + filename + '" was uploaded successfully to directory ' + directory
+        message = 'The file "' + filename + '" was uploaded successfully to directory ' + website_root + directory
     except:
-        message = 'The file "' + filename + '" could not be uploaded to directory ' + directory
+        message = 'The file "' + filename + '" could not be uploaded to directory ' + website_root + directory
 
     print ("""\
     <html><body>

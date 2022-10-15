@@ -109,7 +109,7 @@ void                    Client::setResponseString(std::string code, std::string 
     else if ( noFileToSend() )
     {
         std::stringstream ss;
-        ss << content.size();
+        ss << content.length();
         response_str += "Content-Type: text/html; charset=utf-8;\r\n";
         response_str += "Content-Length: " + ss.str() + "\r\n";       // NEWLY ADDED, TO CHECK !!
         response_str += "\r\n\r\n";
