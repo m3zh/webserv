@@ -6,7 +6,7 @@
 /*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/12 13:22:34 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/15 16:41:08 by artmende         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ std::vector<ServerInfo>         Webserv::getServers()           {   return _serv
 int                             Webserv::set_server()
 {
     int on = 1;
-    int off = 0;
     for (std::vector<ServerInfo>::iterator it = _servers.begin(); it != _servers.end(); it++)
     {
         int listening_socket;
@@ -32,10 +31,9 @@ int                             Webserv::set_server()
         if (fcntl(listening_socket, F_SETFL, O_NONBLOCK) < 0)
         {   throw WebException<int>(BLUE, "WebServ error: fcntl failed on listening socket ", listening_socket); close_all();    return -1;      }
         // setting socket options to allow it to reuse local address (even after a client disconnects)
-        if ( setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &off, sizeof(on)) < 0 )
-        {   throw WebException<int>(BLUE, "WebServ error: setsockopt addr failed on listening socket ", listening_socket); close_all();    return -1;      }
-        if ( setsockopt(listening_socket, SOL_SOCKET,  SO_REUSEPORT, &on, sizeof(on)) < 0 )
-        {   throw WebException<int>(BLUE, "WebServ error: setsockopt addr failed on listening socket ", listening_socket); close_all();    return -1;      }
+        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0)
+        //if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+        {   throw WebException<int>(BLUE, "WebServ error: setsockopt failed on listening socket ", listening_socket); close_all();    return -1;      }
         struct sockaddr_in  listening_addrs;
         // we use memset to initialize a sockaddr_in structure
         memset(&listening_addrs, 0, sizeof(listening_addrs));
@@ -59,7 +57,7 @@ int                             Webserv::set_server()
 int     Webserv::run_server()
 {
     struct timeval timeout;
-    int select_fd;
+    int return_of_select; // -1 means error, 0 means timeout
     
     if (set_server() < 0)
         return -1;
@@ -91,13 +89,27 @@ int     Webserv::run_server()
         _write_set = _current_set;
 
         // select will test listening fd, and clients
-        try {   select_fd = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);              }
-        catch (...) {  throw WebException<int>(BLUE, "WebServ error: select failed on fd", select_fd);      }
-            
+        return_of_select = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
+        std::cout << "just after select()" << std::endl;
+        if (return_of_select == 0)
+            throw WebException<int>(BLUE, "WebServ timeout: no activity for the last", timeout.tv_sec);
+        if (return_of_select == -1)
+        {
+            if (keep_alive == false)
+                throw WebException<int>(BLUE, "CTRL+C has been pressed. Shutting down with exit code", 1);
+            throw WebException<int>(BLUE, "WebServ error: select failed with return", return_of_select);
+        }
         // looping through all listening socket
-        checking_for_new_clients();
-        looping_through_read_set();
-        looping_through_write_set();
+        try
+        {
+            checking_for_new_clients(); // possible issue with accept()
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        looping_through_read_set(); // possible issue with recv() but no exception
+        looping_through_write_set(); // possible issue with send() but no exception
     }
     close_all();
     return 0;
@@ -113,7 +125,9 @@ void    Webserv::checking_for_new_clients()
         if (FD_ISSET((*it).getListeningSocket(), &_read_set) && keep_alive)
         { // there is a new client to accept, we instantiate a Client class and add it to the clients list
             std::cout << "new client ! about to call accept. size of client list now is : " << _clients_list.size() << std::endl;
-            _clients_list.push_back(accept_new_client((*it).getListeningSocket()));
+            Client  *to_add = accept_new_client((*it).getListeningSocket());
+            // in case an exception is thrown, that is where it will stop execution. No Client will be allocated, and no push_back in the client list
+            _clients_list.push_back(to_add);
         }
     }
 }
@@ -124,11 +138,26 @@ Client     *Webserv::accept_new_client(int listening_socket)
     struct sockaddr_in  addr_of_client;
     socklen_t   len_for_accept = sizeof(addr_of_client);
     int client_socket;
-    try {   client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);              } // if (client_socket < 0)
-    catch (...) {  throw WebException<int>(RED, "WebServ error: Client not accepted on listening socket ", listening_socket); return nullptr;      }
+
+    client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);
+    if (client_socket < 0)
+        throw WebException<int>(RED, "WebServ error with function accept(): Client not accepted on listening socket ", listening_socket);
     std::cout << "new client accepted ! socket is " << client_socket << std::endl;      
     FD_SET(client_socket, &_current_set);
-    Client *ret = new Client(client_socket, addr_of_client, get_server_associated_with_listening_socket(listening_socket));
+
+    Client *ret;// = new Client(client_socket, addr_of_client, get_server_associated_with_listening_socket(listening_socket));
+
+    try
+    {
+        ret = new Client(client_socket, addr_of_client, get_server_associated_with_listening_socket(listening_socket));
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        close(client_socket); // in case the memory allocation fails, we close the newly created socket.
+        throw WebException<int>(RED, "WebServ memory allocation error : Client could not be added to Client list. Listening socket was ", listening_socket);
+        // that second exception thrown will be caught in run_server()
+    }
     return (ret);
 }
 
@@ -175,8 +204,6 @@ void    Webserv::looping_through_read_set()
             {
                 std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
                 std::map<std::string, std::string>::const_iterator    content_length_it = header_map.find("Content-Length");
-                if (content_length_it == header_map.end())
-                {    throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);    return;     }
                 if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) <= 0)
                 {
                     std::list<Client*>::iterator    to_delete = it;
@@ -234,7 +261,7 @@ void    Webserv::looping_through_write_set()
                     std::list<Client*>::iterator    to_delete = it;
                     ++it; // ready for next loop cycle
                     remove_client(client_socket, to_delete);
-                    throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                    std::cout << "send failed for client socket " << client_socket << std::endl;
                     continue;
                 }
                     
@@ -260,7 +287,7 @@ void    Webserv::looping_through_write_set()
                         std::list<Client*>::iterator    to_delete = it;
                         ++it; // ready for next loop cycle
                         remove_client(client_socket, to_delete);
-                        throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                        std::cout << "send failed for client socket " << client_socket << std::endl;
                         continue;
                     }
                     (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
@@ -282,7 +309,7 @@ void    Webserv::looping_through_write_set()
                         std::list<Client*>::iterator    to_delete = it;
                         ++it; // ready for next loop cycle
                         remove_client(client_socket, to_delete);
-                        throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                        std::cout << "send failed for client socket " << client_socket << std::endl;
                         continue;
                     }
                     if (bytes_sent < effective_size_of_buffer)
@@ -335,6 +362,7 @@ int     Webserv::get_fd_max() const
     }
     else
         return (_servers.back().getListeningSocket());                                          // last added server has the biggest listening socket
+        // fix this
 }
 
 ServerInfo *Webserv::get_server_associated_with_listening_socket(int listening_socket)
