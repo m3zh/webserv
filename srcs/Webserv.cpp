@@ -520,15 +520,7 @@ void Webserv::DELETEmethod(Client *c) const
         {
             if ( invalidMethod(*page_requested, "DELETE") )                                        // check for method
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
-            // if ( type == LOCATION )
-            // {
-            //     if ((*page_requested).root.size())
-            //         file_path = pwd + _server->getServerRoot() + (*page_requested).root;
-            //     else
-            //         file_path = pwd + _server->getServerRoot() + page_requested->location_path;
-            // }
-            // else
-                file_path = pwd + _server->getServerRoot() + file_path;
+            file_path = pwd + _server->getServerRoot() + file_path;
             break ;
         }
     }
