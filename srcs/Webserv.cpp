@@ -158,6 +158,7 @@ void    Webserv::looping_through_read_set()
                     std::list<Client*>::iterator    to_delete = it;
                     ++it; // ready for next loop cycle
                     remove_client(client_socket, to_delete);
+                    std::cout << "recv failed for client socket " << client_socket << std::endl;
                     continue;
                 }
                 (*it)->appendToRequestString(buffer, bytes_recv);
@@ -173,8 +174,14 @@ void    Webserv::looping_through_read_set()
                 std::map<std::string, std::string>::const_iterator    content_length_it = header_map.find("Content-Length");
                 if (content_length_it == header_map.end())
                 {    throw WebException<int>(BLUE, "WebServ error: no Content-Length on client socket ", client_socket);    return;     }
-                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) == -1)
-                {    throw WebException<int>(BLUE, "WebServ error: receiving failed on client socket ", client_socket);     return;     }
+                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) <= 0)
+                {
+                    std::list<Client*>::iterator    to_delete = it;
+                    ++it; // ready for next loop cycle
+                    remove_client(client_socket, to_delete);
+                    std::cout << "recv failed for client socket " << client_socket << std::endl;
+                    continue;     
+                }
                 (*it)->appendToRequestString(buffer, bytes_recv);
                 if (((*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body())
                         >= (unsigned long)(atoi((content_length_it->second).c_str())) ) // bytes received match content-length bytes of the body
@@ -182,7 +189,6 @@ void    Webserv::looping_through_read_set()
             }
             if ((*it)->isReadComplete())    {
                 std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
-
                 handleRequest(*it); // we handle the request and create a response to send
             }
         }
@@ -211,6 +217,7 @@ void    Webserv::looping_through_write_set()
                         std::list<Client*>::iterator    to_delete = it;
                         ++it; // ready for next loop cycle
                         remove_client(client_socket, to_delete);
+                        std::cout << "send failed for client socket " << client_socket << std::endl;
                         continue;    
                     }
                     (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
@@ -221,11 +228,11 @@ void    Webserv::looping_through_write_set()
                 }
                 if ((bytes_sent = send(client_socket, (*it)->getResponseString().c_str(), (*it)->getResponseString().size(), 0)) <= 0)
                 {
-                    // std::list<Client*>::iterator    to_delete = it;
-                    // ++it; // ready for next loop cycle
-                    //     remove_client(client_socket, to_delete);
-                    //     continue;    
+                    std::list<Client*>::iterator    to_delete = it;
+                    ++it; // ready for next loop cycle
+                    remove_client(client_socket, to_delete);
                     throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                    continue;
                 }
                     
                 if ((std::size_t)bytes_sent < (*it)->getResponseString().size())
@@ -247,7 +254,11 @@ void    Webserv::looping_through_write_set()
                 {
                     if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) <= 0)
                     {
+                        std::list<Client*>::iterator    to_delete = it;
+                        ++it; // ready for next loop cycle
+                        remove_client(client_socket, to_delete);
                         throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                        continue;
                     }
                     (*it)->getRemainingBufferToSend().erase(0, bytes_sent); // this will either clear the string, or leave there what was not sent yet
                     ++it;
@@ -264,7 +275,13 @@ void    Webserv::looping_through_write_set()
                 if (effective_size_of_buffer != 0) // this could be 0 if EOF is reached or if there is an issue with the stream
                 {
                     if ((bytes_sent = send(client_socket, buffer, effective_size_of_buffer, 0)) <= 0)
+                    {
+                        std::list<Client*>::iterator    to_delete = it;
+                        ++it; // ready for next loop cycle
+                        remove_client(client_socket, to_delete);
                         throw WebException<int>(BLUE, "WebServ error: sending failed on client socket ", client_socket);
+                        continue;
+                    }
                     if (bytes_sent < effective_size_of_buffer)
                         (*it)->getRemainingBufferToSend().assign(&buffer[bytes_sent], effective_size_of_buffer - bytes_sent);
                 }
