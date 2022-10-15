@@ -8,13 +8,12 @@ def cgi_script():
     # check params passed in env
     #for param in os.environ.keys():
     #    print "<b>%20s</b>: %s</br>" % (param, os.environ[param])
-
-    if "name" not in form or "age" not in form:
-        message = "<H1>Error</H1>\nNo name or age field provided."
-    else:
+    try:
         name = form.getvalue('name')
         age = form.getvalue('age')
-        message = "Hey there " + name + ',\nyou\'re, what, ' + age + ' years old already?'
+        message = "Hey there " + name + ',\nyou\'re, what, ' + age + ' years old already?'           
+    except:
+        message = "<H1>Error</H1>\nNo name or age field provided."
 
     print ("""\
     <html><body>

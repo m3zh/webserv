@@ -1,4 +1,0 @@
-https://projects.intra.42.fr/uploads/document/document/9540/ubuntu_tester
-https://projects.intra.42.fr/uploads/document/document/9539/cgi_tester
-https://projects.intra.42.fr/uploads/document/document/9538/ubuntu_cgi_tester
-https://projects.intra.42.fr/uploads/document/document/9537/tester

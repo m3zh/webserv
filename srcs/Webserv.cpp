@@ -90,7 +90,7 @@ int     Webserv::run_server()
 
         // select will test listening fd, and clients
         return_of_select = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
-        std::cout << "just after select()" << std::endl;
+        std::cout << "just after select() with return " << return_of_select << std::endl;
         if (return_of_select == 0)
             throw WebException<int>(BLUE, "WebServ timeout: no activity for the last", timeout.tv_sec);
         if (return_of_select == -1)
@@ -242,7 +242,7 @@ void    Webserv::looping_through_write_set()
             {
                 if ((*it)->getRemainingBufferToSend().size() > 0) // in case the whole header could not be sent in 1 time
                 {
-                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) <= 0)
+                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().data(), (*it)->getRemainingBufferToSend().size(), 0)) <= 0)
                     {
                         std::list<Client*>::iterator    to_delete = it;
                         ++it; // ready for next loop cycle
@@ -282,7 +282,7 @@ void    Webserv::looping_through_write_set()
                 }
                 if ((*it)->getRemainingBufferToSend().size())
                 {
-                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().c_str(), (*it)->getRemainingBufferToSend().size(), 0)) <= 0)
+                    if ((bytes_sent = send(client_socket, (*it)->getRemainingBufferToSend().data(), (*it)->getRemainingBufferToSend().size(), 0)) <= 0)
                     {
                         std::list<Client*>::iterator    to_delete = it;
                         ++it; // ready for next loop cycle
@@ -392,6 +392,10 @@ void    Webserv::handleRequest(Client *c)   const   {
     {    c->setResponseString(REQUEST_URI_TOO_LONG, "", "");        return;     }
     if ( version != "HTTP/1.1" )
     {     c->setResponseString(HTTP_VERSION_NOT_SUPPORTED, "", ""); return ;    }
+    std::map<std::string, std::string> header = c->getRequest().get_header_map(); 
+    if (header.find("Content-Length") != header.end()
+        && std::stoi((header.find("Content-Length")->second)) > c->getServerInfo()->getClientMaxBodySize())
+        {  c->setResponseString(PAYLOAD_TOO_LARGE,"","");    return ;              };
     if (method == "GET")            GETmethod(c);
     else if (method == "POST")      POSTmethod(c);
     else if (method == "DELETE")    DELETEmethod(c);
@@ -501,25 +505,36 @@ void Webserv::DELETEmethod(Client *c) const
     Request const &             req = c->getRequest();
     std::vector<page>   pages = _server->getPages();
     std::vector<page>::iterator page_requested = pages.begin();
-    int                 fileInFolder;
+    int                 type = 0;
 
-    for ( ; page_requested != pages.end(); page_requested++ )                               
+    for ( ; page_requested != pages.end(); page_requested++ )                                   // check for location in config
     {
-        file_path = (*page_requested).location_path + req.get_location();
+        if ((*page_requested).root.size())
+            file_path = (*page_requested).root + req.get_location();
+        else
+            file_path = (*page_requested).location_path + req.get_location();
         if ( file_path.find("//") != std::string::npos )
             file_path.replace(file_path.find("//"),2,"/");
-        fileInFolder = access((pwd + _server->getServerRoot() + file_path).c_str(), R_OK);
-        if ( req.get_location().compare((*page_requested).location_path) == 0                   // if the page required is exactly as in config
-                || fileInFolder > -1 )                                                          // or if it is found in a config folder                     
-        {                                                                                                       
-            if ( invalidMethod(*page_requested, "DELETE") )                                     // check for method
+        type = isItFileLocationOrSubfolder(req, *page_requested, pwd + _server->getServerRoot() + file_path);
+        if ( type )
+        {
+            if ( invalidMethod(*page_requested, "DELETE") )                                        // check for method
             {    c->setResponseString(METHOD_NOT_ALLOWED, "", ""); return  ;   }
+            // if ( type == LOCATION )
+            // {
+            //     if ((*page_requested).root.size())
+            //         file_path = pwd + _server->getServerRoot() + (*page_requested).root;
+            //     else
+            //         file_path = pwd + _server->getServerRoot() + page_requested->location_path;
+            // }
+            // else
+                file_path = pwd + _server->getServerRoot() + file_path;
             break ;
         }
     }
-    if ( fileInFolder < 0 && page_requested == pages.end() )
-    {    c->setResponseString(NOT_FOUND, "", "");  return ;           }
-    if ( remove((pwd + _server->getServerRoot() + file_path).c_str()) != 0 )
+    if ( !type && page_requested == pages.end() )                                                   // if nothing is found 
+    {    c->setResponseString(NOT_FOUND, "", "");  return ;     }   
+    if ( remove((file_path).c_str()) != 0 )
     {   c->setResponseString(UNAUTHORIZED, "", ""); return  ;   }
     c->setNoFileToSend(true);
     c->setResponseString(OK, "File successfully deleted\n", "");    
