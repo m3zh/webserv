@@ -21,12 +21,12 @@
 class Request
 {
     private:
-        std::string const &                 _raw_request; // this points to the request untouched
+        std::string const &                 _raw_request;           // this points to the request untouched
         std::string                         _method;
         std::string                         _location;
         std::string                         _http_version;
         std::map<std::string, std::string>  _header_map;
-        size_t                              _index_beginning_body; // = std::string::npos in case there is no body
+        size_t                              _index_beginning_body;  // = std::string::npos in case there is no body
 
         void    _remove_char_from_string(std::string & str, char c)     ;
         void    _get_method_location_version(std::string raw_request)   ;

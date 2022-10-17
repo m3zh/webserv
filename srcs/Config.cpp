@@ -33,12 +33,11 @@ int     Config::is_valid(char   *config, char **envp)
             setServerPageParams(parser, server, it);
             setServers(server);
         }
-        // debug_me(parser);
+        valid_servers(getServers());
         if (valid_config(getServers()))
             return 1;
     }
     std::cout << "Error in config\n"; 
-    // debug_me(parser);
     return 0;
 }
 
@@ -57,7 +56,6 @@ int    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<To
         while (it != parser.tokens.end() && it->getType() != "Key" && it->getType() != "Namespace")
         {
             // ports valides entre 0 et 65535 https://www.webopedia.com/reference/well-known-tcp-port-numbers/
-            // pour le port : check si it nest pas vide, si cest un nombre qui ne depasse pas (int ?) et quil est unique
             if (key_tmp.getContent() == "listen")
             {
                 int port;
@@ -68,7 +66,7 @@ int    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<To
                     server.setPort(port);
                 }
                 catch (...) {
-                    std::cout << "Something wrong with stoi in setServerParams...\n";
+                    std::cout << "Couldn't convert port in Config::setServerParams...\n";
                     return 0;
                 }
                 if (port < 0 || port > 65535)
@@ -148,7 +146,7 @@ void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vect
 // GETTER functions
 // ************
 
-std::vector<ServerInfo>&     Config::getServers()        {   return _servers;    };
+std::vector<ServerInfo>&     Config::getServers()   {    return _servers;    };
 
 // ************
 // VALIDATE functions
@@ -193,6 +191,31 @@ bool                    Config::valid_config(std::vector<ServerInfo>& s)
     return true;
 };
 
+bool                    Config::valid_servers(std::vector<ServerInfo>& s)
+{   
+    std::vector<ServerInfo>::reverse_iterator rit = s.rbegin();
+
+    while ( rit != s.rend() - 1) 
+    {
+        std::vector<ServerInfo>::reverse_iterator it2 = rit + 1;
+        while ( it2 != s.rend() )
+        {
+            if ((*rit).getPort() == (*it2).getPort())
+                (*it2).setDefault(false);
+            it2++;
+        }
+        rit++;
+    }
+    std::vector<ServerInfo>::iterator it = s.begin();
+    while ( it != s.end() ) 
+    {
+        if (it->getDefault() == false)
+            _servers.erase(it);
+        it++;
+    }
+    return true;
+};
+
 // ************
 // DEBUGGING functions
 // ************
@@ -230,11 +253,6 @@ void    Config::debug_me(Lexer &parser)
             std::cout << "  - location " << (*it2).location_path << ",\n"
                         << "        - autoindex " << (*it2).autoindex << ",\n"
                         << "        - root " << (*it2).root << ",\n";
-                // if (it2->methods[0])
-                // {
-
-                //     std::cout   << "        - " << it2->methods[0] << ",\n";
-                // }
             it2++;
         }
         it++;

@@ -38,17 +38,17 @@ class Client
         std::string                 request_str;
         Request                     request;
 
-        std::string                 response_str; // header of the response
-        std::ifstream               response_file_stream; // stream open on the file to send (if there is one)
+        std::string                 response_str;                   // header of the response
+        std::ifstream               response_file_stream;           // stream open on the file to send (if there is one)
         std::string                 response_file;
-        std::string                 remaining_buffer_to_send; // In case send() couldn't transmit the full buffer
-        bool                        there_is_a_file_to_send; /////////////////// DUPLICATE !!
+        std::string                 remaining_buffer_to_send;       // In case send() couldn't transmit the full buffer
         bool                        header_has_been_sent;
 
         bool                        header_is_read_complete;
         bool                        is_read_complete;       
         bool                        FileToSend;
-        bool                        is_not_cgi;       
+        bool                        there_is_a_file_to_send;
+        bool                        is_not_cgi;
 
         Client();
         Client(Client const & x);
@@ -64,11 +64,11 @@ class Client
         int                     getClientSocket()   const;
         struct sockaddr_in      getClientAddress()  const;
         ServerInfo *            getServerInfo()     const;
-        std::string const &     getRequestString()  const; // make it a non const reference
-        Request const &         getRequest()        const; // non const reference
+        std::string const &     getRequestString()  const;
+        Request const &         getRequest()        const;
         std::string             getResponseString() const;
         std::string             getResponseFile()   const;
-        std::ifstream &         getResponseFileStream(); // probably not const as reading will affect the state of the stream
+        std::ifstream &         getResponseFileStream();
         std::string &           getRemainingBufferToSend();
         std::string             getContentType(std::string file);
         std::string             getFileSize(std::string file);
@@ -96,7 +96,4 @@ class Client
         void                    setThereIsAFileToSend(bool state);
         bool                    isNotCgi();
         void                    setIsNotCgi(bool state);        
-
-
-        //Response class
 };

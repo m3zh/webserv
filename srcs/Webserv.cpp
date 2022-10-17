@@ -26,14 +26,14 @@ int                             Webserv::set_server()
         int listening_socket;
         // check for creation of socket to bind with each server
         if ((listening_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        {   throw WebException<int>(BLUE, "WebServ error: socket failed on listening socket ", listening_socket); close_all();    return -1;      }
+        {   perror(""); throw WebException<int>(BLUE, "WebServ error: socket failed on listening socket ", listening_socket); close_all();    return -1;      }
         // setting socket in non blocking mode, to allow it to connect to multiple clients ; instead of having a blocking socket restricted to one client
         if (fcntl(listening_socket, F_SETFL, O_NONBLOCK) < 0)
-        {   throw WebException<int>(BLUE, "WebServ error: fcntl failed on listening socket ", listening_socket); close_all();    return -1;      }
+        {   perror(""); throw WebException<int>(BLUE, "WebServ error: fcntl failed on listening socket ", listening_socket); close_all();    return -1;      }
         // setting socket options to allow it to reuse local address (even after a client disconnects)
-        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0)
-        //if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
-        {   throw WebException<int>(BLUE, "WebServ error: setsockopt failed on listening socket ", listening_socket); close_all();    return -1;      }
+        //if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0)
+        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+        {   perror(""); throw WebException<int>(BLUE, "WebServ error: setsockopt failed on listening socket ", listening_socket); close_all();    return -1;      }
         struct sockaddr_in  listening_addrs;
         // we use memset to initialize a sockaddr_in structure
         memset(&listening_addrs, 0, sizeof(listening_addrs));
@@ -44,10 +44,10 @@ int                             Webserv::set_server()
         listening_addrs.sin_port = htons((*it).getPort());
         // we bind the socket to a "file" descriptor => we get a socket descriptor
         if ((bind(listening_socket, (struct sockaddr *)&listening_addrs, sizeof(listening_addrs))) < 0)
-        {   throw WebException<int>(BLUE, "WebServ error: bind failed on listening socket ", listening_socket); close_all();    return -1;      }
+        {   perror(""); throw WebException<int>(BLUE, "WebServ error: bind failed on listening socket ", listening_socket); close_all();    return -1;      }
         // we launch the socket, with a maximum of 256 different sockets in the queue
         if ((listen(listening_socket, BACKLOG) < 0))
-        {   throw WebException<int>(BLUE, "WebServ error: listening failed on listening socket ", listening_socket); close_all();    return -1;      }
+        {   perror(""); throw WebException<int>(BLUE, "WebServ error: listening failed on listening socket ", listening_socket); close_all();    return -1;      }
         (*it).setListeningSocket(listening_socket);
         (*it).setListeningAddrs(listening_addrs);
     }

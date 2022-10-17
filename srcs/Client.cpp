@@ -97,9 +97,9 @@ void                    Client::setResponseString(std::string code, std::string 
     std::string error_file(ERROR_FILE_PATH);
     response_str = "HTTP/1.1 " + code + " " + status[code] + "\r\n";        // start of header
     if ( code == "301" )
-    {                                                    // if it is a redirection
+    {                                                                       // if it is a redirection
         response_str += "Location: " + content + "\r\n\r\n";
-        file = "";                                              // we set the file to "" ( there is no file to send )
+        file = "";                                                          // we set the file to "" ( there is no file to send )
         std::cout << "STR RES: " << response_str; 
         setResponseFile(file); 
         setThereIsAFileToSend(false);  return ;     
@@ -111,10 +111,10 @@ void                    Client::setResponseString(std::string code, std::string 
         std::stringstream ss;
         ss << content.length();
         response_str += "Content-Type: text/html; charset=utf-8;\r\n";
-        response_str += "Content-Length: " + ss.str() + "\r\n";       // NEWLY ADDED, TO CHECK !!
+        response_str += "Content-Length: " + ss.str() + "\r\n";
         response_str += "\r\n\r\n";
-        response_str += content;                               // we append the message we got from the python script
-        file = "";                                              // we set the file to "" ( there is no file to send )
+        response_str += content;                                             // we append the message we got from the python script
+        file = "";                                                           // we set the file to "" ( there is no file to send )
         std::cout << "STR RES: " << response_str; 
         setResponseFile(file); 
         setThereIsAFileToSend(false); return ;                                           
@@ -122,7 +122,7 @@ void                    Client::setResponseString(std::string code, std::string 
     else if( code == "200" )
         file = file_path;
     response_str += "Content-Type: " + getContentType(file) + "; charset=utf-8;\r\n";
-    response_str += "Content-Length: " + getFileSize(file) + ";\r\n\r\n";             // NEWLY ADDED, TO CHECK !!
+    response_str += "Content-Length: " + getFileSize(file) + ";\r\n\r\n";
     std::cout << "\nSTR RES: " << response_str;
     std::cout << "FILE: " << file << std::endl;
     setResponseFile(file);
@@ -141,10 +141,11 @@ void                    Client::setHeaderReadAsComplete(bool state)     {   head
 bool                    Client::noFileToSend()                          {   return FileToSend;                   };
 void                    Client::setNoFileToSend(bool state)             {   FileToSend = state;                  };
 
-bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
-void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;        };
 bool                    Client::thereIsAFileToSend()                    {   return there_is_a_file_to_send;      };
 void                    Client::setThereIsAFileToSend(bool state)       {   there_is_a_file_to_send = state;     };
+
+bool                    Client::headerHasBeenSent()                     {   return header_has_been_sent;         };
+void                    Client::setHeaderBeenSent(bool state)           {   header_has_been_sent = state;        };
 bool                    Client::isNotCgi()                              {   return is_not_cgi;      };
 void                    Client::setIsNotCgi(bool state)                 {   is_not_cgi = state;     };
 

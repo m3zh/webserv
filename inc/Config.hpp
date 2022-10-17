@@ -31,13 +31,12 @@ class ServerInfo;
 // in a readable way for the Webserv class
 // ****************************
 
-
 class Config
 {
     private:
         std::vector<ServerInfo>    _servers;
         
-        void                    debug_me(Lexer &parser);
+        void            debug_me(Lexer &parser);
 
         Config(Config const &p);
         Config& operator=(Config const &p);
@@ -55,5 +54,6 @@ class Config
 
         std::vector<ServerInfo>&     getServers();
 
-        bool            valid_config(std::vector<ServerInfo>    &s);
+        bool            valid_config(std::vector<ServerInfo>     &s);
+        bool            valid_servers(std::vector<ServerInfo>    &s);
 };

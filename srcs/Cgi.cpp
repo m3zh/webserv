@@ -82,7 +82,7 @@ bool        Cgi::isCGI_request(Client *c)
 [ source: https://www.tutorialspoint.com/perl/perl_cgi.htm ]
 
 The GET method is:
-- the defualt method to pass information from browser to web server
+- the default method to pass information from browser to web server
 - info is written in the URL and is visible to everyone, thus not safe, ie − http://www.test.com/cgi-bin/hello.cgi?key1=value1&key2=value2
 - size limtation: only 1024 characters can be in a request string
 - info is passed using QUERY_STRING header and  accessible through QUERY_STRING environment variable
@@ -107,10 +107,10 @@ void    Cgi::child_process() const
 
     if (dup2(_fds[READ], STDIN_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
     {    perror("cgi dup2 in"); exit(EXIT_FAILURE);  }
-    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)                                                   // in the child the output is written to the end of the pipe
+    if (dup2(_fds[WRITE], STDOUT_FILENO) < 0)
     {    perror("cgi dup2 out"); exit(EXIT_FAILURE);  }
     // we populate cmd[3] for execve                                 
-    string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                                          // cmd[0] -> /usr/bin/python                
+    string2charstar(&cmd[0], get_CGIscript(_request.action).c_str());                           // cmd[0] -> /usr/bin/python                
     string2charstar(&cmd[1], (_request.path_to_script + _request.action).c_str());              // cmd[1] -> cgi-script.py
     cmd[2] = 0;
     close(_fds[WRITE]);
@@ -122,7 +122,7 @@ void    Cgi::child_process() const
 void    Cgi::parent_process(int status) const
 {
     close(_fds[READ]);                                               // in the parent the output written to the end of the pipe
-    waitpid(_pid, &status, 0);                                                      // is re-written to the response to be sent to the server
+    waitpid(_pid, &status, 0);                                       // is re-written to the response to be sent to the server
     
     if (keep_alive == false)
         return ;
@@ -341,9 +341,9 @@ void Cgi::sendCGI_response(Client *c)
 {
     lseek(_fds[WRITE], 0, SEEK_SET);
     if (!fdopen(_fds[WRITE], "r"))
-    {   c->setResponseString(UNAUTHORIZED, "", "");      return;      }                                                                 // to check if file can be opened, else error
+    {   c->setResponseString(UNAUTHORIZED, "", "");      return;      }             // to check if file can be opened, else error
     std::string     _response = file2string(_fds[WRITE]); 
-    if (_response.size())                                                           // if we have an output, execve has succeded                                        
+    if (_response.size())                                                           // if we have an output, execve has succeeded                                        
     {   c->setResponseString(OK, _response,"");       return;      }
     c->setResponseString(BAD_GATEWAY, "", "");
 }

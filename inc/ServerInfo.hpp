@@ -40,6 +40,7 @@ class ServerInfo
         page                        _error_page;
         int                         _listening_socket;
         struct sockaddr_in          _listening_addrs;
+        bool                        _default_server;
         
     public:
         ServerInfo();
@@ -56,6 +57,9 @@ class ServerInfo
 
         int                         getPort();      
         void                        setPort(int p);
+
+        bool                        getDefault();      
+        void                        setDefault(bool state);
 
         int                         getClientMaxBodySize();      
         void                        setClientMaxBodySize(int c);  

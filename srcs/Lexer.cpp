@@ -21,13 +21,13 @@ std::string	    Lexer::types[]           = {
                                             "Method",
                                             "Namespace",
                                             "Path",
-                                            "Value"                       // to be deleted
+                                            "Value"
                                         };
 std::string	    Lexer::namespace_types[] = {
                                             "location",
                                             "server"
                                         };
-std::string	    Lexer::key_types[]       = {                               // some key types will be deleted afterwards
+std::string	    Lexer::key_types[]       = {
                                             "allowed_methods",
                                             "autoindex",
                                             "client_max_body_size",
@@ -43,7 +43,7 @@ std::string	    Lexer::key_types[]       = {                               // so
                                             "upload_store",
                                             "workers"		
                                         };
-std::string	    Lexer::method_types[]    = {                               // some key types will be deleted afterwards
+std::string	    Lexer::method_types[]    = {
                                             "GET",
                                             "DELETE",
                                             "POST",
@@ -90,7 +90,7 @@ bool            Lexer::tag(Token& token)
     std::string token_content = token.getContent();
 
     if (token_content.find("#") != std::string::npos)
-        return (handleComments(token));
+        return handleComments(token);
     else if (match_anystring(token_content, namespace_types, 2))
         return  setNamespaceParams(token);
     else if (token_content.find("/") == 0 || token_content.compare(0, 2, "./") == 0)    // if it starts with a / it's a path.
@@ -119,7 +119,7 @@ bool            Lexer::tokenize(std::vector<std::string> current_line)
         Token token(current_line[i], i);                                        // create token with content and pos
 
         if (!tag(token) || !valid_line(current_line) )
-            return false;                               // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
+            return false;                                                       // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
         tokens.push_back(token);
     }
     return validate_by_position(tokens, i);
@@ -131,7 +131,6 @@ bool            Lexer::tokenize(std::vector<std::string> current_line)
 
 bool    Lexer::setPathParams(Token& token)
 {
-    // int     fd;
     Token   last;
     token.setType("Path");
     
@@ -219,10 +218,10 @@ int     Lexer::valid_brackets(std::fstream &f)                          // check
 
 int     Lexer::valid_lineending(std::string line)                {             return match_anychar(line[line.size() - 1], "{;}");               };
 
-bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)            // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
+bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tokens)                   // check if tokens are in the right sequence (eg, port should follow listen, not viceversa)
 {
     std::vector<Token>::iterator it = tokens.end();
-    it = it - num_of_tokens;                                                                    // we start from the first token pushed from this line
+    it = it - num_of_tokens;                                                                           // we start from the first token pushed from this line
 
     if ((*it).getContent() != "allowed_methods")
         if ((*it).getAllowedWords() > num_of_tokens)
