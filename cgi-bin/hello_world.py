@@ -5,9 +5,6 @@ import cgi, os
 def cgi_script():
     form = cgi.FieldStorage()
 
-    # check params passed in env
-    #for param in os.environ.keys():
-    #    print "<b>%20s</b>: %s</br>" % (param, os.environ[param])
     try:
         name = form.getvalue('name')
         age = form.getvalue('age')
