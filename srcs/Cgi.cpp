@@ -59,10 +59,10 @@ bool        Cgi::isCGI_request(Client *c)
         {   std::cout << "No content length for post method CGI\n"; c->setResponseString(LENGTH_REQUIRED,"","");    return false;              };
         if ((int)content_length > _server->getClientMaxBodySize())
         {   std::cout << "Uploaded file too large for CGI\n"; c->setResponseString(PAYLOAD_TOO_LARGE,"","");    return false;              };
-        if (header.find("Content-Type") != header.end())
-        {   if (header["Content-Type"].find("text/plain") != std::string::npos)
-            {    c->setResponseString(UNSUPPORTED_MEDIA_TYPE,"","");    return false;               };
-        }
+        // if (header.find("Content-Type") != header.end())
+        // {   if (header["Content-Type"].find("text/plain") != std::string::npos)
+        //     {    c->setResponseString(UNSUPPORTED_MEDIA_TYPE,"","");    return false;               };
+        // }
     }
     // ------
     // SCRIPT -> root + action

@@ -91,7 +91,7 @@ int     Webserv::run_server()
         // select will test listening fd, and clients
         return_of_select = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
         if (return_of_select == 0)
-            throw WebException<int>(BLUE, "WebServ timeout: no activity for the last", timeout.tv_usec);
+            throw WebException<int>(BLUE, "WebServ timeout: exit code", 0);
         if (return_of_select == -1)
         {
             if (keep_alive == false)
@@ -123,7 +123,7 @@ void    Webserv::checking_for_new_clients()
     {
         if (FD_ISSET((*it).getListeningSocket(), &_read_set) && keep_alive)
         { // there is a new client to accept, we instantiate a Client class and add it to the clients list
-            std::cout << "new client ! about to call accept. size of client list now is : " << _clients_list.size() << std::endl;
+            //std::cout << "new client ! about to call accept. size of client list now is : " << _clients_list.size() << std::endl;
             Client  *to_add = accept_new_client((*it).getListeningSocket());
             // in case an exception is thrown, that is where it will stop execution. No Client will be allocated, and no push_back in the client list
             _clients_list.push_back(to_add);
@@ -140,7 +140,7 @@ Client     *Webserv::accept_new_client(int listening_socket)
     client_socket = accept(listening_socket, (struct sockaddr *)&addr_of_client, &len_for_accept);
     if (client_socket < 0)
         throw WebException<int>(RED, "WebServ error with function accept(): Client not accepted on listening socket ", listening_socket);
-    std::cout << "new client accepted ! socket is " << client_socket << std::endl;      
+    //std::cout << "new client accepted ! socket is " << client_socket << std::endl;      
     FD_SET(client_socket, &_current_set);
 
     Client *ret;
@@ -182,12 +182,21 @@ void    Webserv::looping_through_read_set()
             ssize_t bytes_recv;
             if ((*it)->headerIsReadComplete() == false) 
             {
-                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) <= 0)
+                bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0);
+                if (bytes_recv == -1)
                 {
                     std::list<Client*>::iterator    to_delete = it;
-                    ++it; // ready for next loop cycle
+                    ++it;
                     remove_client(client_socket, to_delete);
                     std::cout << "recv failed for client socket " << client_socket << std::endl;
+                    continue;
+                }
+                else if (bytes_recv == 0)
+                {
+                    std::list<Client*>::iterator    to_delete = it;
+                    ++it;
+                    remove_client(client_socket, to_delete);
+                    std::cout << "recv complete. Connection closed by peer" << std::endl;
                     continue;
                 }
                 (*it)->appendToRequestString(buffer, bytes_recv);
@@ -201,13 +210,22 @@ void    Webserv::looping_through_read_set()
             {
                 std::map<std::string, std::string>  header_map = (*it)->getRequest().get_header_map();
                 std::map<std::string, std::string>::const_iterator    content_length_it = header_map.find("Content-Length");
-                if ((bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0)) <= 0)
+                bytes_recv = recv(client_socket, buffer, sizeof(buffer), 0);
+                if (bytes_recv == -1)
                 {
                     std::list<Client*>::iterator    to_delete = it;
-                    ++it; // ready for next loop cycle
+                    ++it;
                     remove_client(client_socket, to_delete);
                     std::cout << "recv failed for client socket " << client_socket << std::endl;
-                    continue;     
+                    continue;
+                }
+                else if (bytes_recv == 0)
+                {
+                    std::list<Client*>::iterator    to_delete = it;
+                    ++it;
+                    remove_client(client_socket, to_delete);
+                    std::cout << "recv complete. Connection closed by peer" << std::endl;
+                    continue;
                 }
                 (*it)->appendToRequestString(buffer, bytes_recv);
                 if (((*it)->getRequestString().size() - (*it)->getRequest().get_index_beginning_body())
@@ -215,7 +233,7 @@ void    Webserv::looping_through_read_set()
                     (*it)->setReadAsComplete(true);
             }
             if ((*it)->isReadComplete())    {
-                std::cout << "Reading complete.\nRequest is:\n" << (*it)->getRequestString();
+                std::cout << "Reading complete.\n\nRequest is:\n" << (*it)->getRequestString();
                 handleRequest(*it); // we handle the request and create a response to send
             }
         }
@@ -591,7 +609,7 @@ void     Webserv::checkAutoindex( page page, std::string file, Client *c, Server
         
         DIR *dir = opendir(file.c_str());
         if ( dir == NULL )
-        {   c->setResponseString(UNAUTHORIZED, "", "");  return ;   }
+        {   c->setResponseString(NOT_FOUND, "", "");  return ;   }
         while ( (dir_list = readdir(dir)) )    {
             std::string item(dir_list->d_name);
             std::string href = item;

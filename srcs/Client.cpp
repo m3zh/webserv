@@ -90,10 +90,6 @@ void                    Client::setResponseString(std::string code, std::string 
     status["504"] = "Gateway Timeout";
     status["505"] = "HTTP Version Not Supported";
     
-    std::cout << "CODE: ";
-    std::cout << code;
-    std::cout << "\n";
-    std::cout << content;
     std::string error_file(ERROR_FILE_PATH);
     response_str = "HTTP/1.1 " + code + " " + status[code] + "\r\n";        // start of header
     if ( code == "301" )
@@ -123,8 +119,7 @@ void                    Client::setResponseString(std::string code, std::string 
         file = file_path;
     response_str += "Content-Type: " + getContentType(file) + "; charset=utf-8;\r\n";
     response_str += "Content-Length: " + getFileSize(file) + ";\r\n\r\n";
-    std::cout << "\nSTR RES: " << response_str;
-    std::cout << "FILE: " << file << std::endl;
+    std::cout << "Response is:\n" << response_str;
     setResponseFile(file);
     getResponseFileStream().open(file, std::ios_base::in | std::ios_base::binary);          // convert file to fstream
     setThereIsAFileToSend(true); 
@@ -160,8 +155,9 @@ std::string           Client::getContentType(std::string file)
         || extension == "xml" || extension == "csv" )
     {    ret = "text/" + extension; return ret;     }
     if ( extension == "jpeg" || extension == "png" || extension == "gif" 
-        || extension == "svg" || extension == "webp" || extension == "jpg" )
+        || extension == "svg" || extension == "webp" || extension == "jpg")
     {    ret = "image/" + extension; return ret;     }
+    if ( extension == "ico" ) { ret = "image/x-icon"; return ret; }
     ret = "text/plain";
     return ret;
 };
