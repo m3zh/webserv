@@ -31,8 +31,8 @@ int                             Webserv::set_server()
         if (fcntl(listening_socket, F_SETFL, O_NONBLOCK) < 0)
         {   throw WebException<int>(BLUE, "WebServ error: fcntl failed on listening socket ", listening_socket); close_all();    return -1;      }
         // setting socket options to allow it to reuse local address (even after a client disconnects)
-        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0)
-        //if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+        //if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0)
+        if (setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
         {   throw WebException<int>(BLUE, "WebServ error: setsockopt failed on listening socket ", listening_socket); close_all();    return -1;      }
         struct sockaddr_in  listening_addrs;
         // we use memset to initialize a sockaddr_in structure

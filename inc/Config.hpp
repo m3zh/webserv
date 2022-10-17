@@ -55,5 +55,6 @@ class Config
 
         std::vector<ServerInfo>&     getServers();
 
-        bool            valid_config(std::vector<ServerInfo>    &s);
+        bool            valid_config(std::vector<ServerInfo>     &s);
+        bool            valid_servers(std::vector<ServerInfo>    &s);
 };

@@ -33,12 +33,11 @@ int     Config::is_valid(char   *config, char **envp)
             setServerPageParams(parser, server, it);
             setServers(server);
         }
-        // debug_me(parser);
+        valid_servers(getServers());
         if (valid_config(getServers()))
             return 1;
     }
     std::cout << "Error in config\n"; 
-    // debug_me(parser);
     return 0;
 }
 
@@ -148,7 +147,7 @@ void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vect
 // GETTER functions
 // ************
 
-std::vector<ServerInfo>&     Config::getServers()        {   return _servers;    };
+std::vector<ServerInfo>&     Config::getServers()   {    return _servers;    };
 
 // ************
 // VALIDATE functions
@@ -190,6 +189,31 @@ bool                    Config::valid_config(std::vector<ServerInfo>& s)
     }
     if (root != 1)
         return false;
+    return true;
+};
+
+bool                    Config::valid_servers(std::vector<ServerInfo>& s)
+{   
+    std::vector<ServerInfo>::reverse_iterator rit = s.rbegin();
+
+    while ( rit != s.rend() - 1) 
+    {
+        std::vector<ServerInfo>::reverse_iterator it2 = rit + 1;
+        while ( it2 != s.rend() )
+        {
+            if ((*rit).getPort() == (*it2).getPort())
+                (*it2).setDefault(false);
+            it2++;
+        }
+        rit++;
+    }
+    std::vector<ServerInfo>::iterator it = s.begin();
+    while ( it != s.end() ) 
+    {
+        if (it->getDefault() == false)
+            _servers.erase(it);
+        it++;
+    }
     return true;
 };
 
