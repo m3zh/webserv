@@ -33,8 +33,9 @@ int     Config::is_valid(char   *config, char **envp)
             setServerPageParams(parser, server, it);
             setServers(server);
         }
-        valid_servers(getServers());
-        if (valid_config(getServers()))
+        if (!valid_servers(getServers()))
+            std::cout << "Port missing\n";
+        else if (valid_config(getServers()))
             return 1;
     }
     std::cout << "Error in config\n"; 
@@ -155,8 +156,10 @@ std::vector<ServerInfo>&     Config::getServers()   {    return _servers;    };
 bool                    Config::valid_config(std::vector<ServerInfo>& s)
 {   
     std::vector<ServerInfo>::iterator it = s.begin();
+    std::vector<ServerInfo>::iterator ite = s.end();
+    if (s.size() > 1)  ite = s.end() - 1;
 
-    while ( it != s.end() - 1)
+    while ( it != ite )
     {
         int root = 0;
         if ((*it).getPort() < 0) return false;                                  // check if port has been set
@@ -200,6 +203,8 @@ bool                    Config::valid_servers(std::vector<ServerInfo>& s)
         std::vector<ServerInfo>::reverse_iterator it2 = rit + 1;
         while ( it2 != s.rend() )
         {
+            if ((*rit).getPort() == -1)
+                return false;
             if ((*rit).getPort() == (*it2).getPort())
                 (*it2).setDefault(false);
             it2++;
