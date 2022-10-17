@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/05 22:35:05 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/28 13:06:13 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/16 21:13:13 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ int     Config::is_valid(char   *config, char **envp)
 
 void    Config::setServers(ServerInfo &server)          {    _servers.insert(_servers.begin(), server); };
 
-void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
+int    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)
 {
     while (it != parser.tokens.end() && it->getType() == "Key")
     {
@@ -56,19 +56,53 @@ void    Config::setServerParams(Lexer &parser, ServerInfo &server, std::vector<T
         it++;
         while (it != parser.tokens.end() && it->getType() != "Key" && it->getType() != "Namespace")
         {
+            // ports valides entre 0 et 65535 https://www.webopedia.com/reference/well-known-tcp-port-numbers/
+            // pour le port : check si it nest pas vide, si cest un nombre qui ne depasse pas (int ?) et quil est unique
             if (key_tmp.getContent() == "listen")
-                server.setPort(stoi(it->getContent()));
+            {
+                int port;
+                if (server.getPort() != -1)
+                {   std::cout << "Too many ports\n"; return 0;  }
+                try { 
+                    port = stoi(it->getContent());
+                    server.setPort(port);
+                }
+                catch (...) {
+                    std::cout << "Something wrong with stoi in setServerParams...\n";
+                    return 0;
+                }
+                if (port < 0 || port > 65535)
+                {   std::cout << "Wrong port number\n"; return 0;  }
+                
+            }
             else if (key_tmp.getContent() == "server_name")
-                server.setServerName(it->getContent());
+            {
+                if (server.getServerName() != "")
+                {   std::cout << "Too many server names\n"; return 0;  }
+                server.setServerName(it->getContent()); 
+            }
             else if (key_tmp.getContent() == "client_max_body_size")
-                server.setClientMaxBodySize(stoi(it->getContent()));
+            {
+                if (server.getClientMaxBodySize() != 1048576)
+                {   std::cout << "Too many body sizes\n"; return 0;  }
+                server.setClientMaxBodySize(stoi(it->getContent())); 
+            }
             else if (key_tmp.getContent() == "root")
+            {
+                if (server.getServerRoot() != "")
+                {   std::cout << "Too many server indexes\n"; return 0;  }
                 server.setServerRoot(it->getContent());
+            }
             else if (key_tmp.getContent() == "index")
+            {
+                if (server.getServerIndex() != "")
+                {   std::cout << "Too many server indexes\n"; return 0;  }
                 server.setServerIndex(it->getContent());
+            }
             it++;
         }
     }
+    return 1;
 }
 
 void    Config::setServerPageParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it)

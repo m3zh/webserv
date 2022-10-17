@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/15 09:13:06 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/06 08:48:32 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/16 20:47:41 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ class Config
         int             is_valid(char   *config, char **envp);
         
         void            setServers(ServerInfo &s);
-        void            setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it);
+        int             setServerParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it);
         void            setServerPageParams(Lexer &parser, ServerInfo &server, std::vector<Token>::iterator &it);
 
         std::vector<ServerInfo>&     getServers();

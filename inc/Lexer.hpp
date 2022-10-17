@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/15 09:13:31 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 16:33:11 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/16 20:35:22 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ class Lexer
 		std::vector<std::string>	split(std::string line);			   									// split lines on multiple separators (i.e. spaces)
         int             			valid_brackets(std::fstream &f);       									// check if brackets in config are closed
         int             			valid_lineending(std::string line);      								// check if line ending is valid ( if it ends with ; { or } )
-
+		bool            			valid_line(std::vector<std::string> current_line);
 		// Lexer TAGS - static members
 		static std::string			types[];
 		static std::string			namespace_types[];

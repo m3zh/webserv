@@ -6,7 +6,7 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/12 16:33:26 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/08/12 16:33:27 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/16 20:41:16 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,8 @@ int     Lexer::read(char   *config, char **envp)
 {
     setCurrWorkdir(envp);
     std::fstream file(config, std::fstream::in);
+    if (file.good() && file.peek() == EOF)
+    { std::cout << "Config file is empty\n"; return 0;  }
     if  (file.good() && valid_brackets(file))
     {
 		std::string line;
@@ -116,7 +118,8 @@ bool            Lexer::tokenize(std::vector<std::string> current_line)
     {
         Token token(current_line[i], i);                                        // create token with content and pos
 
-        if (!tag(token))            return false;                               // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne   
+        if (!tag(token) || !valid_line(current_line) )
+            return false;                               // si on a pas tag le token, c'est qu'on a un comment donc on skippe la ligne
         tokens.push_back(token);
     }
     return validate_by_position(tokens, i);
@@ -138,16 +141,6 @@ bool    Lexer::setPathParams(Token& token)
         if (token.getContent().compare(0, 1, ".") == 0) return false;
     if (token.getContent().compare(0, 1, ".") == 0)                                         // remove . if path starts with .
         token.setContent(token.getContent().substr(1, token.getContent().size() - 1));
-    // if (last.getContent().compare("root") == 0)                                             // root must be followed by an EXISTING path
-    // {
-    //     fd = open((getCurrWorkdir() + token.getContent()).c_str(), O_RDONLY);               // check if absolute path exists
-    //     if (fd < 0)
-    //     {
-    //         std::cout << "Invalid path in config" << std::endl;
-    //         return false;
-    //     }
-    //     close(fd);
-    // }
     if (token.getContent()[token.getContent().size() - 1] != '/')                           // add a / at the end of the path if not present already
         token.getContent() += '/';
     return true;    
@@ -258,6 +251,17 @@ bool    Lexer::validate_by_position(std::vector<Token> tokens, size_t num_of_tok
     return true;
 }
 
+bool            Lexer::valid_line(std::vector<std::string> current_line)
+{
+    if ( current_line[0] == "server" )
+        return current_line.size() == 1;
+    if ( current_line[0] == "listen" || current_line[0] == "server_name" || current_line[0] == "root"
+        || current_line[0] == "index" || current_line[0] == "client_max_body_size" || current_line[0] == "location"
+        || current_line[0] == "upload_store" || current_line[0] == "autoindex" )
+        return current_line.size() == 2;
+    return true;
+}
+
 bool    Lexer::handleComments(Token& token)
 {
     std::string before_comment = token.getContent().substr(0, token.getContent().find("#"));
@@ -267,6 +271,7 @@ bool    Lexer::handleComments(Token& token)
     tokens.push_back(token);
     return false;
 }
+
 
 // ************
 // PAIR functions

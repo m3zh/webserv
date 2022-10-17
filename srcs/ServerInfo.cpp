@@ -6,15 +6,15 @@
 /*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/03 09:29:52 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/09/26 18:40:34 by mlazzare         ###   ########.fr       */
+/*   Updated: 2022/10/16 21:10:48 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../inc/ServerInfo.hpp"
 
-ServerInfo::ServerInfo()    :   _server_name("localhost"),                      // by default set to localhost
+ServerInfo::ServerInfo()    :   _server_name(""),                               
                                 _port(-1),                                      // port MUST be set in config
-                                _client_max_body_size(6000000)                      // by default set to 500
+                                _client_max_body_size(1048576)                   // by default set to 1M
                                 {};
 ServerInfo::~ServerInfo()       {};
 

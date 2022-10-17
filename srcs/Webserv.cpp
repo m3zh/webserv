@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: artmende <artmende@student.s19.be>         +#+  +:+       +#+        */
+/*   By: mlazzare <mlazzare@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/31 16:09:14 by mlazzare          #+#    #+#             */
-/*   Updated: 2022/10/15 16:41:08 by artmende         ###   ########.fr       */
+/*   Updated: 2022/10/16 17:45:37 by mlazzare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,9 +90,8 @@ int     Webserv::run_server()
 
         // select will test listening fd, and clients
         return_of_select = select(1 + get_fd_max(), &_read_set, &_write_set, NULL, &timeout);
-        std::cout << "just after select() with return " << return_of_select << std::endl;
         if (return_of_select == 0)
-            throw WebException<int>(BLUE, "WebServ timeout: no activity for the last", timeout.tv_sec);
+            throw WebException<int>(BLUE, "WebServ timeout: no activity for the last", timeout.tv_usec);
         if (return_of_select == -1)
         {
             if (keep_alive == false)
@@ -102,14 +101,14 @@ int     Webserv::run_server()
         // looping through all listening socket
         try
         {
-            checking_for_new_clients(); // possible issue with accept()
+            checking_for_new_clients();
         }
         catch(const std::exception& e)
         {
             std::cerr << e.what() << '\n';
         }
-        looping_through_read_set(); // possible issue with recv() but no exception
-        looping_through_write_set(); // possible issue with send() but no exception
+        looping_through_read_set();
+        looping_through_write_set();
     }
     close_all();
     return 0;
@@ -134,7 +133,6 @@ void    Webserv::checking_for_new_clients()
 
 Client     *Webserv::accept_new_client(int listening_socket)
 {
-    // the returned client is allocated in the heap. Do not forget to deallocate it
     struct sockaddr_in  addr_of_client;
     socklen_t   len_for_accept = sizeof(addr_of_client);
     int client_socket;
@@ -145,7 +143,7 @@ Client     *Webserv::accept_new_client(int listening_socket)
     std::cout << "new client accepted ! socket is " << client_socket << std::endl;      
     FD_SET(client_socket, &_current_set);
 
-    Client *ret;// = new Client(client_socket, addr_of_client, get_server_associated_with_listening_socket(listening_socket));
+    Client *ret;
 
     try
     {
@@ -154,9 +152,8 @@ Client     *Webserv::accept_new_client(int listening_socket)
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
-        close(client_socket); // in case the memory allocation fails, we close the newly created socket.
+        close(client_socket);
         throw WebException<int>(RED, "WebServ memory allocation error : Client could not be added to Client list. Listening socket was ", listening_socket);
-        // that second exception thrown will be caught in run_server()
     }
     return (ret);
 }
