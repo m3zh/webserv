@@ -5,7 +5,8 @@
 # config file will be based on nginx default config
 https://www.nginx.com/resources/wiki/start/topics/examples/full/
 # socket programming in C
-https://aticleworld.com/socket-programming-in-c-using-tcpip/
+https://aticleworld.com/socket-programming-in-c-using-tcpip/  
+https://bousk.developpez.com/cours/reseau-c++/TCP/05-envoi-reception-serveur/#LII
 # How to Load a Webpage in C
 https://www.youtube.com/watch?v=CymFHNqC7n4
 # Web programming (CGI) in C ( from 8:40 )
